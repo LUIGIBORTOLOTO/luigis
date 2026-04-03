@@ -122,6 +122,11 @@
         #map-container { flex-grow: 1; position: relative; }
         #map { height: 100%; width: 100%; z-index: 1; }
         
+        /* Ajuste para o controle de basemaps no Leaflet */
+        .leaflet-control-layers { background: var(--glass-bg) !important; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important; border-radius: 10px !important; }
+        .leaflet-control-layers-list { padding: 5px; }
+        .leaflet-control-layers-expanded { background: var(--bg-panel) !important; }
+
         .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: rgba(15, 23, 42, 0.95) !important; backdrop-filter: blur(8px); color: var(--text-light) !important; border: 1px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.6) !important; border-radius: 8px; }
         .leaflet-popup-content { margin: 12px; min-width: 200px; }
         .leaflet-container a.leaflet-popup-close-button { color: var(--text-muted); right: 6px; top: 6px; transition: 0.2s; }
@@ -201,7 +206,7 @@
         </div>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="abrirAba('aba-entrada', this)">1. RTK</button>
+            <button class="tab-btn active" onclick="abrirAba('aba-entrada', this)">1. Pontos</button>
             <button class="tab-btn" onclick="abrirAba('aba-camadas', this)">2. Camadas</button>
             <button class="tab-btn" onclick="abrirAba('aba-editor', this)">3. Tabela</button>
             <button class="tab-btn" onclick="abrirAba('aba-exportar', this)">4. Exportar</button>
@@ -223,7 +228,7 @@
             
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <label style="margin:0;">Dados Brutos (RTK / CSV)</label>
+                    <label style="margin:0;">Dados Brutos (Pontos / CSV)</label>
                     <button class="btn btn-outline btn-small" onclick="document.getElementById('arquivo-csv').click()">📂 Importar Arquivo</button>
                     <input type="file" id="arquivo-csv" accept=".csv,.txt" style="display:none;" onchange="carregarTextoEntrada(event)">
                 </div>
@@ -281,7 +286,7 @@
                 <table class="tabela-editor">
                     <thead><tr><th width="15%">#</th><th>Nome do Vértice</th><th width="30%">Cota Z</th></tr></thead>
                     <tbody id="tabela-editor-body">
-                        <tr><td colspan="3" style="text-align: center; padding: 30px; color: var(--text-muted);">Aguardando plotagem de dados RTK...</td></tr>
+                        <tr><td colspan="3" style="text-align: center; padding: 30px; color: var(--text-muted);">Aguardando plotagem de dados...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -302,7 +307,7 @@
 
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 5px;">
-                    <label style="margin:0;">Tabela (Visível no Popup e CAD)</label>
+                    <label style="margin:0;">Tabela (Visível no Popup, CSV e CAD)</label>
                     <div style="display:flex; gap: 4px;">
                         <button class="btn btn-outline btn-small" onclick="marcarTodasColunas(true)">Todas</button>
                         <button class="btn btn-outline btn-small" onclick="marcarTodasColunas(false)">Nenhuma</button>
@@ -320,6 +325,7 @@
             </label>
 
             <div style="display:flex; flex-direction:column; gap:10px; margin-top:5px;">
+                <button class="btn btn-success btn-block" onclick="baixarCSV()">📊 Exportar Planilha (.CSV)</button>
                 <button class="btn btn-warning btn-block" onclick="baixarDXF()">📐 Exportar AutoCAD (.DXF)</button>
                 <button class="btn btn-purple btn-block" onclick="baixarGeoJSON()">🌍 Exportar QGIS / GIS (.GeoJSON)</button>
             </div>
@@ -333,24 +339,24 @@
             <div class="card" style="border-color: var(--accent);">
                 <label style="color: var(--accent); font-size: 14px;">🌍 Sobre o LuiGIS</label>
                 <p style="font-size: 12px; line-height: 1.6; color: var(--text-light); margin-top: 0;">
-                    O <strong>LuiGIS</strong> é um WebGIS avançado projetado para agilizar o fluxo de trabalho de profissionais de geoprocessamento e topografia. Ele permite o cruzamento rápido de dados RTK com bases cartográficas pesadas diretamente no navegador, sem a necessidade de servidores complexos ou softwares desktop para consultas rápidas.
+                    O <strong>LuiGIS</strong> é um WebGIS avançado projetado para agilizar o fluxo de trabalho de profissionais de geoprocessamento e topografia. Ele permite o cruzamento rápido de dados com bases cartográficas pesadas diretamente no navegador.
                 </p>
             </div>
 
             <div class="card" style="border-color: var(--purple); background: rgba(139, 92, 246, 0.05);">
                 <label style="color: var(--purple); font-size: 13px;">🧠 Construção Guiada por IA</label>
                 <p style="font-size: 12px; line-height: 1.6; color: var(--text-muted); margin-top: 0;">
-                    A arquitetura lógica, o design da interface, o processamento geoespacial em JavaScript e a superação de limites técnicos de rede (bypass CORS) foram estruturados e codificados de forma colaborativa com <strong>Inteligência Artificial</strong>. Um projeto que une a visão e a engenharia humana com a velocidade de desenvolvimento da IA.
+                    A arquitetura lógica, o design da interface, o processamento geoespacial em JavaScript e a superação de limites técnicos de rede (bypass CORS) foram estruturados e codificados de forma colaborativa com <strong>Inteligência Artificial</strong>. 
                 </p>
             </div>
 
             <div class="card">
                 <label>Como Funciona o Sistema</label>
                 <ul style="font-size: 11px; padding-left: 20px; line-height: 1.6; color: var(--text-muted); margin: 0;">
-                    <li><strong style="color:white;">Aba 1 (RTK):</strong> Cole dados brutos de estação total ou RTK e plote no mapa com conversão de coordenadas automática.</li>
+                    <li><strong style="color:white;">Aba 1 (Pontos):</strong> Cole dados brutos de estação total ou RTK e plote no mapa com conversão de coordenadas automática.</li>
                     <li><strong style="color:white;">Aba 2 (Camadas):</strong> Acesse bases da nuvem separadas por regionais ou arraste seus próprios SHP, KML e GeoJSON.</li>
                     <li><strong style="color:white;">Aba 3 (Tabela):</strong> Editor de atributos em tempo real para os vértices medidos.</li>
-                    <li><strong style="color:white;">Aba 4 (Exportar):</strong> Baixe a área visível do mapa em DXF para AutoCAD, garantindo que as camadas e textos estejam organizados, ou exporte para GIS (GeoJSON).</li>
+                    <li><strong style="color:white;">Aba 4 (Exportar):</strong> Baixe a área visível do mapa em CSV, DXF ou GeoJSON.</li>
                 </ul>
             </div>
             
@@ -377,9 +383,22 @@
     </main>
 
     <script>
-        var map = L.map('map', { preserveDrawingBuffer: true, zoomControl: false }).setView([-19.932, -44.053], 13);
+        // CONFIGURAÇÃO DOS MÚLTIPLOS BASEMAPS
+        var googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=y&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20, crossOrigin: true, attribution: 'Google Satélite' });
+        var googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20, crossOrigin: true, attribution: 'Google Ruas' });
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' });
+        
+        var basemaps = {
+            "🛰️ Google Satélite": googleSat,
+            "🗺️ Google Ruas": googleStreets,
+            "🌍 OpenStreetMap": osm
+        };
+
+        var map = L.map('map', { preserveDrawingBuffer: true, zoomControl: false, layers: [googleSat] }).setView([-19.932, -44.053], 13);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
-        L.tileLayer('https://mt1.google.com/vt/lyrs=y&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20, crossOrigin: true }).addTo(map);
+        
+        // Adiciona o Controle de Camadas no canto inferior esquerdo
+        L.control.layers(basemaps, null, { position: 'bottomleft' }).addTo(map);
         
         var memoria = { nomes: [], cotas: [], lon: [], lat: [] };
         var datumsDef = { "WGS84": "+datum=WGS84", "SIRGAS2000": "+ellps=GRS80 +towgs84=0,0,0,0,0,0,0", "SAD69": "+ellps=aust_SA +towgs84=-66.87,4.37,-38.52,0,0,0,0" };
@@ -629,9 +648,9 @@
                 map.fitBounds(groupBounds.getBounds(), {padding:[40,40], maxZoom: 21});
             }
 
-            gerenciadorCamadas.unshift({ id: 'rtk_poligono', nome: '📍 RTK - Polígono', leafletLayer: camadaPoligono, visivel: true, tipo: 'rtk_poly', cor: '#3b82f6' });
-            gerenciadorCamadas.unshift({ id: 'rtk_pontos', nome: '📍 RTK - Pontos', leafletLayer: camadaPontos, visivel: true, tipo: 'rtk_pt', cor: '#ef4444' });
-            gerenciadorCamadas.unshift({ id: 'rtk_rotulos', nome: '📍 RTK - Rótulos', leafletLayer: camadaRotulos, visivel: true, tipo: 'rtk_text' });
+            gerenciadorCamadas.unshift({ id: 'rtk_poligono', nome: '📍 Pontos - Polígono', leafletLayer: camadaPoligono, visivel: true, tipo: 'rtk_poly', cor: '#3b82f6' });
+            gerenciadorCamadas.unshift({ id: 'rtk_pontos', nome: '📍 Pontos - Vértices', leafletLayer: camadaPontos, visivel: true, tipo: 'rtk_pt', cor: '#ef4444' });
+            gerenciadorCamadas.unshift({ id: 'rtk_rotulos', nome: '📍 Pontos - Rótulos', leafletLayer: camadaRotulos, visivel: true, tipo: 'rtk_text' });
             
             renderizarGestorCamadas();
         }
@@ -866,6 +885,75 @@
         }
 
         function baixarArquivo(n, c, t) { var b = new Blob([c], {type: t}); var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = n; a.click(); }
+
+        // --- NOVA FUNÇÃO: EXPORTAR CSV ---
+        function baixarCSV() {
+            var hasRtk = memoria.lon.length > 0;
+            var hasLayers = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel);
+            
+            if (!hasRtk && !hasLayers) { 
+                alert("Não há dados visíveis para exportar."); 
+                return; 
+            }
+
+            var csvContent = "\uFEFF"; // BOM para Excel abrir o UTF-8 corretamente
+            var headers = ["Origem", "Nome_ID", "Coord_X", "Coord_Y", "Cota_Z"];
+            var rows = [];
+
+            // Pega as colunas globais ativadas
+            var extras = [];
+            for (var k in colunasGlobais) { if (colunasGlobais[k]) extras.push(k); }
+            
+            headers = headers.concat(extras);
+            rows.push(headers.join(";"));
+
+            var fmtOut = document.getElementById('out-formato').value;
+            var epsgU = "+proj=longlat +datum=WGS84 +no_defs"; 
+            var epsgD = (fmtOut === 'utm') ? obterEpsgEntrada() : epsgU;
+
+            if (hasRtk) {
+                for(var i=0; i<memoria.lon.length; i++) {
+                    var c = proj4(epsgU, epsgD, [memoria.lon[i], memoria.lat[i]]);
+                    var row = [
+                        "Pontos_Levantamento", 
+                        memoria.nomes[i], 
+                        c[0].toFixed(5).replace('.', ','), 
+                        c[1].toFixed(5).replace('.', ','), 
+                        memoria.cotas[i].toString().replace('.', ',')
+                    ];
+                    // Preenche o resto com vazio
+                    for(var e=0; e<extras.length; e++) row.push("");
+                    rows.push(row.join(";"));
+                }
+            }
+
+            if (hasLayers) {
+                var featuresClip = obterRecorteFeatures();
+                featuresClip.forEach(feat => {
+                    try {
+                        var centro = turf.centroid(feat).geometry.coordinates;
+                        var c = proj4(epsgU, epsgD, [centro[0], centro[1]]);
+                        
+                        var row = [
+                            "Camada_SHP", 
+                            "Geometria", 
+                            c[0].toFixed(5).replace('.', ','), 
+                            c[1].toFixed(5).replace('.', ','), 
+                            "0"
+                        ];
+                        
+                        extras.forEach(k => {
+                            var val = feat.properties ? feat.properties[k] : "";
+                            row.push(val ? String(val).replace(/;/g, ',').replace(/\n/g, ' ') : "");
+                        });
+                        
+                        rows.push(row.join(";"));
+                    } catch(e) {}
+                });
+            }
+
+            baixarArquivo("Exportacao_LuiGIS.csv", csvContent + rows.join("\n"), "text/csv;charset=utf-8;");
+        }
 
         function baixarDXF() {
             var hasRtk = memoria.lon.length > 0;
