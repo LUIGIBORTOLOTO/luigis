@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS v1.0 | Sistema Restrito</title>
+    <title>LuiGIS v1.1 | Sistema Restrito</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,7 +64,7 @@
         #btn-entrar:hover { background-color: var(--accent-hover); }
 
         /* --- ESTILOS DO SISTEMA --- */
-        #sidebar { width: 480px; background-color: var(--bg-panel); display: flex; flex-direction: column; border-right: 1px solid var(--border); z-index: 1000; box-shadow: 4px 0 25px rgba(0,0,0,0.6); }
+        #sidebar { width: 500px; background-color: var(--bg-panel); display: flex; flex-direction: column; border-right: 1px solid var(--border); z-index: 1000; box-shadow: 4px 0 25px rgba(0,0,0,0.6); }
         
         .header { padding: 20px; border-bottom: 1px solid var(--border); background-color: var(--bg-dark); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10;}
         .header-left { display: flex; align-items: center; gap: 12px; }
@@ -73,8 +73,8 @@
         .insta-btn { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: white; padding: 8px 14px; border-radius: 20px; font-size: 11px; text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 5px; box-shadow: 0 4px 15px rgba(220, 39, 67, 0.3); transition: 0.3s;}
         .insta-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(220, 39, 67, 0.5); }
 
-        .tabs { display: flex; padding: 12px; background-color: var(--bg-dark); gap: 4px; border-bottom: 1px solid var(--border); }
-        .tab-btn { flex: 1; padding: 10px 2px; background: var(--bg-card); border: 1px solid transparent; color: var(--text-muted); cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 6px; }
+        .tabs { display: flex; padding: 8px; background-color: var(--bg-dark); gap: 4px; border-bottom: 1px solid var(--border); flex-wrap: wrap;}
+        .tab-btn { flex: 1; padding: 10px 2px; background: var(--bg-card); border: 1px solid transparent; color: var(--text-muted); cursor: pointer; font-weight: 600; transition: 0.3s; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 6px; min-width: 65px; }
         .tab-btn.active { color: #fff; background-color: var(--accent); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); }
         .tab-btn:hover:not(.active) { color: var(--text-light); background-color: var(--border); }
 
@@ -122,7 +122,6 @@
         #map-container { flex-grow: 1; position: relative; }
         #map { height: 100%; width: 100%; z-index: 1; }
         
-        /* Ajuste para o controle de basemaps no Leaflet */
         .leaflet-control-layers { background: var(--glass-bg) !important; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important; border-radius: 10px !important; }
         .leaflet-control-layers-list { padding: 5px; }
         .leaflet-control-layers-expanded { background: var(--bg-panel) !important; }
@@ -156,6 +155,12 @@
         .col-check-label { display: flex; align-items: center; gap: 8px; font-size: 12px; cursor: pointer; color: var(--text-light); background: var(--bg-dark); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); transition: 0.2s; font-weight: 500; }
         .col-check-label:hover { border-color: var(--accent); background: rgba(59, 130, 246, 0.05); }
         .col-check-label input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+
+        /* Estilos Documentos */
+        .doc-preview { background-color: #fff; color: #000; padding: 20px; font-family: 'Times New Roman', Times, serif; font-size: 13px; border-radius: 6px; min-height: 200px; line-height: 1.5; margin-top: 15px; }
+        .doc-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; color: #000; }
+        .doc-table th, .doc-table td { border: 1px solid #000; padding: 4px; text-align: center; }
+        .doc-table th { background-color: #f1f5f9; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -210,7 +215,8 @@
             <button class="tab-btn" onclick="abrirAba('aba-camadas', this)">2. Camadas</button>
             <button class="tab-btn" onclick="abrirAba('aba-editor', this)">3. Tabela</button>
             <button class="tab-btn" onclick="abrirAba('aba-exportar', this)">4. Exportar</button>
-            <button class="tab-btn" onclick="abrirAba('aba-sobre', this)">5. Sobre</button>
+            <button class="tab-btn" onclick="abrirAba('aba-documentos', this)" style="border-bottom: 2px solid var(--success);">5. Documentos</button>
+            <button class="tab-btn" onclick="abrirAba('aba-sobre', this)">6. Sobre</button>
         </div>
 
         <div id="aba-entrada" class="tab-content active">
@@ -228,11 +234,12 @@
             
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <label style="margin:0;">Dados Brutos (Pontos / CSV)</label>
-                    <button class="btn btn-outline btn-small" onclick="document.getElementById('arquivo-csv').click()">📂 Importar Arquivo</button>
+                    <label style="margin:0;">Dados Brutos (TXT, CSV ou PDF)</label>
+                    <button class="btn btn-outline btn-small" onclick="document.getElementById('arquivo-csv').click()">📂 Importar</button>
                     <input type="file" id="arquivo-csv" accept=".csv,.txt" style="display:none;" onchange="carregarTextoEntrada(event)">
                 </div>
-                <textarea id="main-texto" style="height: 140px;" placeholder="Cole as coordenadas brutas do seu equipamento aqui..."></textarea>
+                <p style="font-size: 10px; color: var(--success); margin: 0;">📄 <strong>PDFs:</strong> Abra o PDF, copie a tabela de coordenadas e cole diretamente na caixa abaixo.</p>
+                <textarea id="main-texto" style="height: 120px;" placeholder="Cole as coordenadas brutas do seu equipamento ou tabela do PDF aqui..."></textarea>
             </div>
             <button class="btn btn-primary btn-block" onclick="processarLevantamento()">📍 Plotar Geometria no Mapa</button>
         </div>
@@ -329,10 +336,35 @@
                 <button class="btn btn-warning btn-block" onclick="baixarDXF()">📐 Exportar AutoCAD (.DXF)</button>
                 <button class="btn btn-purple btn-block" onclick="baixarGeoJSON()">🌍 Exportar QGIS / GIS (.GeoJSON)</button>
             </div>
-            
-            <div style="margin-top: auto; text-align: center; border-top: 1px solid var(--border); padding-top: 15px;">
-                <p style="font-size: 11px; color: var(--text-muted); margin: 0;">LuiGIS v1.0 | Integrado ao GitHub</p>
+        </div>
+
+        <div id="aba-documentos" class="tab-content">
+            <div class="card" style="border-color: var(--success);">
+                <label style="color: var(--success);">Gerador de Peças Técnicas</label>
+                <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Gera documentação topográfica baseada no polígono processado na Aba 1.</p>
+                
+                <div class="form-row" style="margin-top: 10px;">
+                    <div><label>Proprietário</label><input type="text" id="doc-prop" value="Nome do Proprietário"></div>
+                    <div><label>Município/UF</label><input type="text" id="doc-mun" value="Igarapé - MG"></div>
+                </div>
+                <div class="form-row">
+                    <div><label>Gleba/Imóvel</label><input type="text" id="doc-gleba" value="Lote 01, Quadra A"></div>
+                    <div><label>Confrontantes (Geral)</label><input type="text" id="doc-confrontantes" value="Lotes vizinhos e rua"></div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+                    <button class="btn btn-success btn-small" onclick="gerarDocumento('memorial')">📄 Memorial e Tabela</button>
+                    <button class="btn btn-primary btn-small" onclick="gerarDocumento('requerimento')">📝 Requerimento</button>
+                    <button class="btn btn-warning btn-small" onclick="gerarDocumento('anuencia')" style="grid-column: span 2; color: #000;">🤝 Carta de Anuência</button>
+                </div>
             </div>
+
+            <div style="display: flex; gap: 5px;">
+                <button class="btn btn-outline btn-small" onclick="copiarTexto('preview-area-docs')">📋 Copiar Texto</button>
+                <button class="btn btn-outline btn-small" onclick="imprimirDocs('preview-area-docs')">🖨️ Imprimir</button>
+            </div>
+
+            <div id="preview-area-docs" class="doc-preview" style="display: none;"></div>
         </div>
 
         <div id="aba-sobre" class="tab-content">
@@ -353,10 +385,11 @@
             <div class="card">
                 <label>Como Funciona o Sistema</label>
                 <ul style="font-size: 11px; padding-left: 20px; line-height: 1.6; color: var(--text-muted); margin: 0;">
-                    <li><strong style="color:white;">Aba 1 (Pontos):</strong> Cole dados brutos de estação total ou RTK e plote no mapa com conversão de coordenadas automática.</li>
+                    <li><strong style="color:white;">Aba 1 (Pontos):</strong> Cole dados brutos de estação total, PDF ou RTK e plote no mapa com conversão de coordenadas automática.</li>
                     <li><strong style="color:white;">Aba 2 (Camadas):</strong> Acesse bases da nuvem separadas por regionais ou arraste seus próprios SHP, KML e GeoJSON.</li>
-                    <li><strong style="color:white;">Aba 3 (Tabela):</strong> Editor de atributos em tempo real para os vértices medidos.</li>
+                    <li><strong style="color:white;">Aba 3 (Tabela):</strong> Editor de atributos em tempo real.</li>
                     <li><strong style="color:white;">Aba 4 (Exportar):</strong> Baixe a área visível do mapa em CSV, DXF ou GeoJSON.</li>
+                    <li><strong style="color:white;">Aba 5 (Documentos):</strong> Geração de Memorial, Tabelas Analíticas SGL/UTM, Requerimento e Anuência.</li>
                 </ul>
             </div>
             
@@ -406,6 +439,10 @@
         var camadaIdCounter = 0;
         
         var colunasGlobais = {}; 
+
+        // VARIÁVEIS GLOBAIS PARA ÁREA E PERÍMETRO
+        var ultimaAreaCalculada = 0;
+        var ultimoPerimetroCalculado = 0;
 
         // --- LÓGICA DE LOGIN COM USUÁRIO E SENHA (LuiGIS) ---
         function verificarLogin() {
@@ -625,6 +662,8 @@
                 L.marker(latlng, {opacity:0}).bindTooltip(memoria.nomes[i], {permanent:true, direction:'right', className:'etiqueta-mapa'}).addTo(camadaRotulos);
             }
 
+            ultimaAreaCalculada = 0; ultimoPerimetroCalculado = 0;
+
             if(pts.length >= 3) {
                 L.polygon(pts, {color:'#3b82f6', weight:3, fillOpacity:0.2}).addTo(camadaPoligono);
                 var area = 0, perimetro = 0;
@@ -633,9 +672,11 @@
                     area += (p1.x * p2.y) - (p2.x * p1.y);
                     perimetro += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
                 }
-                area = Math.abs(area)/2;
-                document.getElementById('lbl-area').innerHTML = area.toFixed(2).replace('.',',') + " <span>m²</span>";
-                document.getElementById('lbl-perimetro').innerHTML = perimetro.toFixed(2).replace('.',',') + " <span>m</span>";
+                ultimaAreaCalculada = Math.abs(area)/2;
+                ultimoPerimetroCalculado = perimetro;
+
+                document.getElementById('lbl-area').innerHTML = ultimaAreaCalculada.toFixed(2).replace('.',',') + " <span>m²</span>";
+                document.getElementById('lbl-perimetro').innerHTML = ultimoPerimetroCalculado.toFixed(2).replace('.',',') + " <span>m</span>";
                 document.getElementById('info-panel').style.display = 'block';
             } else if (pts.length === 2) {
                 L.polyline(pts, {color:'#3b82f6', weight:3}).addTo(camadaPoligono);
@@ -654,6 +695,155 @@
             
             renderizarGestorCamadas();
         }
+
+        // ==========================================
+        // LÓGICA DE DOCUMENTOS (ABA 5)
+        // ==========================================
+
+        function calcAzimuteDist(x1, y1, x2, y2) {
+            var dx = x2 - x1; var dy = y2 - y1;
+            var dist = Math.sqrt(dx*dx + dy*dy);
+            var az = Math.atan2(dx, dy) * (180 / Math.PI);
+            if (az < 0) az += 360;
+            var d = Math.floor(az);
+            var m = Math.floor((az - d) * 60);
+            var s = (((az - d) * 60) - m) * 60;
+            var azStr = `${d}° ${m.toString().padStart(2, '0')}' ${s.toFixed(2).padStart(5, '0')}"`;
+            return { dist: dist.toFixed(2), azimute: azStr };
+        }
+
+        function obterPlanoUTM(lon, lat) {
+            var epsgU = "+proj=longlat +datum=WGS84 +no_defs";
+            var zona = document.getElementById('main-zona').value || 23;
+            var hemi = (document.getElementById('main-hemi').value === 'S') ? '+south ' : '';
+            var datum = datumsDef[document.getElementById('main-datum').value] || "+datum=WGS84";
+            var epsgUtm = `+proj=utm +zone=${zona} ${hemi}${datum} +units=m +no_defs`;
+            return proj4(epsgU, epsgUtm, [lon, lat]);
+        }
+
+        function gerarDocumento(tipo) {
+            if (memoria.lon.length < 3 && tipo === 'memorial') { 
+                alert("Necessário um polígono fechado (mínimo 3 vértices) para gerar memorial."); return; 
+            }
+
+            var prop = document.getElementById('doc-prop').value || "Não informado";
+            var mun = document.getElementById('doc-mun').value || "Não informado";
+            var gleba = document.getElementById('doc-gleba').value || "Não informado";
+            var confront = document.getElementById('doc-confrontantes').value || "Não informado";
+            
+            var area = ultimaAreaCalculada.toFixed(2).replace('.', ',');
+            var perim = ultimoPerimetroCalculado.toFixed(2).replace('.', ',');
+
+            var conteudoHTML = "";
+
+            if (tipo === 'memorial') {
+                // Prepara vetores no Plano UTM para calculos
+                var coordsUTM = [];
+                for(var i=0; i<memoria.lon.length; i++) {
+                    var c = obterPlanoUTM(memoria.lon[i], memoria.lat[i]);
+                    coordsUTM.push({x: c[0], y: c[1]});
+                }
+
+                conteudoHTML += `<h3 style="text-align: center; text-decoration: underline;">MEMORIAL DESCRITIVO E TABELA ANALÍTICA</h3>`;
+                conteudoHTML += `<p><strong>Proprietário:</strong> ${prop}<br><strong>Gleba/Imóvel:</strong> ${gleba}<br><strong>Município/UF:</strong> ${mun}<br><strong>Área Total:</strong> ${area} m²<br><strong>Perímetro:</strong> ${perim} m</p>`;
+                
+                var desc = `<p style="text-align: justify; text-indent: 30px;">Inicia-se a descrição deste perímetro no vértice <strong>${memoria.nomes[0]}</strong>, de coordenadas N <strong>${coordsUTM[0].y.toFixed(3).replace('.',',')} m</strong> e E <strong>${coordsUTM[0].x.toFixed(3).replace('.',',')} m</strong>; deste, segue com os seguintes azimutes e distâncias:</p>`;
+                
+                var tabela = `<table class="doc-table"><thead><tr><th>Vértice</th><th>Azimute</th><th>Distância (m)</th><th>Coordenada E (X)</th><th>Coordenada N (Y)</th><th>Plano Local X (SGL)</th><th>Plano Local Y (SGL)</th></tr></thead><tbody>`;
+
+                var startX = coordsUTM[0].x;
+                var startY = coordsUTM[0].y;
+
+                var qtsPts = coordsUTM.length;
+                for (var i = 0; i < qtsPts; i++) {
+                    var pAtual = i;
+                    var pProx = (i + 1) % qtsPts;
+                    
+                    var calc = calcAzimuteDist(coordsUTM[pAtual].x, coordsUTM[pAtual].y, coordsUTM[pProx].x, coordsUTM[pProx].y);
+                    
+                    desc += `<p style="text-align: justify; margin: 5px 0;">Do vértice <strong>${memoria.nomes[pAtual]}</strong> ao vértice <strong>${memoria.nomes[pProx]}</strong>, com azimute de <strong>${calc.azimute}</strong> e distância de <strong>${calc.dist.replace('.',',')} m</strong>, confrontando neste trecho com ${confront}, até as coordenadas N <strong>${coordsUTM[pProx].y.toFixed(3).replace('.',',')} m</strong> e E <strong>${coordsUTM[pProx].x.toFixed(3).replace('.',',')} m</strong>.</p>`;
+                    
+                    // Calculo rudimentar SGL (Sist. Geodésico Local) assumindo o ponto 0 como Origem 0,0
+                    var sglX = coordsUTM[pAtual].x - startX;
+                    var sglY = coordsUTM[pAtual].y - startY;
+
+                    tabela += `<tr>
+                        <td><strong>${memoria.nomes[pAtual]}</strong></td>
+                        <td>${calc.azimute}</td>
+                        <td>${calc.dist.replace('.',',')}</td>
+                        <td>${coordsUTM[pAtual].x.toFixed(3).replace('.',',')}</td>
+                        <td>${coordsUTM[pAtual].y.toFixed(3).replace('.',',')}</td>
+                        <td>${sglX.toFixed(3).replace('.',',')}</td>
+                        <td>${sglY.toFixed(3).replace('.',',')}</td>
+                    </tr>`;
+                }
+
+                desc += `<p style="text-align: justify; text-indent: 30px;">Chegando novamente ao vértice <strong>${memoria.nomes[0]}</strong>, fechando assim o polígono acima descrito.</p>`;
+                tabela += `</tbody></table>`;
+                
+                conteudoHTML += desc;
+                conteudoHTML += `<h4 style="margin-top: 20px;">Tabela de Coordenadas (Sistema UTM e SGL Arbitrário)</h4>`;
+                conteudoHTML += tabela;
+
+                conteudoHTML += `<div style="margin-top: 60px; text-align: center;"><p>_______________________________________________________</p><p><strong>Responsável Técnico</strong><br>CREA/CAU: ______________</p></div>`;
+            } 
+            else if (tipo === 'requerimento') {
+                var dataAtual = new Date().toLocaleDateString('pt-BR');
+                conteudoHTML += `<h3 style="text-align: center; text-decoration: underline; margin-bottom: 30px;">REQUERIMENTO AO MUNICÍPIO</h3>`;
+                conteudoHTML += `<p style="text-align: justify; line-height: 1.8;"><strong>Ilmo. Sr. Prefeito Municipal de ${mun}</strong>,</p>`;
+                conteudoHTML += `<p style="text-align: justify; text-indent: 30px; line-height: 1.8;"><strong>${prop}</strong>, proprietário(a) do imóvel denominado <strong>${gleba}</strong>, localizado neste município, vem mui respeitosamente à presença de Vossa Senhoria REQUERER a aprovação do levantamento topográfico, planta e memorial descritivo, referentes à área de <strong>${area} m²</strong>, visando fins de regularização/desmembramento/retificação.</p>`;
+                conteudoHTML += `<p style="text-align: justify; text-indent: 30px; line-height: 1.8;">Nestes termos, pede e aguarda deferimento.</p>`;
+                conteudoHTML += `<p style="text-align: right; margin-top: 40px;">${mun}, ${dataAtual}.</p>`;
+                conteudoHTML += `<div style="margin-top: 60px; text-align: center;"><p>_______________________________________________________</p><p><strong>${prop}</strong><br>CPF/CNPJ: ______________</p></div>`;
+            }
+            else if (tipo === 'anuencia') {
+                var dataAtual = new Date().toLocaleDateString('pt-BR');
+                conteudoHTML += `<h3 style="text-align: center; text-decoration: underline; margin-bottom: 30px;">DECLARAÇÃO DE ANUÊNCIA E RESPEITO DE DIVISAS</h3>`;
+                conteudoHTML += `<p style="text-align: justify; text-indent: 30px; line-height: 1.8;">Nós, abaixo assinados, proprietários dos imóveis confrontantes com a área pertencente a <strong>${prop}</strong>, denominada <strong>${gleba}</strong>, localizada no município de <strong>${mun}</strong>, com área total medida de <strong>${area} m²</strong>.</p>`;
+                conteudoHTML += `<p style="text-align: justify; text-indent: 30px; line-height: 1.8;"><strong>DECLARAMOS</strong> expressamente, sob as penas da lei, que vistoriamos as marcações e os vértices estabelecidos no levantamento topográfico e que <strong>CONCORDAMOS PLENAMENTE</strong> com as divisas levantadas, não havendo qualquer invasão ou litígio com nossos imóveis.</p>`;
+                conteudoHTML += `<table class="doc-table" style="margin-top: 30px;">
+                    <thead><tr><th width="30%">Nome do Confrontante</th><th width="20%">CPF / RG</th><th width="50%">Assinatura</th></tr></thead>
+                    <tbody>
+                        <tr><td style="height: 40px;"></td><td></td><td></td></tr>
+                        <tr><td style="height: 40px;"></td><td></td><td></td></tr>
+                        <tr><td style="height: 40px;"></td><td></td><td></td></tr>
+                        <tr><td style="height: 40px;"></td><td></td><td></td></tr>
+                    </tbody>
+                </table>`;
+                conteudoHTML += `<p style="text-align: right; margin-top: 40px;">${mun}, ${dataAtual}.</p>`;
+            }
+
+            var container = document.getElementById('preview-area-docs');
+            container.innerHTML = conteudoHTML;
+            container.style.display = 'block';
+        }
+
+        function copiarTexto(elementId) {
+            var el = document.getElementById(elementId);
+            if(el.innerHTML === "") { alert("Gere um documento primeiro!"); return; }
+            var range = document.createRange();
+            range.selectNode(el);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand("copy");
+            window.getSelection().removeAllRanges();
+            alert("Texto copiado para a área de transferência!");
+        }
+
+        function imprimirDocs(divId) {
+            var conteudo = document.getElementById(divId).innerHTML;
+            if(conteudo === "") { alert("Gere um documento primeiro!"); return; }
+            var janela = window.open('', '', 'width=900,height=650');
+            janela.document.write('<html><head><title>Imprimir Documentos - LuiGIS</title>');
+            janela.document.write('<style>body{font-family: "Times New Roman", Times, serif; padding: 20px; font-size: 14px;} .doc-table{width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px;} .doc-table th, .doc-table td {border: 1px solid #000; padding: 6px; text-align: center;}</style>');
+            janela.document.write('</head><body>');
+            janela.document.write(conteudo);
+            janela.document.write('</body></html>');
+            janela.document.close();
+            setTimeout(() => { janela.print(); }, 500);
+        }
+
+        // ==========================================
 
         var modoRegua = false; var reguaLayer = L.featureGroup().addTo(map); var reguaPts = []; var reguaLinha = null;
         function toggleRegua() {
@@ -886,7 +1076,6 @@
 
         function baixarArquivo(n, c, t) { var b = new Blob([c], {type: t}); var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = n; a.click(); }
 
-        // --- NOVA FUNÇÃO: EXPORTAR CSV ---
         function baixarCSV() {
             var hasRtk = memoria.lon.length > 0;
             var hasLayers = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel);
@@ -896,11 +1085,10 @@
                 return; 
             }
 
-            var csvContent = "\uFEFF"; // BOM para Excel abrir o UTF-8 corretamente
+            var csvContent = "\uFEFF"; 
             var headers = ["Origem", "Nome_ID", "Coord_X", "Coord_Y", "Cota_Z"];
             var rows = [];
 
-            // Pega as colunas globais ativadas
             var extras = [];
             for (var k in colunasGlobais) { if (colunasGlobais[k]) extras.push(k); }
             
@@ -921,7 +1109,6 @@
                         c[1].toFixed(5).replace('.', ','), 
                         memoria.cotas[i].toString().replace('.', ',')
                     ];
-                    // Preenche o resto com vazio
                     for(var e=0; e<extras.length; e++) row.push("");
                     rows.push(row.join(";"));
                 }
