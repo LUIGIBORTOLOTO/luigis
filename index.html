@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS v5.0 | Métrica CAD & DocGEO Pro</title>
+    <title>LuiGIS v6.0 | Topografia GNSS, CAD & DocGEO</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,418 +19,133 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js"></script>
-    
+    <script src="https://unpkg.com/tokml@0.4.0/tokml.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     
     <style>
-        /* TEMA ESCURO (AUTOCAD / QGIS DARK) */
+        /* TEMA ESCURO (AUTOCAD / CIVIL 3D DARK) */
         :root {
-            --bg-dark: #1e1e1e; 
-            --bg-panel: #252526; 
-            --bg-card: #2d2d30;
-            --text-light: #ffffff; 
-            --text-muted: #cccccc;
-            --accent: #007acc; 
-            --accent-hover: #0098ff;
-            --success: #4caf50; 
-            --warning: #d7ba7d; 
-            --danger: #f44336;
-            --purple: #c586c0; 
-            --border: #3e3e42; 
-            --cad-canvas: #000000;
+            --bg-dark: #1e1e1e; --bg-panel: #252526; --bg-card: #2d2d30;
+            --text-light: #ffffff; --text-muted: #cccccc;
+            --accent: #007acc; --accent-hover: #0098ff;
+            --success: #4caf50; --warning: #d7ba7d; --danger: #f44336;
+            --purple: #c586c0; --border: #3e3e42; --cad-canvas: #0a0a0c;
         }
 
-        body { 
-            margin: 0; 
-            padding: 0; 
-            font-family: 'Inter', sans-serif; 
-            display: flex; 
-            height: 100vh; 
-            overflow: hidden; 
-            background-color: var(--bg-dark); 
-            color: var(--text-light); 
-        }
-
-        /* SCROLLBAR CUSTOMIZADA */
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; display: flex; height: 100vh; overflow: hidden; background-color: var(--bg-dark); color: var(--text-light); }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-dark); }
         ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #777; }
 
-        /* LAYOUT PRINCIPAL */
-        #sidebar { 
-            width: 500px; 
-            background-color: var(--bg-panel); 
-            display: flex; 
-            flex-direction: column; 
-            border-right: 1px solid var(--border); 
-            z-index: 1000; 
-            box-shadow: 4px 0 20px rgba(0,0,0,0.5); 
-        }
-
-        .header { 
-            padding: 15px 20px; 
-            border-bottom: 1px solid var(--border); 
-            background-color: #1a1a1c; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            position: sticky; 
-            top: 0; 
-            z-index: 10;
-        }
-
-        .header h1 { 
-            margin: 0; 
-            font-size: 18px; 
-            font-weight: 700; 
-            color: #fff; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px;
-        }
+        /* SIDEBAR (ESQUERDA) */
+        #sidebar { width: 480px; background-color: var(--bg-panel); display: flex; flex-direction: column; border-right: 1px solid var(--border); z-index: 1000; box-shadow: 4px 0 20px rgba(0,0,0,0.5); }
+        .header { padding: 15px; border-bottom: 1px solid var(--border); background-color: #1a1a1c; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10;}
+        .header h1 { margin: 0; font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px;}
         
-        /* SISTEMA DE ABAS (TABS) */
-        .tabs { 
-            display: flex; 
-            flex-wrap: wrap; 
-            background-color: #252526; 
-            border-bottom: 1px solid var(--border);
-        }
+        .tabs { display: flex; flex-wrap: wrap; background-color: #252526; border-bottom: 1px solid var(--border);}
+        .tab-btn { flex: 1; padding: 12px 4px; background: transparent; border: none; border-bottom: 3px solid transparent; color: #888; cursor: pointer; font-size: 11px; text-transform: uppercase; font-weight: 700; transition: 0.2s; text-align: center; }
+        .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); background: #2d2d30; }
+        .tab-btn:hover:not(.active) { color: #fff; background: #333; }
 
-        .tab-btn { 
-            flex: 1; 
-            padding: 12px 4px; 
-            background: transparent; 
-            border: none; 
-            border-bottom: 3px solid transparent; 
-            color: #888; 
-            cursor: pointer; 
-            font-size: 11px; 
-            text-transform: uppercase; 
-            font-weight: 700; 
-            transition: 0.2s; 
-            text-align: center; 
-        }
+        .tab-content { display: none; padding: 15px; flex-direction: column; gap: 15px; overflow-y: auto; flex-grow: 1; }
+        .tab-content.active { display: flex; animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .tab-btn.active { 
-            color: var(--accent); 
-            border-bottom: 3px solid var(--accent); 
-            background: #2d2d30; 
-        }
-
-        .tab-btn:hover:not(.active) { 
-            color: #fff; 
-            background: #333; 
-        }
-
-        .tab-content { 
-            display: none; 
-            padding: 20px; 
-            flex-direction: column; 
-            gap: 15px; 
-            overflow-y: auto; 
-            flex-grow: 1; 
-        }
-
-        .tab-content.active { 
-            display: flex; 
-            animation: fadeIn 0.3s ease-out; 
-        }
-
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(5px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-
-        /* CARTÕES E FORMULÁRIOS */
-        .card { 
-            background: var(--bg-card); 
-            border-radius: 6px; 
-            border: 1px solid var(--border); 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-            padding: 15px; 
-            position: relative; 
-            margin-top: 10px;
-        }
-
-        .card-title { 
-            position: absolute; 
-            top: -10px; 
-            left: 10px; 
-            background: var(--bg-card); 
-            padding: 0 8px; 
-            font-size: 11px; 
-            color: var(--accent); 
-            font-weight: 700; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px;
-        }
-
+        /* CARDS E FORMS */
+        .card { background: var(--bg-card); border-radius: 4px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; padding: 15px; position: relative; margin-top: 10px;}
+        .card-title { position: absolute; top: -10px; left: 10px; background: var(--bg-card); padding: 0 8px; font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase;}
         .card-title.green { color: var(--success); }
         .card-title.orange { color: var(--warning); }
-        .card-title.purple { color: var(--purple); }
         
-        label { 
-            font-size: 11px; 
-            font-weight: 600; 
-            color: #aaa; 
-            text-transform: uppercase; 
-            margin-bottom: 4px; 
-            display: block;
-        }
-
-        select, input[type="text"], input[type="number"], textarea { 
-            width: 100%; 
-            padding: 10px; 
-            background-color: #1e1e1e; 
-            border: 1px solid var(--border); 
-            border-radius: 4px; 
-            color: #fff; 
-            font-size: 12px; 
-            font-family: inherit; 
-            box-sizing: border-box; 
-            outline: none; 
-            transition: border-color 0.2s;
-        }
-
+        label { font-size: 11px; font-weight: 600; color: #aaa; text-transform: uppercase; margin-bottom: 4px; display: block;}
+        select, input[type="text"], input[type="number"], textarea { width: 100%; padding: 8px; background-color: #1e1e1e; border: 1px solid var(--border); border-radius: 3px; color: #fff; font-size: 12px; font-family: inherit; box-sizing: border-box; outline: none; }
         select:focus, input:focus, textarea:focus { border-color: var(--accent); }
-        
-        .form-row { display: flex; gap: 12px; }
+        .form-row { display: flex; gap: 10px; }
         .form-row > div { flex: 1; display: flex; flex-direction: column; }
-        .form-group { display: flex; flex-direction: column; }
 
-        /* BOTÕES GERAIS */
-        .btn { 
-            padding: 10px 14px; 
-            border: 1px solid var(--border); 
-            border-radius: 4px; 
-            font-weight: 600; 
-            font-size: 12px; 
-            cursor: pointer; 
-            transition: 0.2s; 
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            text-transform: uppercase; 
-            color: var(--text-light); 
-            background: #333;
-        }
-
+        /* BOTOES */
+        .btn { padding: 10px 12px; border: 1px solid var(--border); border-radius: 3px; font-weight: 600; font-size: 11px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; color: var(--text-light); background: #333;}
         .btn-block { width: 100%; }
         .btn:hover { background: #444; border-color: #666; }
-        
         .btn-primary { background-color: var(--accent); border-color: var(--accent); }
-        .btn-primary:hover { background-color: var(--accent-hover); border-color: var(--accent-hover); }
-        
+        .btn-primary:hover { background-color: var(--accent-hover); }
         .btn-success { background-color: #2e7d32; border-color: #2e7d32; }
-        .btn-success:hover { background-color: #388e3c; border-color: #388e3c; }
-        
         .btn-warning { background-color: var(--warning); color: #000; border-color: var(--warning); }
-        .btn-warning:hover { background-color: #e8c886; border-color: #e8c886; }
-        
-        .btn-purple { background-color: var(--purple); border-color: var(--purple); }
-        .btn-purple:hover { background-color: #d896d3; border-color: #d896d3; }
-        
-        .btn-danger { background-color: var(--danger); border-color: var(--danger); }
-        .btn-danger:hover { background-color: #ff5252; border-color: #ff5252; }
-        
         .btn-outline { background-color: transparent; border: 1px solid var(--accent); color: var(--accent); }
         .btn-outline:hover { background-color: rgba(0, 122, 204, 0.1); }
 
-        /* PLANILHA INTERNA (TABELA DE VÉRTICES) */
-        .spreadsheet-container { 
-            flex-grow: 1; 
-            overflow-y: auto; 
-            overflow-x: auto; 
-            background: var(--bg-dark); 
-            border: 1px solid var(--border); 
-            border-radius: 4px; 
-            min-height: 200px;
-        }
-
-        .tabela-editor { 
-            width: 100%; 
-            border-collapse: collapse; 
-            font-family: 'Courier New', Courier, monospace; 
-            font-size: 12px; 
-        }
-
-        .tabela-editor th, .tabela-editor td { 
-            border: 1px solid var(--border); 
-            padding: 6px 8px; 
-        }
-
-        .tabela-editor th { 
-            background-color: #1a1a1c; 
-            color: #ccc; 
-            position: sticky; 
-            top: 0; 
-            z-index: 2; 
-            text-align: center; 
-            font-family: 'Inter', sans-serif;
-            text-transform: uppercase;
-            font-size: 10px;
-        }
-
+        /* GESTOR E TABELAS */
+        .spreadsheet-container { flex-grow: 1; overflow-y: auto; overflow-x: auto; background: var(--bg-dark); border: 1px solid var(--border); min-height: 180px;}
+        .tabela-editor { width: 100%; border-collapse: collapse; font-family: 'Courier New', monospace; font-size: 11px; }
+        .tabela-editor th, .tabela-editor td { border: 1px solid var(--border); padding: 5px; }
+        .tabela-editor th { background-color: #1a1a1c; color: #ccc; position: sticky; top: 0; z-index: 2; text-align: center;}
         .tabela-editor td { background-color: #1e1e1e; text-align: right; }
-        .tabela-editor td.col-id { text-align: center; background-color: #252526; color: #888; width: 40px; font-weight: bold;}
-        .tabela-editor input { 
-            background: transparent; 
-            border: none; 
-            color: #4fc1ff; 
-            width: 100%; 
-            font-family: 'Courier New', Courier, monospace; 
-            font-size: 12px; 
-            text-align: right; 
-            outline: none; 
-            padding: 0;
-        }
+        .tabela-editor td.col-id { text-align: center; background-color: #252526; color: #888; width: 30px;}
+        .tabela-editor input { background: transparent; border: none; color: #4fc1ff; width: 100%; font-family: 'Courier New', monospace; font-size: 11px; text-align: right; outline: none; }
         .tabela-editor input:focus { background: rgba(0, 122, 204, 0.2); }
 
-        /* GESTOR DE CAMADAS (LAYERS) */
-        .layer-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            background: #1e1e1e; 
-            padding: 8px 12px; 
-            border-radius: 4px; 
-            border: 1px solid var(--border); 
-            font-size: 12px; 
-            margin-bottom: 6px; 
-            transition: 0.2s;
-        }
-
-        .layer-item:hover { border-color: var(--accent); }
-        .btn-icon { background: transparent; border: none; color: #aaa; cursor: pointer; padding: 4px; font-size: 16px; transition: 0.2s;}
+        .layer-item { display: flex; justify-content: space-between; align-items: center; background: #1e1e1e; padding: 6px 10px; border-radius: 3px; border: 1px solid var(--border); font-size: 11px; margin-bottom: 5px; }
+        .btn-icon { background: transparent; border: none; color: #aaa; cursor: pointer; padding: 2px; font-size: 14px; transition: 0.2s;}
         .btn-icon:hover { color: #fff; }
-        .btn-icon:disabled { opacity: 0.3; cursor: not-allowed; }
-        .color-picker { width: 24px; height: 24px; padding: 0; border: none; border-radius: 4px; cursor: pointer; background: transparent; }
 
-        /* ÁREA DO MAPA E CAD */
+        /* MAPA, CAD E TOOLBAR DIREITA */
         #map-container { flex-grow: 1; position: relative; background: var(--cad-canvas); }
         #map { height: 100%; width: 100%; z-index: 1; background: var(--cad-canvas); cursor: crosshair !important; }
-        
         .leaflet-container { background: var(--cad-canvas) !important; }
-        .leaflet-control-layers { background: var(--bg-panel) !important; border: 1px solid var(--border) !important; color: #ccc !important; font-size: 12px; border-radius: 4px;}
-        
-        .map-tools { 
-            position: absolute; 
-            top: 20px; 
-            left: 60px; 
-            z-index: 1000; 
-            display: flex; 
-            gap: 5px; 
-            background: var(--bg-panel); 
-            padding: 5px; 
-            border-radius: 4px; 
-            border: 1px solid var(--border); 
-            box-shadow: 2px 2px 15px rgba(0,0,0,0.6); 
+        .leaflet-control-layers { display: none; } /* Esconde o padrão, usaremos o nosso botão */
+
+        /* BARRA DE FERRAMENTAS LATERAL DIREITA (NOVA) */
+        .right-toolbar {
+            position: absolute; top: 20px; right: 20px; z-index: 1000;
+            display: flex; flex-direction: column; gap: 8px;
+            background: rgba(37, 37, 38, 0.95); padding: 8px; border: 1px solid var(--border);
+            border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
         }
+        .right-toolbar button {
+            width: 40px; height: 40px; background: #333; color: white; border: 1px solid #555;
+            border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; transition: 0.2s; position: relative;
+        }
+        .right-toolbar button:hover { background: var(--accent); border-color: var(--accent-hover); }
+        .right-toolbar button[data-active="true"] { background: var(--warning); color: #000; border-color: var(--warning); }
         
+        /* Tooltip para os botões da direita */
+        .right-toolbar button::after {
+            content: attr(data-tooltip); position: absolute; right: 50px; background: #111; color: #fff;
+            padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; opacity: 0;
+            pointer-events: none; transition: 0.2s; border: 1px solid #444;
+        }
+        .right-toolbar button:hover::after { opacity: 1; }
+
+        .divider { height: 1px; background: var(--border); margin: 4px 0; }
+
         #info-panel { 
-            position: absolute; 
-            bottom: 20px; 
-            right: 20px; 
-            background: rgba(30, 30, 30, 0.95); 
-            border: 1px solid var(--border); 
-            color: #ccc; 
-            padding: 15px; 
-            border-radius: 4px; 
-            z-index: 1000; 
-            pointer-events: none;
-            box-shadow: 2px 2px 15px rgba(0,0,0,0.6);
-            min-width: 200px;
+            position: absolute; bottom: 20px; right: 20px; background: rgba(30, 30, 30, 0.95); 
+            border: 1px solid var(--border); color: #ccc; padding: 15px; border-radius: 4px; z-index: 1000; pointer-events: none;
         }
+        #info-panel h3 { margin: 0 0 5px 0; font-size: 10px; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 4px;}
+        #info-panel p { margin: 4px 0; font-family: 'Courier New', monospace; font-size: 12px; color: #4fc1ff; font-weight: bold;}
+        .etiqueta-mapa { background: transparent; border: none; color: #fff; font-weight: 700; font-size: 11px; text-shadow: 1px 1px 2px #000, -1px -1px 2px #000; box-shadow: none; }
+        .col-check-label { display: flex; align-items: center; gap: 8px; font-size: 11px; cursor: pointer; color: var(--text-light); background: #1e1e1e; padding: 4px 8px; border-radius: 3px; border: 1px solid var(--border); }
 
-        #info-panel h3 { margin: 0 0 8px 0; font-size: 12px; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 6px;}
-        #info-panel p { margin: 6px 0; font-family: 'Courier New', monospace; font-size: 14px; color: #4fc1ff; font-weight: bold;}
-        
-        .etiqueta-mapa { background: transparent; border: none; color: #fff; font-weight: 700; font-size: 12px; text-shadow: 1px 1px 3px #000, -1px -1px 3px #000; box-shadow: none; }
-        .col-check-label { display: flex; align-items: center; gap: 8px; font-size: 11px; cursor: pointer; color: var(--text-light); background: #1e1e1e; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border); }
+        /* DOCGEO PREVIEW */
+        .doc-preview-wrapper { background: #525659; padding: 20px; overflow-y: auto; display: none; position: absolute; top:0; left:0; width:100%; height:100%; z-index: 9999; box-sizing: border-box;}
+        .doc-page { background: white; color: black; width: 210mm; min-height: 297mm; margin: 0 auto 20px auto; padding: 20mm; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.5; box-sizing: border-box; position: relative;}
+        .doc-page h2 { text-align: center; font-size: 14pt; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 20px;}
+        .doc-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 9pt; }
+        .doc-table th, .doc-table td { border: 1px solid #000; padding: 5px; text-align: center; }
+        .doc-table th { background-color: #f0f0f0; font-weight: bold; }
+        .selo-croqui { border: 2px solid #000; padding: 10px; display: grid; grid-template-columns: 100px 1fr 1fr; gap: 8px; font-size: 9pt; align-items: center;}
+        .assinatura-box { margin-top: 40px; text-align: center; page-break-inside: avoid; }
 
-        /* PREVIEW DE IMPRESSÃO (ESTILO A4 DOCGEO) */
-        .doc-preview-wrapper { 
-            background: #525659; 
-            padding: 20px; 
-            overflow-y: auto; 
-            display: none; 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            z-index: 9999; 
-            box-sizing: border-box;
-        }
-
-        .doc-page { 
-            background: white; 
-            color: black; 
-            width: 210mm; 
-            min-height: 297mm; 
-            margin: 0 auto 20px auto; 
-            padding: 20mm; 
-            box-shadow: 0 5px 25px rgba(0,0,0,0.8); 
-            font-family: Arial, sans-serif; 
-            font-size: 11pt; 
-            line-height: 1.5; 
-            box-sizing: border-box; 
-            position: relative;
-        }
-
-        .doc-page h2 { 
-            text-align: center; 
-            font-size: 14pt; 
-            text-transform: uppercase; 
-            border-bottom: 2px solid #000; 
-            padding-bottom: 5px; 
-            margin-bottom: 20px;
-        }
-
-        .doc-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 15px; 
-            font-size: 9pt; 
-        }
-
-        .doc-table th, .doc-table td { 
-            border: 1px solid #000; 
-            padding: 6px; 
-            text-align: center; 
-        }
-
-        .doc-table th { background-color: #e0e0e0; font-weight: bold; }
-        
-        /* CROQUI ESPECÍFICO */
-        .selo-croqui { 
-            border: 2px solid #000; 
-            padding: 10px; 
-            display: grid; 
-            grid-template-columns: 100px 1fr 1fr; 
-            gap: 8px; 
-            font-size: 9pt; 
-            align-items: center;
-        }
-
-        .assinatura-box { 
-            margin-top: 60px; 
-            text-align: center; 
-            page-break-inside: avoid; 
-        }
-
-        /* MEDIA QUERY PARA IMPRESSÃO REAL */
         @media print {
             body * { visibility: hidden; }
             #doc-render-area, #doc-render-area * { visibility: visible; }
             #doc-render-area { position: absolute; left: 0; top: 0; width: 100%; background: white;}
             .doc-page { box-shadow: none; margin: 0; padding: 15mm; width: 100%; min-height: auto; page-break-after: always;}
-            .doc-preview-wrapper { display: block !important; padding: 0; background: white; overflow: visible;}
+            .doc-preview-wrapper { display: block !important; padding: 0; background: white;}
         }
     </style>
 </head>
@@ -438,1257 +153,665 @@
 
     <aside id="sidebar">
         <div class="header">
-            <h1>
-                <svg width="24" height="24" viewBox="0 0 100 100">
-                    <rect width="100" height="100" rx="12" fill="#007acc" />
-                    <path d="M25 50 L45 70 L75 30" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg> 
-                LuiGIS DocGEO
-            </h1>
-            <span style="font-size:11px; color:#aaa; font-weight:normal; background: #333; padding: 4px 8px; border-radius: 12px;">v5.0 Ultimate</span>
+            <h1><svg width="20" height="20" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="#007acc" /><path d="M25 50 L45 70 L75 30" stroke="white" stroke-width="8" fill="none" stroke-linecap="round"/></svg> LuiGIS DocGEO</h1>
+            <span style="font-size:10px; color:#aaa; font-weight:normal;">v6.0 Pro CAD</span>
         </div>
 
         <div class="tabs">
             <button class="tab-btn active" onclick="abrirAba('aba-projeto', this)">1. Projeto</button>
-            <button class="tab-btn" onclick="abrirAba('aba-vertices', this)">2. Vértices</button>
+            <button class="tab-btn" onclick="abrirAba('aba-vertices', this)">2. Vértices / RTK</button>
             <button class="tab-btn" onclick="abrirAba('aba-cad', this)">3. CAD/Layers</button>
-            <button class="tab-btn" onclick="abrirAba('aba-docs', this)">4. Documentos</button>
+            <button class="tab-btn" onclick="abrirAba('aba-docs', this)">4. DocGEO</button>
             <button class="tab-btn" onclick="abrirAba('aba-exportar', this)">5. Exportar</button>
         </div>
 
         <div id="aba-projeto" class="tab-content active">
-            <p style="font-size:12px; color:#aaa; margin:0; line-height: 1.4;">Preencha as informações do levantamento. Tudo o que você digitar aqui será salvo automaticamente no navegador para os Documentos e Laudos.</p>
-            
             <div class="card">
-                <div class="card-title">Dados do Imóvel e Proprietário</div>
-                <div class="form-group">
-                    <label>Proprietário (Requerente)</label>
-                    <input type="text" id="prop-nome" placeholder="Nome Completo / Razão Social" oninput="autoSave()">
-                </div>
+                <div class="card-title">Dados do Imóvel</div>
+                <div class="form-group"><label>Proprietário</label><input type="text" id="prop-nome" oninput="autoSave()"></div>
                 <div class="form-row">
-                    <div><label>CPF / CNPJ</label><input type="text" id="prop-cpf" placeholder="000.000.000-00" oninput="autoSave()"></div>
-                    <div><label>Matrícula / CCIR</label><input type="text" id="prop-mat" placeholder="Ex: Matrícula 12345" oninput="autoSave()"></div>
+                    <div><label>CPF / CNPJ</label><input type="text" id="prop-cpf" oninput="autoSave()"></div>
+                    <div><label>Matrícula / CCIR</label><input type="text" id="prop-mat" oninput="autoSave()"></div>
                 </div>
-                <div class="form-row">
-                    <div><label>Nome do Imóvel / Gleba</label><input type="text" id="prop-imovel" placeholder="Ex: Fazenda Boa Esperança" oninput="autoSave()"></div>
-                </div>
-                <div class="form-row">
-                    <div><label>Município - UF</label><input type="text" id="prop-mun" placeholder="Ex: Igarapé - MG" oninput="autoSave()"></div>
-                </div>
-                <div class="form-group">
-                    <label>Confrontantes (Termo Geral p/ Memorial)</label>
-                    <input type="text" id="prop-conf" value="propriedades vizinhas e vias públicas" oninput="autoSave()">
-                </div>
+                <div class="form-row"><div><label>Gleba / Imóvel</label><input type="text" id="prop-imovel" oninput="autoSave()"></div></div>
+                <div class="form-row"><div><label>Município - UF</label><input type="text" id="prop-mun" oninput="autoSave()"></div></div>
+                <div class="form-group"><label>Confrontantes</label><input type="text" id="prop-conf" value="propriedades vizinhas e vias públicas" oninput="autoSave()"></div>
             </div>
 
             <div class="card" style="border-color: var(--warning);">
                 <div class="card-title orange">Responsável Técnico</div>
-                <div class="form-group">
-                    <label>Nome do Profissional</label>
-                    <input type="text" id="tec-nome" value="Luigi Alves Bortoloto" oninput="autoSave()">
-                </div>
+                <div class="form-group"><label>Nome</label><input type="text" id="tec-nome" value="Luigi Alves Bortoloto" oninput="autoSave()"></div>
                 <div class="form-row">
                     <div><label>Formação</label><input type="text" id="tec-formacao" value="Técnico em Edificações" oninput="autoSave()"></div>
-                    <div><label>Registro (CREA/CFT)</label><input type="text" id="tec-reg" placeholder="CFT: 000000" oninput="autoSave()"></div>
+                    <div><label>Registro</label><input type="text" id="tec-reg" oninput="autoSave()"></div>
                 </div>
                 <div class="form-row">
-                    <div><label>Código INCRA</label><input type="text" id="tec-incra" placeholder="Ex: XXXX" oninput="autoSave()"></div>
-                    <div><label>CPF do Técnico</label><input type="text" id="tec-cpf" placeholder="000.000.000-00" oninput="autoSave()"></div>
+                    <div><label>Cód INCRA</label><input type="text" id="tec-incra" oninput="autoSave()"></div>
+                    <div><label>CPF</label><input type="text" id="tec-cpf" oninput="autoSave()"></div>
                 </div>
             </div>
-            
-            <button class="btn btn-outline btn-block" style="margin-top: 10px;" onclick="limparProjeto()">🧹 Limpar Formulários (Reset)</button>
         </div>
 
         <div id="aba-vertices" class="tab-content" style="padding-bottom: 0;">
             <div class="card" style="margin-top:0;">
-                <div class="card-title">Configuração e Importação</div>
+                <div class="card-title">Importar Vértices</div>
                 <div class="form-row">
                     <div>
-                        <label>Sistema (Entrada)</label>
                         <select id="main-formato" onchange="toggleUTM()">
                             <option value="utm">UTM (Planar: E / N)</option>
                             <option value="sgl">SGL (Graus, Min, Seg)</option>
                             <option value="decimal">DD (Graus Decimais)</option>
                         </select>
                     </div>
-                    <div><label>Datum</label><select id="main-datum"><option value="SIRGAS2000">SIRGAS 2000</option><option value="WGS84">WGS 84</option><option value="SAD69">SAD 69</option></select></div>
+                    <div><select id="main-datum"><option value="SIRGAS2000">SIRGAS 2000</option><option value="WGS84">WGS 84</option><option value="SAD69">SAD 69</option></select></div>
                 </div>
-                <div class="form-row" id="utm-options">
-                    <div><label>Zona UTM</label><input type="number" id="main-zona" value="23"></div>
+                <div class="form-row" id="utm-options" style="margin-top:5px;">
+                    <div><label>Zona</label><input type="number" id="main-zona" value="23"></div>
                     <div><label>Hemisfério</label><select id="main-hemi"><option value="S">Sul (S)</option><option value="N">Norte (N)</option></select></div>
                 </div>
                 
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                    <label style="margin:0; color:var(--accent);">Cole os dados brutos ou importe arquivo:</label>
-                    <button class="btn btn-outline" style="padding:6px 10px; font-size:11px;" onclick="document.getElementById('arquivo-csv').click()">📂 LER CSV / TXT / PDF</button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+                    <label style="margin:0; color:var(--accent);">Cole os dados (ID; X; Y; Z):</label>
+                    <button class="btn btn-outline" style="padding:4px 8px; font-size:10px;" onclick="document.getElementById('arquivo-csv').click()">📂 PDF/CSV</button>
                     <input type="file" id="arquivo-csv" accept=".csv,.txt,.pdf" style="display:none;" onchange="lerArquivoEntrada(event)">
                 </div>
-                <textarea id="main-texto" style="height: 100px; font-size:11px; line-height:1.4; resize:vertical; font-family: 'Courier New', monospace;" placeholder="Cole aqui seus dados.&#10;Ex: ID; Descrição; Coord X; Coord Y; Cota Z&#10;O sistema aceita SGL, UTM ou extração de PDFs do SIGEF."></textarea>
-                <button class="btn btn-primary btn-block" style="height: 40px; font-size: 14px;" onclick="processarLevantamento()">📍 PROCESSAR E PLOTAR NO MAPA</button>
+                <textarea id="main-texto" style="height: 60px; font-size:10px;" placeholder="V1; 583530.54; 7771896.46; 769.46"></textarea>
+                <button class="btn btn-primary btn-block" onclick="processarLevantamento()">📍 Processar e Plotar</button>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; margin-bottom: 5px;">
-                <label style="margin:0;">Tabela Analítica (Editável)</label>
-                <button class="btn btn-success" style="padding:6px 12px; font-size:11px;" onclick="salvarEdicoesTabela()">✅ Atualizar Desenho</button>
+            <div class="card" style="border-color: #ff9800; background: rgba(255, 152, 0, 0.05);">
+                <div class="card-title" style="color: #ff9800;">Ajuste GNSS (Translação PPP)</div>
+                <p style="font-size:9px; color:#aaa; margin:0 0 5px 0;">Calcule os Deltas inserindo as coordenadas da Base Original e da Base processada pelo IBGE (UTM).</p>
+                <div class="form-row">
+                    <div><label style="color:#ff9800;">Base Original (E / N)</label>
+                        <input type="number" id="ppp-e-orig" placeholder="Este (X)" step="0.001">
+                        <input type="number" id="ppp-n-orig" placeholder="Norte (Y)" step="0.001" style="margin-top:4px;">
+                    </div>
+                    <div><label style="color:#4caf50;">Base IBGE (E / N)</label>
+                        <input type="number" id="ppp-e-ibge" placeholder="Este (X)" step="0.001">
+                        <input type="number" id="ppp-n-ibge" placeholder="Norte (Y)" step="0.001" style="margin-top:4px;">
+                    </div>
+                </div>
+                <button class="btn btn-warning btn-block" style="color:#000; margin-top:5px;" onclick="aplicarTranslacaoPPP()">🔄 Calcular Deltas e Mover Projeto</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <label style="margin:0;">Tabela de Vértices (Editável)</label>
+                <button class="btn btn-success" style="padding:4px 8px; font-size:10px;" onclick="salvarEdicoesTabela()">✅ Atualizar Desenho</button>
             </div>
             <div class="spreadsheet-container">
                 <table class="tabela-editor">
-                    <thead>
-                        <tr><th class="col-id">#</th><th>Vértice</th><th>Coord X / E</th><th>Coord Y / N</th><th>Cota (Z)</th></tr>
-                    </thead>
-                    <tbody id="tabela-editor-body">
-                        <tr><td colspan="5" style="text-align: center; padding: 30px; color: #555;">Nenhum vértice processado. Cole os dados acima.</td></tr>
-                    </tbody>
+                    <thead><tr><th class="col-id">#</th><th>ID</th><th>X / E</th><th>Y / N</th><th>Cota</th></tr></thead>
+                    <tbody id="tabela-editor-body"><tr><td colspan="5" style="text-align: center; color: #555;">Nenhum vértice processado.</td></tr></tbody>
                 </table>
             </div>
         </div>
 
         <div id="aba-cad" class="tab-content">
             <div class="card" style="border-color: var(--warning);">
-                <div class="card-title orange">Motor CAD & OSNAP</div>
+                <div class="card-title orange">OSNAP & Config CAD</div>
                 <div class="form-row">
-                    <div><label>Ímã OSNAP (Pixels)</label><input type="number" id="cad-snap" value="20" onchange="atualizarSnap()"></div>
-                    <div style="display:flex; align-items:flex-end; padding-bottom:8px;"><label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="cad-snap-toggle" checked onchange="atualizarSnap()" style="width: 18px; height: 18px;"> Ligado</label></div>
-                    <div><label>Cor do Traço</label><input type="color" id="cad-color" value="#0098ff" style="height:36px; padding:2px;"></div>
+                    <div><label>Ímã OSNAP</label><input type="number" id="cad-snap" value="20" onchange="atualizarSnap()"></div>
+                    <div style="display:flex; align-items:flex-end; padding-bottom:5px;"><label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="cad-snap-toggle" checked onchange="atualizarSnap()"> Ligado</label></div>
+                    <div><label>Cor (Traço)</label><input type="color" id="cad-color" value="#0098ff" style="height:28px; padding:0;"></div>
                 </div>
-                <div class="form-row" style="margin-top:5px;">
-                    <div>
-                        <label>Bloco para Inserção (Ponto)</label>
-                        <select id="cad-block-type">
-                            <option value="default">📍 Ponto Genérico (Círculo)</option>
-                            <option value="tree">🌳 Vegetação / Árvore</option>
-                            <option value="light">⚡ Poste de Luz / Energia</option>
-                            <option value="sewer">🕳️ Bueiro / Poço de Visita</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn btn-block" style="border-color: var(--danger); color: var(--danger); margin-top: 10px;" onclick="limparCAD()">🗑️ Apagar Geometrias Desenhadas no CAD</button>
+                <button class="btn btn-block" style="border-color: var(--danger); color: var(--danger); margin-top:5px;" onclick="if(confirm('Apagar marcações CAD?')) cadLayerGroup.clearLayers();">🗑️ Limpar Desenhos CAD</button>
             </div>
 
             <div class="card">
-                <div class="card-title">XREF (Arquivos de Referência)</div>
-                <label>Carregar Arquivos Locais (SHP, KML, ZIP, GEOJSON)</label>
-                <input type="file" id="file-shp" accept=".zip, .geojson, .shp, .kml, .kmz" onchange="importarShapefile(event)" style="margin-bottom:12px; font-size:11px;">
-                
-                <label>Bases da Nuvem (Lotes Contagem)</label>
-                <div style="display:flex; gap:10px;">
-                    <select id="select-bases-nuvem" style="flex-grow:1;">
-                        <option value="">Selecione a Regional...</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_ELDORADO.zip">🏙️ Eldorado</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_INDUSTRIAL.zip">🏙️ Industrial</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_NACIONAL.zip">🏙️ Nacional</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_PETROLANDIA.zip">🏙️ Petrolândia</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_RESSACA.zip">🏙️ Ressaca</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_RIACHO.zip">🏙️ Riacho</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_Sede.zip">🏙️ Sede</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_VARGEM%20DAS%20FLORES.zip">🏙️ Vargem das Flores</option>
+                <div class="card-title">XREF (Arquivos e Nuvem)</div>
+                <input type="file" id="file-shp" accept=".zip, .geojson, .shp, .kml, .kmz" onchange="importarShapefile(event)" style="font-size:10px; margin-bottom:5px;">
+                <div style="display:flex; gap:5px;">
+                    <select id="select-bases-nuvem" style="flex-grow:1; font-size:10px;">
+                        <option value="">Nuvem: Regional Contagem...</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_ELDORADO.zip">Eldorado</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_INDUSTRIAL.zip">Industrial</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_NACIONAL.zip">Nacional</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_PETROLANDIA.zip">Petrolândia</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_RESSACA.zip">Ressaca</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_RIACHO.zip">Riacho</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_Sede.zip">Sede</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_VARGEM%20DAS%20FLORES.zip">Vargem</option>
                     </select>
-                    <button class="btn btn-primary" onclick="baixarBaseSelecionada()">☁️ Baixar</button>
+                    <button class="btn btn-primary" style="padding:4px; font-size:10px;" onclick="baixarBaseSelecionada()">☁️ Baixar</button>
                 </div>
             </div>
 
-            <label style="margin-top:10px; font-size: 12px;">Gestor de Camadas (Layers)</label>
-            <div id="camadas-dinamicas" style="display:flex; flex-direction:column; gap:4px; overflow-y: auto;">
-                <p style="font-size: 12px; color: #666; text-align: center; margin-top: 10px;">Nenhuma camada importada ou desenhada.</p>
-            </div>
+            <label style="margin-top:5px;">Gestor de Camadas (Layers)</label>
+            <div id="camadas-dinamicas" style="display:flex; flex-direction:column; gap:4px; overflow-y: auto;"></div>
         </div>
 
         <div id="aba-docs" class="tab-content">
             <div class="card" style="border-color: var(--success); background: rgba(76, 175, 80, 0.05); flex-grow:1;">
-                <div class="card-title green">Automação de Documentos (DocGEO)</div>
-                <p style="font-size: 12px; color: #ccc; margin: 0 0 20px 0; line-height:1.6; text-align: justify;">Esta seção utiliza as informações da aba <b>Projeto</b> e a geometria calculada na aba <b>Vértices</b> para redigir automaticamente as peças técnicas de Regularização, formatadas para impressão em tamanho A4.</p>
-                
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <button class="btn btn-primary" style="height:45px; font-size:13px; justify-content: flex-start; padding-left: 20px;" onclick="gerarDocumento('memorial')">📄 1. Memorial Descritivo (Padrão INCRA/SIGEF)</button>
-                    <button class="btn btn-outline" style="height:45px; font-size:13px; justify-content: flex-start; padding-left: 20px;" onclick="gerarDocumento('anuencia')">🤝 2. Cartas de Anuência (Confrontantes)</button>
-                    <button class="btn btn-outline" style="height:45px; font-size:13px; justify-content: flex-start; padding-left: 20px;" onclick="gerarDocumento('requerimento')">📝 3. Requerimento Oficial ao Cartório/Prefeitura</button>
-                    <button class="btn btn-warning" style="height:45px; font-size:13px; justify-content: flex-start; padding-left: 20px; color:#000;" onclick="gerarDocumento('laudo')">⚖️ 4. Laudo Técnico de Constatação de Limites</button>
-                    <button class="btn btn-success" style="height:45px; font-size:13px; justify-content: flex-start; padding-left: 20px;" onclick="gerarDocumento('croqui')">🗺️ 5. Croqui de Localização (Planta Automática)</button>
+                <div class="card-title green">Gerador DocGEO A4</div>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top:10px;">
+                    <button class="btn btn-primary" onclick="gerarDocumento('memorial')">📄 1. Memorial Descritivo (INCRA)</button>
+                    <button class="btn btn-outline" onclick="gerarDocumento('anuencia')">🤝 2. Cartas de Anuência</button>
+                    <button class="btn btn-outline" onclick="gerarDocumento('requerimento')">📝 3. Requerimento Oficial</button>
+                    <button class="btn btn-warning" style="color:#000;" onclick="gerarDocumento('laudo')">⚖️ 4. Laudo Técnico</button>
+                    <button class="btn btn-success" onclick="gerarDocumento('croqui')">🗺️ 5. Croqui de Localização / Planta</button>
                 </div>
             </div>
         </div>
 
         <div id="aba-exportar" class="tab-content">
             <div class="card" style="border-color: var(--purple);">
-                <div class="card-title purple">Exportar Dados / Conversão</div>
+                <div class="card-title" style="color:var(--purple);">Filtro e Exportação</div>
                 <div class="form-row">
                     <div>
                         <label>Sistema de Coordenadas de Saída</label>
-                        <select id="out-formato">
-                            <option value="utm">UTM (Coordenadas Planas Projetadas / Metros)</option>
-                            <option value="decimal">DD (Graus Decimais WGS84 / Google Earth)</option>
-                        </select>
+                        <select id="out-formato"><option value="utm">UTM (Metros)</option><option value="decimal">DD (WGS84 / Google)</option></select>
                     </div>
                 </div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">Atributos SHP/KML para Preservar</div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-                    <p style="font-size: 10px; color: #aaa; margin:0;">Marque as colunas que deseja manter no CSV/GeoJSON.</p>
-                    <div style="display:flex; gap: 6px;">
-                        <button class="btn btn-outline" style="padding:4px 10px; font-size:11px;" onclick="marcarColunas(true)">Tudo</button>
-                        <button class="btn btn-outline" style="padding:4px 10px; font-size:11px;" onclick="marcarColunas(false)">Nada</button>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                    <label style="margin:0;">Atributos do GIS p/ Exportar:</label>
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn btn-outline" style="padding:2px 6px; font-size:9px;" onclick="marcarColunas(true)">Tudo</button>
+                        <button class="btn btn-outline" style="padding:2px 6px; font-size:9px;" onclick="marcarColunas(false)">Nada</button>
                     </div>
                 </div>
-                <div id="filtro-colunas" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 150px; overflow-y: auto; padding-right: 5px;">
-                    <p style="font-size: 11px; color: #777; grid-column: span 2; text-align: center; margin-top: 10px;">Sem propriedades (arquivos shape) importadas no momento.</p>
+                <div id="filtro-colunas" style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; max-height: 120px; overflow-y: auto; background:#1e1e1e; padding:5px; border-radius:3px;">
+                    <p style="font-size:9px; color:#777;">Sem atributos importados.</p>
                 </div>
+                
+                <label class="col-check-label" style="margin-top:5px; justify-content:center;">
+                    <input type="checkbox" id="chk-recorte" checked>
+                    ✂️ Apenas o que está visível na tela (Clip)
+                </label>
             </div>
 
-            <label style="display:flex; align-items:center; gap:10px; font-size:12px; margin: 15px 0; cursor:pointer; background: #2d2d30; padding: 10px; border-radius: 4px; border: 1px solid var(--border);">
-                <input type="checkbox" id="chk-recorte" checked style="width:18px; height:18px; margin:0;">
-                ✂️ Recortar exportação apenas para geometrias visíveis no Mapa (Clip)
-            </label>
-
-            <div style="display:flex; flex-direction:column; gap:12px; margin-top: auto;">
-                <button class="btn btn-warning btn-block" style="height: 40px; font-size: 13px; color:#000;" onclick="baixarDXF()">📐 Exportar AutoCAD (.DXF)</button>
-                <button class="btn btn-success btn-block" style="height: 40px; font-size: 13px;" onclick="baixarCSV()">📊 Exportar Planilha Excel (.CSV)</button>
-                <button class="btn btn-purple btn-block" style="height: 40px; font-size: 13px;" onclick="baixarGeoJSON()">🌍 Exportar Base GIS (.GeoJSON)</button>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <button class="btn btn-warning btn-block" style="color:#000;" onclick="baixarDXF()">📐 AutoCAD (.DXF)</button>
+                <button class="btn btn-success btn-block" onclick="baixarCSV()">📊 Planilha Excel (.CSV)</button>
+                <button class="btn btn-purple btn-block" onclick="baixarGeoJSON()">🌍 GeoJSON (QGIS)</button>
+                <button class="btn btn-outline btn-block" onclick="baixarKML()">📍 KML (Google Earth)</button>
             </div>
         </div>
     </aside>
 
     <main id="map-container">
-        <div class="map-tools">
-            <button id="btn-regua" class="btn" onclick="toggleRegua()" style="background:#333; border:1px solid #555;" title="Ferramenta de Medição de Distância">📏 Medir Distância</button>
-            <button class="btn" onclick="baixarDXF()" style="background:#333; border:1px solid #555; border-left:3px solid var(--warning);" title="Exportação Rápida para AutoCAD">📐 DXF Rápido</button>
+        <div class="right-toolbar">
+            <button id="btn-sat" onclick="toggleSatelite()" data-tooltip="Alternar Mapa / Satélite">🛰️</button>
+            <div class="divider"></div>
+            <button id="btn-measure-dist" onclick="ativarMedicaoDistancia()" data-tooltip="Medir Distância (Linha)">📏</button>
+            <button id="btn-measure-area" onclick="ativarMedicaoArea()" data-tooltip="Medir Área (Polígono)">📐</button>
+            <button id="btn-draw-marker" onclick="ativarDesenhoPonto()" data-tooltip="Desenhar Ponto (Bloco)">📍</button>
+            <div class="divider"></div>
+            <button onclick="baixarDXF()" data-tooltip="Exportar DXF Rápido" style="color:var(--warning); font-size:12px; font-weight:bold;">DXF</button>
+            <button onclick="baixarGeoJSON()" data-tooltip="Exportar GIS Rápido" style="color:var(--purple); font-size:12px; font-weight:bold;">GIS</button>
+            <button onclick="gerarImagemTela()" data-tooltip="Salvar Imagem da Tela (PNG)" style="color:var(--accent); font-size:12px; font-weight:bold;">PNG</button>
         </div>
+
         <div id="map"></div>
         <div id="info-panel">
-            <h3>Medições Geométricas</h3>
+            <h3>Info Geométrica</h3>
             <p id="lbl-area">Área: 0.00 m²</p>
-            <p id="lbl-perimetro">Perímetro: 0.00 m</p>
+            <p id="lbl-perimetro">Perím: 0.00 m</p>
+            <p id="lbl-medicao" style="color:#f59e0b; display:none;">Medição: 0.00</p>
         </div>
     </main>
 
     <div id="doc-preview-container" class="doc-preview-wrapper">
-        <div style="max-width: 210mm; margin: 0 auto; display: flex; justify-content: flex-end; margin-bottom: 20px;">
-            <button class="btn btn-danger" style="font-size: 14px; padding: 10px 20px;" onclick="fecharPreview()">❌ Voltar ao Sistema</button>
-            <button class="btn btn-primary" style="margin-left:15px; font-size: 14px; padding: 10px 20px;" onclick="window.print()">🖨️ Imprimir Arquivo / Salvar PDF</button>
+        <div style="max-width: 210mm; margin: 0 auto; display: flex; justify-content: flex-end; margin-bottom: 10px;">
+            <button class="btn btn-danger" onclick="document.getElementById('doc-preview-container').style.display='none'">❌ Fechar</button>
+            <button class="btn btn-primary" style="margin-left:10px;" onclick="window.print()">🖨️ Imprimir / PDF</button>
         </div>
         <div id="doc-render-area"></div>
     </div>
 
     <script>
         // ==========================================
-        // AUTO-SAVE DOS FORMULÁRIOS DA ABA PROJETO
+        // AUTO-SAVE DA ABA PROJETO
         // ==========================================
-        const camposProjeto = ['prop-nome', 'prop-cpf', 'prop-mat', 'prop-imovel', 'prop-mun', 'prop-conf', 'tec-nome', 'tec-formacao', 'tec-reg', 'tec-incra', 'tec-cpf'];
-        
-        function autoSave() {
-            let dados = {};
-            camposProjeto.forEach(id => { dados[id] = document.getElementById(id).value; });
-            localStorage.setItem('luigis_projeto_v5', JSON.stringify(dados));
-        }
-
-        function carregarProjetoSalvo() {
-            let salvos = JSON.parse(localStorage.getItem('luigis_projeto_v5'));
-            if(salvos) { 
-                camposProjeto.forEach(id => { if(salvos[id]) document.getElementById(id).value = salvos[id]; }); 
-            }
-        }
-
-        function limparProjeto() {
-            if(confirm("ATENÇÃO: Deseja apagar todos os dados digitados na aba de Projeto?")) {
-                camposProjeto.forEach(id => document.getElementById(id).value = '');
-                localStorage.removeItem('luigis_projeto_v5');
-            }
-        }
-        
-        // Executa o carregamento logo ao iniciar a página
-        carregarProjetoSalvo(); 
+        const camposProj = ['prop-nome', 'prop-cpf', 'prop-mat', 'prop-imovel', 'prop-mun', 'prop-conf', 'tec-nome', 'tec-formacao', 'tec-reg', 'tec-incra', 'tec-cpf'];
+        function autoSave() { let d = {}; camposProj.forEach(id => d[id] = document.getElementById(id).value); localStorage.setItem('lg_proj_v6', JSON.stringify(d)); }
+        function carregarProj() { let s = JSON.parse(localStorage.getItem('lg_proj_v6')); if(s) camposProj.forEach(id => { if(s[id]) document.getElementById(id).value = s[id]; }); }
+        carregarProj();
 
         // ==========================================
-        // MAPA LEAFLET E BASEMAPS (GOOGLE + CARTO)
+        // CONFIGURAÇÃO DO MAPA (LEAFLET + GEOMAN)
         // ==========================================
         var cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 22 });
         var googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20 });
-        var googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20 });
-        var googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20 });
-        var googleTerrain = L.tileLayer('https://mt1.google.com/vt/lyrs=p&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20 });
-        
-        var map = L.map('map', { preserveDrawingBuffer: true, zoomControl: false, layers: [cartoDark] }).setView([-20.076, -44.225], 14); // Igarapé Padrão
+        var map = L.map('map', { preserveDrawingBuffer: true, zoomControl: false, layers: [cartoDark] }).setView([-20.076, -44.225], 14);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
-        
-        var basemaps = { 
-            "🌙 Tema CAD Dark (Padrão)": cartoDark, 
-            "🛰️ Satélite Puro (Google)": googleSat, 
-            "🏷️ Híbrido com Nomes (Google)": googleHybrid, 
-            "🗺️ Mapa de Ruas (Google)": googleStreets,
-            "⛰️ Mapa de Relevo (Google)": googleTerrain
-        };
-        L.control.layers(basemaps, null, { position: 'bottomleft' }).addTo(map);
 
-        // ==========================================
-        // CONFIGURAÇÃO DO CAD (GEOMAN PRO) E VARIÁVEIS GLOBAIS
-        // ==========================================
-        map.pm.addControls({ 
-            position: 'topleft', 
-            drawCircle: false, 
-            drawCircleMarker: false, 
-            drawText: true, 
-            cutPolygon: true, 
-            editMode: true, 
-            dragMode: true, 
-            removalMode: true 
-        });
-        
+        // Geoman CAD Engine
+        map.pm.addControls({ position: 'topleft', drawCircle: false, drawCircleMarker: false, drawText: true, cutPolygon: true, editMode: true, dragMode: true, removalMode: true });
         map.pm.setGlobalOptions({ snappable: true, snapDistance: 20, snapMiddle: true });
         var cadLayerGroup = L.featureGroup().addTo(map);
-        
-        // Listener para mudar a cor de desenho futuro do CAD
-        document.getElementById('cad-color').addEventListener('change', e => {
-            map.pm.setPathOptions({ color: e.target.value, fillColor: e.target.value, fillOpacity: 0.2 });
-        });
+
         map.pm.setPathOptions({ color: '#0098ff', fillColor: '#0098ff', fillOpacity: 0.2 });
+        document.getElementById('cad-color').addEventListener('change', e => map.pm.setPathOptions({ color: e.target.value, fillColor: e.target.value }));
 
-        // Evento disparado sempre que uma geometria CAD é criada
+        // Handler de Criação de Desenhos CAD
         map.on('pm:create', function(e) {
-            var layer = e.layer;
+            var l = e.layer;
             if(e.shape === 'Marker') {
-                var type = document.getElementById('cad-block-type').value;
-                if(type !== 'default') {
+                var t = document.getElementById('cad-block-type').value;
+                if(t !== 'default') {
                     var dict = { 'tree':'🌳', 'light':'⚡', 'sewer':'🕳️' };
-                    layer.setIcon(L.divIcon({ 
-                        html: `<div style="font-size:24px; text-shadow:2px 2px 4px #000; text-align:center;">${dict[type]}</div>`, 
-                        className: '', iconSize: [24,24], iconAnchor: [12,12] 
-                    }));
-                } else {
-                    layer.setIcon(L.circleMarker(layer.getLatLng(), {
-                        radius: 5, color: document.getElementById('cad-color').value, fillColor: '#fff', fillOpacity: 1
-                    }));
-                }
+                    l.setIcon(L.divIcon({ html: `<div style="font-size:24px; text-shadow:2px 2px 4px #000; text-align:center;">${dict[t]}</div>`, className: '', iconSize: [24,24], iconAnchor: [12,12] }));
+                } else { l.setIcon(L.circleMarker(l.getLatLng(), {radius:5, color: document.getElementById('cad-color').value, fillColor: '#fff', fillOpacity: 1})); }
             }
-            cadLayerGroup.addLayer(layer);
+            cadLayerGroup.addLayer(l);
+            desligarModosMedicao(); // Desliga o botão da direita se estiver ativo
         });
 
-        function atualizarSnap() {
-            var active = document.getElementById('cad-snap-toggle').checked;
-            var dist = parseInt(document.getElementById('cad-snap').value) || 20;
-            map.pm.setGlobalOptions({ snappable: active, snapDistance: dist });
+        function atualizarSnap() { map.pm.setGlobalOptions({ snappable: document.getElementById('cad-snap-toggle').checked, snapDistance: parseInt(document.getElementById('cad-snap').value)||20 }); }
+
+        // ==========================================
+        // BARRA DIREITA (SATÉLITE, MEDIÇÕES)
+        // ==========================================
+        var isSat = false;
+        function toggleSatelite() {
+            isSat = !isSat;
+            if(isSat) { map.removeLayer(cartoDark); map.addLayer(googleSat); document.getElementById('btn-sat').setAttribute('data-active', 'true'); } 
+            else { map.removeLayer(googleSat); map.addLayer(cartoDark); document.getElementById('btn-sat').setAttribute('data-active', 'false'); }
         }
 
-        function limparCAD() {
-            if(confirm("ATENÇÃO: Deseja apagar todas as marcações de desenho livre do CAD?")) {
-                cadLayerGroup.clearLayers();
-            }
+        // Lógica de Medição Ativa usando Eventos do Geoman
+        function desligarModosMedicao() {
+            document.querySelectorAll('.right-toolbar button').forEach(b => b.setAttribute('data-active', 'false'));
+            if(isSat) document.getElementById('btn-sat').setAttribute('data-active', 'true'); // Restaura o do satélite
+            document.getElementById('lbl-medicao').style.display = 'none';
         }
 
-        // Variáveis Globais do Sistema
-        var memoria = { nomes: [], cotas: [], lon: [], lat: [] };
-        var gerenciadorCamadas = []; 
-        var camadaIdCounter = 0; 
-        var colunasGlobais = {}; 
-        var ultimaAreaCalculada = 0; 
-        var ultimoPerimetroCalculado = 0;
+        function ativarMedicaoDistancia() {
+            desligarModosMedicao();
+            document.getElementById('btn-measure-dist').setAttribute('data-active', 'true');
+            map.pm.enableDraw('Line');
+            document.getElementById('lbl-medicao').style.display = 'block';
+            document.getElementById('lbl-medicao').innerText = "Distância: Desenhando...";
+        }
+
+        function ativarMedicaoArea() {
+            desligarModosMedicao();
+            document.getElementById('btn-measure-area').setAttribute('data-active', 'true');
+            map.pm.enableDraw('Polygon');
+            document.getElementById('lbl-medicao').style.display = 'block';
+            document.getElementById('lbl-medicao').innerText = "Área: Desenhando...";
+        }
         
-        var datumsDef = { 
-            "WGS84": "+datum=WGS84", 
-            "SIRGAS2000": "+ellps=GRS80 +towgs84=0,0,0,0,0,0,0", 
-            "SAD69": "+ellps=aust_SA +towgs84=-66.87,4.37,-38.52,0,0,0,0" 
-        };
-
-        // Função de Navegação de Abas
-        function abrirAba(id, btn) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            btn.classList.add('active');
+        function ativarDesenhoPonto() {
+            desligarModosMedicao();
+            document.getElementById('btn-draw-marker').setAttribute('data-active', 'true');
+            map.pm.enableDraw('Marker');
         }
+
+        // Eventos dinâmicos de medição na tela
+        map.on('pm:drawstart', ({ workingLayer }) => {
+            workingLayer.on('pm:vertexadded', e => {
+                var pts = workingLayer.getLatLngs();
+                if(pts.length > 1 && !pts[0].length) { // É linha
+                    var d = 0; for(var i=0; i<pts.length-1; i++) d += map.distance(pts[i], pts[i+1]);
+                    document.getElementById('lbl-medicao').innerText = `Distância Parcial: ${d.toFixed(2)} m`;
+                } else if (pts[0] && pts[0].length > 2) { // É poligono
+                    var p = pts[0]; var a = 0;
+                    for(var i=0; i<p.length; i++) {
+                        var p1 = map.project(p[i], 20); var p2 = map.project(p[(i+1)%p.length], 20);
+                        a += (p1.x * p2.y) - (p2.x * p1.y);
+                    }
+                    var areaF = Math.abs(a)/2;
+                    // Correção simples de escala Leaflet (aprox para métrico visual)
+                    document.getElementById('lbl-medicao').innerText = `Geometria calculando... Clique para fechar.`; 
+                }
+            });
+        });
+
+        map.on('pm:drawend', () => { desligarModosMedicao(); });
+
+        // Captura de Tela PNG via Canvas
+        function gerarImagemTela() {
+            document.querySelector('.leaflet-control-container').style.display = 'none';
+            html2canvas(document.getElementById('map'), { useCORS: true }).then(canvas => {
+                document.querySelector('.leaflet-control-container').style.display = 'block';
+                var a = document.createElement('a'); a.href = canvas.toDataURL("image/png"); a.download = "Mapa_LuiGIS.png"; a.click();
+            }).catch(() => { document.querySelector('.leaflet-control-container').style.display = 'block'; alert("Mude para o tema escuro antes de gerar o PNG para evitar bloqueio do servidor do Google."); });
+        }
+
 
         // ==========================================
-        // LÓGICA DE IMPORTAÇÃO DE DADOS (SGL, UTM, SIGEF)
+        // VARIÁVEIS GLOBAIS E UTILITÁRIOS
         // ==========================================
-        function toggleUTM() {
-            document.getElementById('utm-options').style.display = (document.getElementById('main-formato').value === 'utm') ? 'flex' : 'none';
-        }
+        var memoria = { nomes: [], cotas: [], lon: [], lat: [] };
+        var gerenciadorCamadas = []; var camadaIdCounter = 0; var colunasGlobais = {}; 
+        var ultimaAreaCalculada = 0; var ultimoPerimetroCalculado = 0;
+        var datumsDef = { "WGS84": "+datum=WGS84", "SIRGAS2000": "+ellps=GRS80 +towgs84=0,0,0,0,0,0,0", "SAD69": "+ellps=aust_SA +towgs84=-66.87,4.37,-38.52,0,0,0,0" };
 
-        // Transformar Graus, Minutos, Segundos (19° 55' 45" S) em Decimal Absoluto (-19.9291)
-        function parseDMS(str) {
-            var match = str.match(/(\d+)[^\d]+(\d+)[^\d]+([\d.,]+)[^\d]*([NSWE]?)/i);
-            if(!match) return null;
-            var deg = parseFloat(match[1]); 
-            var min = parseFloat(match[2]); 
-            var sec = parseFloat(match[3].replace(',','.'));
-            var dec = deg + (min/60) + (sec/3600);
-            var dir = match[4] ? match[4].toUpperCase() : '';
-            if (dir === 'S' || dir === 'W' || dir === 'O') dec = dec * -1; // Ajuste de Hemisfério
-            return dec;
-        }
+        function abrirAba(id, btn) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById(id).classList.add('active'); btn.classList.add('active'); }
 
-        // Ler arquivos selecionados no botão "Ler CSV / TXT / PDF"
+        // ==========================================
+        // IMPORTAÇÃO E PROCESSAMENTO (SGL, UTM, PDF SIGEF)
+        // ==========================================
+        function toggleUTM() { document.getElementById('utm-options').style.display = (document.getElementById('main-formato').value === 'utm') ? 'flex' : 'none'; }
+        function parseDMS(str) { var m = str.match(/(\d+)[^\d]+(\d+)[^\d]+([\d.,]+)[^\d]*([NSWE]?)/i); if(!m) return null; var d = parseFloat(m[1]) + (parseFloat(m[2])/60) + (parseFloat(m[3].replace(',','.'))/3600); var dir = m[4] ? m[4].toUpperCase() : ''; return (dir==='S'||dir==='W'||dir==='O') ? d*-1 : d; }
+
         async function lerArquivoEntrada(e) {
-            var file = e.target.files[0]; 
-            if (!file) return;
-            
-            // Tratamento especial para PDFs (Extração de texto via PDF.js)
-            if (file.name.toLowerCase().endsWith('.pdf')) {
+            var f = e.target.files[0]; if (!f) return;
+            if (f.name.toLowerCase().endsWith('.pdf')) {
                 var reader = new FileReader();
                 reader.onload = async function() {
-                    var typedarray = new Uint8Array(this.result);
-                    var pdf = await pdfjsLib.getDocument(typedarray).promise;
-                    var text = "";
-                    for(var i=1; i<=pdf.numPages; i++) {
-                        var page = await pdf.getPage(i);
-                        var content = await page.getTextContent();
-                        var strings = content.items.map(i => i.str);
-                        text += strings.join(" ") + "\n";
-                    }
-                    // Expressão regular complexa para organizar PDFs do SIGEF, quebrando linha após identificar N/S/W/E
-                    var linhas = text.replace(/([NSWE])/gi, "$1\n").split('\n'); 
-                    document.getElementById('main-texto').value = linhas.join('\n');
-                    alert("Texto extraído com sucesso do PDF. Verifique na caixa de texto se a formatação precisa de algum pequeno ajuste antes de plotar.");
-                };
-                reader.readAsArrayBuffer(file);
-            } else {
-                // Arquivos de texto normal (CSV e TXT da Estação/RTK)
-                var reader = new FileReader(); 
-                reader.onload = ev => document.getElementById('main-texto').value = ev.target.result; 
-                reader.readAsText(file);
-            }
+                    var pdf = await pdfjsLib.getDocument(new Uint8Array(this.result)).promise; var text = "";
+                    for(var i=1; i<=pdf.numPages; i++) { var p = await pdf.getPage(i); var c = await p.getTextContent(); text += c.items.map(i => i.str).join(" ") + "\n"; }
+                    document.getElementById('main-texto').value = text.replace(/([NSWE])/gi, "$1\n").split('\n').join('\n');
+                }; reader.readAsArrayBuffer(f);
+            } else { var r = new FileReader(); r.onload = ev => document.getElementById('main-texto').value = ev.target.result; r.readAsText(f); }
         }
 
         function obterEpsgEntrada() {
-            var fmtIn = document.getElementById('main-formato').value;
-            var projDatum = datumsDef[document.getElementById('main-datum').value];
-            if(fmtIn === 'utm') {
-                var projHemi = (document.getElementById('main-hemi').value === 'S') ? '+south ' : '';
-                var zona = document.getElementById('main-zona').value;
-                return `+proj=utm +zone=${zona} ${projHemi}${projDatum} +units=m +no_defs`;
-            }
-            return `+proj=longlat ${projDatum} +no_defs`;
+            var d = datumsDef[document.getElementById('main-datum').value];
+            if(document.getElementById('main-formato').value === 'utm') return `+proj=utm +zone=${document.getElementById('main-zona').value} ${document.getElementById('main-hemi').value === 'S' ? '+south ' : ''}${d} +units=m +no_defs`;
+            return `+proj=longlat ${d} +no_defs`;
         }
 
-        // Motor Massivo de Processamento de Texto para Geometria
         function processarLevantamento() {
-            var txt = document.getElementById('main-texto').value;
-            if(!txt.trim()) { alert("Por favor, cole os dados ou importe um arquivo primeiro."); return; }
-            
-            var fmtIn = document.getElementById('main-formato').value;
-            var epsgIn = obterEpsgEntrada(); 
-            var epsgOut = "+proj=longlat +datum=WGS84 +no_defs";
-            
+            var txt = document.getElementById('main-texto').value; if(!txt.trim()) return;
+            var fmtIn = document.getElementById('main-formato').value; var epsgIn = obterEpsgEntrada(); var epsgOut = "+proj=longlat +datum=WGS84 +no_defs";
             memoria = { nomes: [], cotas: [], lon: [], lat: [] };
             var linhas = txt.split('\n');
 
             for (var i = 0; i < linhas.length; i++) {
-                var linha = linhas[i].trim().replace(/"/g, '');
-                
-                // Ignorar cabeçalhos de planilhas
-                if (linha === "" || linha.toUpperCase().startsWith("CO") || linha.startsWith("ID") || linha.toUpperCase().startsWith("PT")) continue; 
+                var l = linhas[i].trim().replace(/"/g, ''); if (l === "" || l.toUpperCase().startsWith("CO") || l.startsWith("ID")) continue; 
+                var x = null, y = null, z = 0, n = "V" + (i + 1);
 
-                var x = null, y = null, z = 0, nome = "V" + (i + 1);
-
-                // Rotina de extração para coordenadas em formato de Graus, Minutos e Segundos
                 if (fmtIn === 'sgl') {
-                    // Busca dois blocos padronizados na linha inteira
-                    var partesDMS = linha.match(/(\d+[^\d]+\d+[^\d]+[\d.,]+[^\d]*[NSWE]?)/gi);
-                    if (partesDMS && partesDMS.length >= 2) {
-                        var c1 = parseDMS(partesDMS[0]); 
-                        var c2 = parseDMS(partesDMS[1]);
-                        
-                        // Lógica para detectar qual é a Latitude e qual é a Longitude
-                        if (partesDMS[0].toUpperCase().includes('W') || partesDMS[0].toUpperCase().includes('O')) { x = c1; y = c2; }
-                        else if (partesDMS[1].toUpperCase().includes('W') || partesDMS[1].toUpperCase().includes('O')) { x = c2; y = c1; }
-                        else { y = c1; x = c2; } // Se não tem letra, assume Lat/Y primeiro
-                        
-                        // Extração do Nome (geralmente primeira coisa na linha) e Cota (última coisa)
-                        var partesSplit = linha.split(/[\t;]+/);
-                        if(partesSplit.length > 0) nome = partesSplit[0].replace(/[^a-zA-Z0-9-]/g,'');
-                        var lastPart = partesSplit[partesSplit.length-1].replace(',','.');
-                        if(!isNaN(parseFloat(lastPart))) z = parseFloat(lastPart);
+                    var pDMS = l.match(/(\d+[^\d]+\d+[^\d]+[\d.,]+[^\d]*[NSWE]?)/gi);
+                    if (pDMS && pDMS.length >= 2) {
+                        var c1 = parseDMS(pDMS[0]), c2 = parseDMS(pDMS[1]);
+                        if (pDMS[0].toUpperCase().includes('W') || pDMS[0].toUpperCase().includes('O')) { x=c1; y=c2; } else if (pDMS[1].toUpperCase().includes('W') || pDMS[1].toUpperCase().includes('O')) { x=c2; y=c1; } else { y=c1; x=c2; }
+                        var pS = l.split(/[\t;]+/); if(pS.length > 0) n = pS[0].replace(/[^a-zA-Z0-9-]/g,'');
+                        var last = pS[pS.length-1].replace(',','.'); if(!isNaN(parseFloat(last))) z = parseFloat(last);
                     }
                 } else {
-                    // Rotina de extração para UTM e Graus Decimais (Dados de RTK, Estação Total)
-                    var partes = linha.split(/[\t;]+/);
-                    if (partes.length < 2) partes = linha.split(',');
+                    var p = l.split(/[\t;]+/); if (p.length < 2) p = l.split(',');
                     var nums = []; var txts = [];
-                    
-                    for(var p = 0; p < partes.length; p++) {
-                        var val = partes[p].trim(); 
-                        var numVal = parseFloat(val.replace(',', '.'));
-                        if(!isNaN(numVal) && val !== "") nums.push(numVal); 
-                        else if(val !== "" && isNaN(numVal)) txts.push(val);
-                    }
-                    
+                    for(var j=0; j<p.length; j++) { var v = p[j].trim(), nv = parseFloat(v.replace(',','.')); if(!isNaN(nv) && v!=="") nums.push(nv); else if(v!=="" && isNaN(nv)) txts.push(v); }
                     if (nums.length >= 2) {
-                        nome = txts.length > 0 ? txts[0] : (partes[1] && isNaN(parseFloat(partes[1])) ? partes[1] : "V" + (i+1));
-                        
+                        n = txts.length > 0 ? txts[0] : (p[1] && isNaN(parseFloat(p[1])) ? p[1] : "V" + (i+1));
                         if(fmtIn === 'utm') {
-                            // Algoritmo inteligente para achar Coordenada Norte (tem 7 dígitos) e Este (tem 6 dígitos)
-                            var pN = nums.find(n => n > 1000000 && n < 10000000); 
-                            var pE = nums.find(n => n > 100000 && n < 1000000 && n !== pN); 
-                            if(pN && pE) { 
-                                y = pN; 
-                                x = pE; 
-                                var res = nums.filter(n => n !== pN && n !== pE); 
-                                z = res.length > 0 ? res[res.length - 1] : 0; 
-                            } else { 
-                                // Se falhar a lógica dos dígitos, pega os dois primeiros números
-                                x = nums[0]; y = nums[1]; 
-                                if(nums.length > 2) z = nums[nums.length - 1]; 
-                            }
-                        } else {
-                            // Decimal
-                            x = nums[0]; y = nums[1]; 
-                            if(nums.length > 2) z = nums[nums.length - 1];
-                        }
+                            var pN = nums.find(nu => nu > 1000000 && nu < 10000000); var pE = nums.find(nu => nu > 100000 && nu < 1000000 && nu !== pN);
+                            if(pN && pE) { y=pN; x=pE; var r = nums.filter(nu => nu!==pN && nu!==pE); z = r.length>0 ? r[r.length-1]:0; } else { x=nums[0]; y=nums[1]; if(nums.length>2) z=nums[nums.length-1]; }
+                        } else { x=nums[0]; y=nums[1]; if(nums.length>2) z=nums[nums.length-1]; }
                     }
                 }
-                
-                // Pular a linha se não conseguiu achar X e Y válidos
                 if(x === null || y === null || isNaN(x) || isNaN(y)) continue;
-                
+                try { var c = (fmtIn === 'sgl' || fmtIn === 'decimal') ? [x, y] : proj4(epsgIn, epsgOut, [x, y]); memoria.nomes.push(n); memoria.cotas.push(z); memoria.lon.push(c[0]); memoria.lat.push(c[1]); } catch(e) {}
+            }
+            if(memoria.lon.length === 0) { alert("Nenhum dado lido."); return; }
+            atualizarTabelaEMapa(true);
+        }
+
+        // ==========================================
+        // O CÉREBRO DA TRANSLAÇÃO RTK (AJUSTE PPP)
+        // ==========================================
+        function aplicarTranslacaoPPP() {
+            if(memoria.lon.length === 0) { alert("Importe e processe os pontos antes de ajustar a base."); return; }
+            
+            var xO = parseFloat(document.getElementById('ppp-e-orig').value); var yO = parseFloat(document.getElementById('ppp-n-orig').value);
+            var xI = parseFloat(document.getElementById('ppp-e-ibge').value); var yI = parseFloat(document.getElementById('ppp-n-ibge').value);
+            
+            if(isNaN(xO) || isNaN(yO) || isNaN(xI) || isNaN(yI)) { alert("Preencha todos os 4 campos de coordenadas para calcular os deltas."); return; }
+            
+            var deltaX = xI - xO; 
+            var deltaY = yI - yO;
+            
+            var epsgEntrada = obterEpsgEntrada();
+            // A translação DEVE ser feita em sistema plano (UTM). Se a entrada for graus, converte p/ UTM provisório
+            var epsgTrabalho = (document.getElementById('main-formato').value === 'utm') ? epsgEntrada : `+proj=utm +zone=${document.getElementById('main-zona').value} +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs`;
+            
+            for(var i=0; i<memoria.lon.length; i++) {
                 try {
-                    // Conversão usando biblioteca PROJ4
-                    var conv = (fmtIn === 'sgl' || fmtIn === 'decimal') ? [x, y] : proj4(epsgIn, epsgOut, [x, y]);
-                    memoria.nomes.push(nome); 
-                    memoria.cotas.push(z); 
-                    memoria.lon.push(conv[0]); 
-                    memoria.lat.push(conv[1]);
+                    // 1. Graus para UTM Local
+                    var ptUtm = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgTrabalho, [memoria.lon[i], memoria.lat[i]]);
+                    // 2. Aplica o Delta
+                    ptUtm[0] += deltaX; ptUtm[1] += deltaY;
+                    // 3. Volta para Graus no Banco
+                    var ptDeg = proj4(epsgTrabalho, "+proj=longlat +datum=WGS84 +no_defs", [ptUtm[0], ptUtm[1]]);
+                    memoria.lon[i] = ptDeg[0]; memoria.lat[i] = ptDeg[1];
                 } catch(e) {}
             }
             
-            if(memoria.lon.length === 0) { alert("Nenhum dado válido extraído. Verifique o formato."); return; }
-            
-            // Popula a Tabela e o Mapa
-            atualizarEditorTabela(); 
-            atualizarMapa(true);
+            alert(`Deltas aplicados com sucesso!\nΔE: ${deltaX.toFixed(3)} m\nΔN: ${deltaY.toFixed(3)} m`);
+            atualizarTabelaEMapa(true); // Refaz o desenho todo transladado
         }
 
         // ==========================================
         // TABELA E SINCRONIZAÇÃO NO MAPA
         // ==========================================
-        function atualizarEditorTabela() {
-            var b = document.getElementById('tabela-editor-body'); 
-            b.innerHTML = "";
-            var epsgC = obterEpsgEntrada();
-            
+        function atualizarTabelaEMapa(zoom) {
+            var b = document.getElementById('tabela-editor-body'); b.innerHTML = ""; var epsgC = obterEpsgEntrada();
             memoria.nomes.forEach((n, i) => {
                 var c = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgC, [memoria.lon[i], memoria.lat[i]]);
-                b.innerHTML += `
-                    <tr>
-                        <td class="col-id">${i+1}</td>
-                        <td><input type="text" id="ed-n-${i}" value="${n}"></td>
-                        <td>${c[0].toFixed(3)}</td>
-                        <td>${c[1].toFixed(3)}</td>
-                        <td><input type="number" step="0.001" id="ed-z-${i}" value="${memoria.cotas[i]}"></td>
-                    </tr>`; 
+                b.innerHTML += `<tr><td class="col-id">${i+1}</td><td><input type="text" id="ed-n-${i}" value="${n}"></td><td>${c[0].toFixed(3)}</td><td>${c[1].toFixed(3)}</td><td><input type="number" step="0.001" id="ed-z-${i}" value="${memoria.cotas[i]}"></td></tr>`; 
             });
+            atualizarDesenhoMemoria(zoom);
         }
 
         function salvarEdicoesTabela() {
             if(memoria.lon.length === 0) return;
-            memoria.nomes.forEach((n, i) => { 
-                memoria.nomes[i] = document.getElementById(`ed-n-${i}`).value; 
-                memoria.cotas[i] = parseFloat(document.getElementById(`ed-z-${i}`).value) || 0; 
-            });
-            atualizarMapa(false);
-            alert("Mapa e textos atualizados com sucesso com base na tabela.");
+            memoria.nomes.forEach((n, i) => { memoria.nomes[i] = document.getElementById(`ed-n-${i}`).value; memoria.cotas[i] = parseFloat(document.getElementById(`ed-z-${i}`).value) || 0; });
+            atualizarDesenhoMemoria(false);
         }
 
-        function atualizarMapa(zoom = false) {
-            // Remove as camadas de medição anteriores, se existirem
-            ['rtk_poly', 'rtk_pt', 'rtk_text'].forEach(id => { 
-                var i = gerenciadorCamadas.findIndex(c => c.id === id); 
-                if(i !== -1) { 
-                    map.removeLayer(gerenciadorCamadas[i].leafletLayer); 
-                    gerenciadorCamadas.splice(i, 1); 
-                } 
-            });
-
-            var cPoly = L.featureGroup();
-            var cPt = L.featureGroup();
-            var cTxt = L.featureGroup();
-            var pts = [], ptsP = []; 
-            var epsgC = obterEpsgEntrada(); 
-
+        function atualizarDesenhoMemoria(zoom) {
+            ['rtk_poly', 'rtk_pt', 'rtk_text'].forEach(id => { var i = gerenciadorCamadas.findIndex(c => c.id === id); if(i !== -1) { map.removeLayer(gerenciadorCamadas[i].leafletLayer); gerenciadorCamadas.splice(i, 1); } });
+            var cPoly = L.featureGroup(), cPt = L.featureGroup(), cTxt = L.featureGroup(); var pts = [], ptsP = []; var epsgC = obterEpsgEntrada(); 
             for(var i=0; i<memoria.lon.length; i++) {
-                var ll = [memoria.lat[i], memoria.lon[i]]; 
-                pts.push(ll);
-                
-                // Calcula as coordenadas projetadas locais para descobrir Área e Perímetro corretos
-                try { 
-                    var cr = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgC, [memoria.lon[i], memoria.lat[i]]); 
-                    ptsP.push({x: cr[0], y: cr[1]}); 
-                } catch(e) { 
-                    ptsP.push({x:0, y:0}); 
-                }
-                
-                // Desenha os Pontos e Textos
+                var ll = [memoria.lat[i], memoria.lon[i]]; pts.push(ll);
+                try { var cr = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgC, [memoria.lon[i], memoria.lat[i]]); ptsP.push({x: cr[0], y: cr[1]}); } catch(e) { ptsP.push({x:0, y:0}); }
                 L.circleMarker(ll, {radius:4, color:'#0098ff', fillColor:'#1e1e1e', fillOpacity:1, weight:2}).addTo(cPt);
                 L.marker(ll, {opacity:0}).bindTooltip(memoria.nomes[i], {permanent:true, direction:'right', className:'etiqueta-mapa'}).addTo(cTxt);
             }
-
-            ultimaAreaCalculada = 0; 
-            ultimoPerimetroCalculado = 0;
-            
-            // Só desenha o polígono se tiver 3 ou mais pontos
+            ultimaAreaCalculada = 0; ultimoPerimetroCalculado = 0;
             if(pts.length >= 3) {
                 L.polygon(pts, {color:'#0098ff', weight:2, fillOpacity:0.1, dashArray: '5,5'}).addTo(cPoly);
-                
-                // Algoritmo de Área de Gauss (Shoelace) e Perímetro a partir das coordenadas planas reais
                 var a = 0, p = 0;
-                for(var j=0; j<ptsP.length; j++) { 
-                    var p1 = ptsP[j], p2 = ptsP[(j+1)%ptsP.length]; 
-                    a += (p1.x * p2.y) - (p2.x * p1.y); 
-                    p += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)); 
-                }
-                ultimaAreaCalculada = Math.abs(a)/2; 
-                ultimoPerimetroCalculado = p;
-                
-                document.getElementById('lbl-area').innerHTML = "Área Analítica: " + ultimaAreaCalculada.toFixed(2) + " m²";
-                document.getElementById('lbl-perimetro').innerHTML = "Perímetro Analítico: " + ultimoPerimetroCalculado.toFixed(2) + " m";
+                for(var j=0; j<ptsP.length; j++) { var p1 = ptsP[j], p2 = ptsP[(j+1)%ptsP.length]; a += (p1.x * p2.y) - (p2.x * p1.y); p += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)); }
+                ultimaAreaCalculada = Math.abs(a)/2; ultimoPerimetroCalculado = p;
+                document.getElementById('lbl-area').innerHTML = "Área: " + ultimaAreaCalculada.toFixed(2) + " m²";
+                document.getElementById('lbl-perimetro').innerHTML = "Perímetro: " + ultimoPerimetroCalculado.toFixed(2) + " m";
             }
-
-            cPoly.addTo(map); 
-            cPt.addTo(map); 
-            cTxt.addTo(map);
-            
-            if(zoom && pts.length > 0) {
-                map.fitBounds(cPt.getBounds(), {padding:[40,40], maxZoom: 20});
-            }
-
-            // Registra as camadas no Gestor para o usuário poder esconder/mostrar/reordenar
-            gerenciadorCamadas.unshift({ id: 'rtk_poly', nome: 'Limites Geometria', leafletLayer: cPoly, visivel: true, tipo: 'rtk_poly', cor: '#0098ff' });
+            cPoly.addTo(map); cPt.addTo(map); cTxt.addTo(map);
+            if(zoom && pts.length > 0) map.fitBounds(cPt.getBounds(), {padding:[40,40], maxZoom: 20});
+            gerenciadorCamadas.unshift({ id: 'rtk_poly', nome: 'Polígono do Imóvel', leafletLayer: cPoly, visivel: true, tipo: 'rtk_poly', cor: '#0098ff' });
             gerenciadorCamadas.unshift({ id: 'rtk_pt', nome: 'Pontos Vértices', leafletLayer: cPt, visivel: true, tipo: 'rtk_pt', cor: '#0098ff' });
-            gerenciadorCamadas.unshift({ id: 'rtk_text', nome: 'Textos Vértices', leafletLayer: cTxt, visivel: true, tipo: 'rtk_text' });
-            
+            gerenciadorCamadas.unshift({ id: 'rtk_text', nome: 'Nomes na Tela', leafletLayer: cTxt, visivel: true, tipo: 'rtk_text' });
             renderizarGestorCamadas();
         }
 
         // ==========================================
-        // GESTOR AVANÇADO DE CAMADAS E IMPORTAÇÃO DE SHAPES/KML
+        // GESTÃO DE CAMADAS E SHAPES
         // ==========================================
         function renderizarGestorCamadas() {
-            var c = document.getElementById('camadas-dinamicas'); 
-            c.innerHTML = '';
-            
-            if(gerenciadorCamadas.length === 0) {
-                c.innerHTML = '<p style="font-size: 12px; color: #666; text-align: center; margin-top: 10px;">Nenhuma camada.</p>';
-                return;
-            }
-
+            var c = document.getElementById('camadas-dinamicas'); c.innerHTML = '';
             gerenciadorCamadas.forEach((cam, i) => {
-                var corHtml = (cam.tipo === 'shp' || cam.tipo === 'rtk_poly' || cam.tipo === 'rtk_pt') ? `<input type="color" class="color-picker" value="${cam.cor || '#000000'}" onchange="alterarCor('${cam.id}', this.value)" title="Mudar Cor da Camada">` : '';
-                c.innerHTML += `
-                    <div class="layer-item">
-                        <div style="display:flex; gap:8px; align-items:center; overflow:hidden;">
-                            ${corHtml}
-                            <span style="color:${cam.visivel ? '#fff' : '#666'}; white-space:nowrap; font-weight: 600;">${cam.nome}</span>
-                        </div>
-                        <div style="display:flex; gap:2px;">
-                            <button class="btn-icon" title="Visibilidade" onclick="toggleCamada('${cam.id}')">${cam.visivel ? '👁️' : '🙈'}</button>
-                            <button class="btn-icon" title="Focar na Tela" onclick="zoomCamada('${cam.id}')" ${!cam.visivel ? 'disabled' : ''}>🔍</button>
-                            <button class="btn-icon" title="Subir na Ordem" onclick="moverCamadaUp(${i})" ${i === 0 ? 'disabled' : ''}>🔼</button>
-                            <button class="btn-icon" title="Descer na Ordem" onclick="moverCamadaDown(${i})" ${i === gerenciadorCamadas.length - 1 ? 'disabled' : ''}>🔽</button>
-                            <button class="btn-icon" title="Excluir" onclick="removerCamada('${cam.id}')">🗑️</button>
-                        </div>
-                    </div>`;
+                var corHtml = (cam.tipo === 'shp' || cam.tipo === 'rtk_poly' || cam.tipo === 'rtk_pt') ? `<input type="color" class="color-picker" value="${cam.cor||'#000'}" onchange="alterarCor('${cam.id}', this.value)">` : '';
+                c.innerHTML += `<div class="layer-item"><div style="display:flex; gap:6px; align-items:center; overflow:hidden;">${corHtml}<span style="color:${cam.visivel ? '#fff' : '#666'};">${cam.nome}</span></div>
+                    <div style="display:flex; gap:2px;"><button class="btn-icon" onclick="toggleCamada('${cam.id}')">${cam.visivel ? '👁️' : '🙈'}</button><button class="btn-icon" onclick="zoomCamada('${cam.id}')" ${!cam.visivel?'disabled':''}>🔍</button><button class="btn-icon" onclick="removerCamada('${cam.id}')">🗑️</button></div></div>`;
             });
-            atualizarOrdemZIndexMap();
         }
         
-        function alterarCor(id, cor) { 
-            var c = gerenciadorCamadas.find(x => x.id === id); 
-            if(c) { 
-                c.cor = cor; 
-                if (c.tipo === 'shp' || c.tipo === 'rtk_poly') { c.leafletLayer.setStyle({ color: cor, fillColor: cor }); } 
-                else if (c.tipo === 'rtk_pt') { c.leafletLayer.setStyle({ color: cor }); } 
-            } 
-        }
-        function toggleCamada(id) { 
-            var c = gerenciadorCamadas.find(x => x.id === id); 
-            if(c){ 
-                c.visivel = !c.visivel; 
-                if(c.visivel) map.addLayer(c.leafletLayer); 
-                else map.removeLayer(c.leafletLayer); 
-                renderizarGestorCamadas(); 
-            } 
-        }
+        function alterarCor(id, cor) { var c = gerenciadorCamadas.find(x => x.id === id); if(c) { c.cor = cor; if (c.tipo === 'shp' || c.tipo === 'rtk_poly') { c.leafletLayer.setStyle({ color: cor, fillColor: cor }); } else if (c.tipo === 'rtk_pt') { c.leafletLayer.setStyle({ color: cor }); } } }
+        function toggleCamada(id) { var c = gerenciadorCamadas.find(x => x.id === id); if(c){ c.visivel = !c.visivel; if(c.visivel) map.addLayer(c.leafletLayer); else map.removeLayer(c.leafletLayer); renderizarGestorCamadas(); } }
         function zoomCamada(id) { var c = gerenciadorCamadas.find(x => x.id === id); if(c && c.visivel && c.leafletLayer.getBounds) map.fitBounds(c.leafletLayer.getBounds(), {padding:[40,40]}); }
         function removerCamada(id) { var i = gerenciadorCamadas.findIndex(x => x.id === id); if(i !== -1){ map.removeLayer(gerenciadorCamadas[i].leafletLayer); gerenciadorCamadas.splice(i, 1); renderizarGestorCamadas(); renderizarFiltros(); } }
-        function moverCamadaUp(index) { if (index > 0) { var t = gerenciadorCamadas[index - 1]; gerenciadorCamadas[index - 1] = gerenciadorCamadas[index]; gerenciadorCamadas[index] = t; renderizarGestorCamadas(); } }
-        function moverCamadaDown(index) { if (index < gerenciadorCamadas.length - 1) { var t = gerenciadorCamadas[index + 1]; gerenciadorCamadas[index + 1] = gerenciadorCamadas[index]; gerenciadorCamadas[index] = t; renderizarGestorCamadas(); } }
-        
-        function atualizarOrdemZIndexMap() { 
-            var camadasReversas = gerenciadorCamadas.slice().reverse(); 
-            camadasReversas.forEach(camada => { if(camada.visivel && camada.leafletLayer.bringToFront) camada.leafletLayer.bringToFront(); }); 
-        }
 
-        // Função de Download Nativo na Nuvem (Integração GitHub Regions)
         async function baixarBaseSelecionada() {
-            var url = document.getElementById('select-bases-nuvem').value;
-            if(!url) { alert("Por favor, selecione uma regional na lista."); return; }
-            
-            alert("Iniciando o download e extração na nuvem. Aguarde... Isso pode demorar alguns segundos dependendo da base.");
-            
-            try {
-                let res = await fetch(url, { headers: { 'Accept': 'application/octet-stream' } });
-                if (!res.ok) throw new Error("Erro no download da base de dados. Verifique a URL ou o Servidor.");
-                let blob = await res.blob();
-                
-                // Simula um "Event File" para a função de importação reaproveitar a lógica
-                importarShapefile({ target: { files: [new File([blob], "Base_Geoprocessamento.zip", { type: "application/zip" })] } });
-            } catch (err) { alert(err.message); }
+            var url = document.getElementById('select-bases-nuvem').value; if(!url) return;
+            try { let res = await fetch(url, { headers: { 'Accept': 'application/octet-stream' } }); if (!res.ok) throw new Error(""); let blob = await res.blob(); importarShapefile({ target: { files: [new File([blob], "Base.zip", { type: "application/zip" })] } }); } catch (err) {}
         }
 
-        // Sistema de Filtragem de Colunas do Shape para Exportação e Popup
+        // ==========================================
+        // FILTRO DE EXPORTAÇÃO (CORRIGIDO RIGOROSAMENTE)
+        // ==========================================
         function renderizarFiltros() {
-            var c = document.getElementById('filtro-colunas'); if(!c) return; c.innerHTML = '';
-            var keys = Object.keys(colunasGlobais).sort();
-            if(keys.length === 0) { c.innerHTML = '<p style="font-size:11px; color:#777; grid-column: span 2; text-align: center;">Sem propriedades importadas.</p>'; return; }
+            var c = document.getElementById('filtro-colunas'); if(!c) return; c.innerHTML = ''; var keys = Object.keys(colunasGlobais).sort();
+            if(keys.length === 0) { c.innerHTML = '<p style="font-size:9px; color:#777; grid-column: span 2;">Sem atributos importados.</p>'; return; }
             keys.forEach(k => { c.innerHTML += `<label class="col-check-label"><input type="checkbox" onchange="colunasGlobais['${k}'] = this.checked" ${colunasGlobais[k]?'checked':''}>${k}</label>`; });
         }
         function marcarColunas(b) { for(var k in colunasGlobais) colunasGlobais[k] = b; renderizarFiltros(); }
-
-        function construirPopup(props) {
-            let h = "<table class='info-table'><tbody>"; let ct = 0;
-            for(let k in props) { 
-                if(colunasGlobais[k] && props[k] !== null && props[k] !== undefined) { 
-                    h += `<tr><th>${k}</th><td>${props[k]}</td></tr>`; ct++; 
-                } 
-            }
-            return ct > 0 ? h + "</tbody></table>" : "<p style='color:#777;'>Atributos ocultos pelos filtros de exportação.</p>";
-        }
+        function construirPopup(props) { let h = "<table class='info-table'><tbody>"; let ct = 0; for(let k in props) { if(colunasGlobais[k] && props[k]) { h += `<tr><th>${k}</th><td>${props[k]}</td></tr>`; ct++; } } return ct > 0 ? h + "</tbody></table>" : "<p style='color:#777;'>Atributos ocultos pelo filtro.</p>"; }
 
         function reprojectGeo(geo) {
-            var epsgIn = obterEpsgEntrada(); 
-            var epsgOut = "+proj=longlat +datum=WGS84 +no_defs";
-            function p(c) { 
-                if(typeof c[0] === 'number') { 
-                    if(Math.abs(c[0]) > 180 || Math.abs(c[1]) > 90) { 
-                        try{ var cr = proj4(epsgIn, epsgOut, [c[0], c[1]]); c[0]=cr[0]; c[1]=cr[1]; } catch(e){} 
-                    } 
-                } else { for(var i=0; i<c.length; i++) p(c[i]); } 
-            }
-            if(geo.type === "FeatureCollection") geo.features.forEach(f => { if(f.geometry && f.geometry.coordinates) p(f.geometry.coordinates); }); 
-            else if (geo.type === "Feature") { if(geo.geometry && geo.geometry.coordinates) p(geo.geometry.coordinates); }
+            var eI = obterEpsgEntrada(), eO = "+proj=longlat +datum=WGS84 +no_defs";
+            function p(c) { if(typeof c[0] === 'number') { if(Math.abs(c[0]) > 180 || Math.abs(c[1]) > 90) { try{ var cr = proj4(eI, eO, [c[0], c[1]]); c[0]=cr[0]; c[1]=cr[1]; }catch(e){} } } else { for(var i=0; i<c.length; i++) p(c[i]); } }
+            if(geo.type === "FeatureCollection") geo.features.forEach(f => { if(f.geometry && f.geometry.coordinates) p(f.geometry.coordinates); }); else if (geo.type === "Feature") { if(geo.geometry && geo.geometry.coordinates) p(geo.geometry.coordinates); }
             return geo;
         }
 
         function addGeoJsonToMap(geo, nome, cor) {
             geo = reprojectGeo(geo);
-            
-            // Adiciona as colunas novas encontradas no shape globalmente
-            if(geo.features) {
-                geo.features.forEach(f => { 
-                    if(f.properties) {
-                        Object.keys(f.properties).forEach(k => { 
-                            if(colunasGlobais[k] === undefined) colunasGlobais[k] = true; 
-                        }); 
-                    }
-                });
-            }
+            if(geo.features) geo.features.forEach(f => { if(f.properties) Object.keys(f.properties).forEach(k => { if(colunasGlobais[k] === undefined) colunasGlobais[k] = true; }); });
             renderizarFiltros();
-            
-            var layer = L.geoJSON(geo, { 
-                style: { color: cor, weight: 1, fillOpacity: 0.1 }, 
-                onEachFeature: (f, l) => l.bindPopup(() => construirPopup(f.properties)) 
-            }).addTo(map);
-            
+            var layer = L.geoJSON(geo, { style: { color: cor, weight: 1, fillOpacity: 0.1 }, onEachFeature: (f, l) => l.bindPopup(() => construirPopup(f.properties)) }).addTo(map);
             map.fitBounds(layer.getBounds());
-            
-            gerenciadorCamadas.push({ 
-                id: 'shp_' + camadaIdCounter++, 
-                nome: "☁️ " + nome, 
-                leafletLayer: layer, 
-                visivel: true, 
-                tipo: 'shp', 
-                cor: cor, 
-                rawGeoJSON: geo 
-            });
-            
+            gerenciadorCamadas.push({ id: 'shp_' + camadaIdCounter++, nome: nome, leafletLayer: layer, visivel: true, tipo: 'shp', cor: cor, rawGeoJSON: geo });
             renderizarGestorCamadas(); 
         }
 
         async function importarShapefile(e) {
-            const f = e.target.files[0]; 
-            if (!f) return; 
-            
-            const r = new FileReader(); 
-            var n = f.name.toLowerCase();
-            
-            if (n.endsWith('.shp')) { 
-                r.onload = async (ev) => { try { const g = shp.parseShp(ev.target.result); addGeoJsonToMap({ type: "FeatureCollection", features: g.map(geom => ({ type: "Feature", properties: {}, geometry: geom })) }, f.name, '#9c27b0'); } catch(err){ alert("Erro importando SHP"); } }; 
-                r.readAsArrayBuffer(f); 
-            } 
-            else if (n.endsWith('.zip')) { 
-                r.onload = async (ev) => { try { let g = await shp(ev.target.result); addGeoJsonToMap(g, f.name, '#ff9800'); } catch(err){ alert("Erro importando ZIP (SHP)"); } }; 
-                r.readAsArrayBuffer(f); 
-            } 
-            else if (n.endsWith('.kmz')) { 
-                r.onload = async (ev) => { try { var z = await JSZip.loadAsync(ev.target.result); var k = Object.keys(z.files).find(x => x.toLowerCase().endsWith('.kml')); var t = await z.files[k].async("text"); addGeoJsonToMap(toGeoJSON.kml(new DOMParser().parseFromString(t, 'text/xml')), f.name, '#4caf50'); } catch(err){ alert("Erro importando KMZ"); } }; 
-                r.readAsArrayBuffer(f); 
-            } 
-            else if (n.endsWith('.kml')) { 
-                r.onload = (ev) => { try { addGeoJsonToMap(toGeoJSON.kml(new DOMParser().parseFromString(ev.target.result, 'text/xml')), f.name, '#4caf50'); } catch(err){ alert("Erro importando KML"); } }; 
-                r.readAsText(f); 
-            } 
-            else { 
-                r.onload = (ev) => { try { addGeoJsonToMap(JSON.parse(ev.target.result), f.name, '#00bcd4'); } catch(err){ alert("Arquivo incompatível"); } }; 
-                r.readAsText(f); 
-            }
+            const f = e.target.files[0]; if (!f) return; const r = new FileReader(); var n = f.name.toLowerCase();
+            if (n.endsWith('.shp')) { r.onload = async (ev) => { try { const g = shp.parseShp(ev.target.result); addGeoJsonToMap({ type: "FeatureCollection", features: g.map(geom => ({ type: "Feature", properties: {}, geometry: geom })) }, f.name, '#9c27b0'); } catch(err){} }; r.readAsArrayBuffer(f); } 
+            else if (n.endsWith('.zip')) { r.onload = async (ev) => { try { let g = await shp(ev.target.result); addGeoJsonToMap(g, f.name, '#ff9800'); } catch(err){} }; r.readAsArrayBuffer(f); } 
+            else if (n.endsWith('.kmz')) { r.onload = async (ev) => { try { var z = await JSZip.loadAsync(ev.target.result); var k = Object.keys(z.files).find(x => x.toLowerCase().endsWith('.kml')); var t = await z.files[k].async("text"); addGeoJsonToMap(toGeoJSON.kml(new DOMParser().parseFromString(t, 'text/xml')), f.name, '#4caf50'); } catch(err){} }; r.readAsArrayBuffer(f); } 
+            else if (n.endsWith('.kml')) { r.onload = (ev) => { try { addGeoJsonToMap(toGeoJSON.kml(new DOMParser().parseFromString(ev.target.result, 'text/xml')), f.name, '#4caf50'); } catch(err){} }; r.readAsText(f); } 
+            else { r.onload = (ev) => { try { addGeoJsonToMap(JSON.parse(ev.target.result), f.name, '#00bcd4'); } catch(err){} }; r.readAsText(f); }
         }
 
         // ==========================================
-        // EXPORTAÇÕES COMPEXAS (CSV, DXF E GEOJSON)
+        // EXPORTAÇÕES (O BUG DO GEOJSON FOI CORRIGIDO AQUI)
         // ==========================================
-        function obterCoordenadasSaida() { 
-            var fmt = document.getElementById('out-formato').value; 
-            var epsgD = (fmt === 'utm') ? obterEpsgEntrada() : "+proj=longlat +datum=WGS84 +no_defs"; 
-            var pts = []; 
-            for(var i=0; i<memoria.lon.length; i++) { 
-                var c = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgD, [memoria.lon[i], memoria.lat[i]]); 
-                pts.push({ x: c[0], y: c[1], z: memoria.cotas[i], nome: memoria.nomes[i] }); 
-            } 
-            return pts; 
-        }
-
+        function obterCoordenadasSaida() { var fmt = document.getElementById('out-formato').value; var epsgD = (fmt === 'utm') ? obterEpsgEntrada() : "+proj=longlat +datum=WGS84 +no_defs"; var pts = []; for(var i=0; i<memoria.lon.length; i++) { var c = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgD, [memoria.lon[i], memoria.lat[i]]); pts.push({ x: c[0], y: c[1], z: memoria.cotas[i], nome: memoria.nomes[i] }); } return pts; }
         function obterRecorte() { 
-            var feats = []; 
-            if(!document.getElementById('chk-recorte').checked) return feats; // Se o recorte estiver desligado
-            
-            var b = map.getBounds(); 
-            var bbox = turf.bboxPolygon([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]); 
-            
-            gerenciadorCamadas.forEach(c => { 
-                if(c.tipo === 'shp' && c.visivel && c.rawGeoJSON) { 
-                    var items = c.rawGeoJSON.features ? c.rawGeoJSON.features : (c.rawGeoJSON.type === 'Feature' ? [c.rawGeoJSON] : []); 
-                    items.forEach(f => { 
-                        try { if(turf.booleanIntersects(f, bbox)) feats.push(f); } 
-                        catch(e) { feats.push(f); } // Se falhar a intersecção matemática, exporta por segurança
-                    }); 
-                } 
-            }); 
-            return feats; 
+            var feats = []; if(!document.getElementById('chk-recorte').checked) return getTudo(); 
+            var b = map.getBounds(); var bbox = turf.bboxPolygon([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]); 
+            gerenciadorCamadas.forEach(c => { if(c.tipo === 'shp' && c.visivel && c.rawGeoJSON) { var items = c.rawGeoJSON.features ? c.rawGeoJSON.features : (c.rawGeoJSON.type === 'Feature' ? [c.rawGeoJSON] : []); items.forEach(f => { try { if(turf.booleanIntersects(f, bbox)) feats.push(f); } catch(e) { feats.push(f); } }); } }); return feats; 
         }
+        function getTudo() { var feats = []; gerenciadorCamadas.forEach(c => { if(c.tipo === 'shp' && c.visivel && c.rawGeoJSON) { var items = c.rawGeoJSON.features ? c.rawGeoJSON.features : (c.rawGeoJSON.type === 'Feature' ? [c.rawGeoJSON] : []); items.forEach(f => feats.push(f)); } }); return feats; }
+        function extractRings(c, t) { if(t === 'LineString') return [c]; if(t === 'Polygon') return c; if(t === 'MultiLineString') return c; if(t === 'MultiPolygon') { let r = []; c.forEach(p => p.forEach(ri => r.push(ri))); return r; } return []; }
+        function dwn(n, c, t) { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([c], {type: t})); a.download = n; a.click(); }
 
-        function extractRings(c, t) { 
-            if(t === 'LineString') return [c]; 
-            if(t === 'Polygon') return c; 
-            if(t === 'MultiLineString') return c; 
-            if(t === 'MultiPolygon') { 
-                let r = []; 
-                c.forEach(p => p.forEach(ri => r.push(ri))); 
-                return r; 
-            } 
-            return []; 
-        }
-
-        function dwn(n, c, t) { 
-            var a = document.createElement('a'); 
-            a.href = URL.createObjectURL(new Blob([c], {type: t})); 
-            a.download = n; 
-            a.click(); 
-        }
-
-        function baixarCSV() {
-            var hRtk = memoria.lon.length > 0; 
-            var hShp = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel);
-            
-            if (!hRtk && !hShp) { alert("Não existem dados para exportar. Processe ou importe algo."); return; }
-            
-            // Montagem do Cabeçalho Excel-friendly
-            var csv = "\uFEFFOrigem;Nome/ID;Coord_E_X;Coord_N_Y;Cota_Z;"; 
-            var ex = []; 
-            for (var k in colunasGlobais) if (colunasGlobais[k]) ex.push(k); 
-            csv += ex.join(";") + "\n";
-            
-            var epsgD = (document.getElementById('out-formato').value === 'utm') ? obterEpsgEntrada() : "+proj=longlat +datum=WGS84 +no_defs";
-            
-            // Exporta os Pontos Plotados
-            if (hRtk) { 
-                for(var i=0; i<memoria.lon.length; i++) { 
-                    var c = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgD, [memoria.lon[i], memoria.lat[i]]); 
-                    var row = ["Dados_Vértices", memoria.nomes[i], c[0].toFixed(5).replace('.',','), c[1].toFixed(5).replace('.',','), memoria.cotas[i].toString().replace('.',',')]; 
-                    for(var e=0; e<ex.length; e++) row.push(""); 
-                    csv += row.join(";") + "\n"; 
-                } 
+        // AQUI ESTÁ A CORREÇÃO DE ATRIBUTOS
+        function aplicarFiltroPropriedades(featOriginal) {
+            var nF = JSON.parse(JSON.stringify(featOriginal)); // Deep clone
+            nF.properties = {}; // Zera propriedades
+            for(let k in featOriginal.properties) {
+                if (colunasGlobais[k] === true) { // Puxa SÓ o que está marcado como true no painel
+                    nF.properties[k] = featOriginal.properties[k];
+                }
             }
-            
-            // Exporta os Centróides das Geometrias (Lotes/Quadras) importados via SHP
-            if (hShp) { 
-                obterRecorte().forEach(f => { 
-                    try { 
-                        var ce = turf.centroid(f).geometry.coordinates; 
-                        var c = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgD, [ce[0], ce[1]]); 
-                        var row = ["Geometria_SHP", "Centroide", c[0].toFixed(5).replace('.',','), c[1].toFixed(5).replace('.',','), "0"]; 
-                        ex.forEach(k => { 
-                            var v = f.properties ? f.properties[k] : ""; 
-                            row.push(v ? String(v).replace(/;/g, ',').replace(/\n/g, ' ') : ""); 
-                        }); 
-                        csv += row.join(";") + "\n"; 
-                    } catch(e){} 
-                }); 
-            }
-            dwn("Relatorio_Topografia_LuiGIS.csv", csv, "text/csv;charset=utf-8;");
-        }
-
-        function baixarDXF() {
-            var hRtk = memoria.lon.length > 0; 
-            var hShp = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel); 
-            var hCad = false; cadLayerGroup.eachLayer(() => hCad = true);
-            
-            if (!hRtk && !hShp && !hCad) { alert("O mapa está vazio, impossível exportar DXF."); return; }
-            
-            var epsgD = (document.getElementById('out-formato').value === 'utm') ? obterEpsgEntrada() : "+proj=longlat +datum=WGS84 +no_defs";
-            var dxf = "0\nSECTION\n2\nENTITIES\n";
-            
-            // Construção DXF do Polígono Medido (Aba Vértices)
-            if (hRtk) {
-                var pts = obterCoordenadasSaida();
-                dxf += "0\nPOLYLINE\n8\nLEVANTAMENTO_PERIMETRO\n66\n1\n70\n1\n62\n5\n"; 
-                pts.forEach(p => dxf += `0\nVERTEX\n8\nLEVANTAMENTO_PERIMETRO\n10\n${p.x.toFixed(4)}\n20\n${p.y.toFixed(4)}\n30\n${p.z}\n`); 
-                dxf += "0\nSEQEND\n";
-                
-                pts.forEach(p => { 
-                    dxf += `0\nPOINT\n8\nLEVANTAMENTO_PONTOS\n10\n${p.x.toFixed(4)}\n20\n${p.y.toFixed(4)}\n30\n${p.z}\n`; 
-                    dxf += `0\nTEXT\n8\nLEVANTAMENTO_TEXTOS\n10\n${p.x.toFixed(4)}\n20\n${(p.y+1.5).toFixed(4)}\n30\n${p.z}\n40\n1.5\n1\n${p.nome}\n72\n1\n11\n${p.x.toFixed(4)}\n21\n${(p.y+1.5).toFixed(4)}\n31\n${p.z}\n73\n2\n`; 
-                });
-            }
-            
-            // Construção DXF dos desenhos livres feitos na tela
-            if (hCad) {
-                cadLayerGroup.eachLayer(l => {
-                    if (l instanceof L.Marker || l instanceof L.CircleMarker) { 
-                        var p = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgD, [l.getLatLng().lng, l.getLatLng().lat]); 
-                        dxf += `0\nPOINT\n8\nDESENHO_CAD_LIVRE\n10\n${p[0].toFixed(4)}\n20\n${p[1].toFixed(4)}\n30\n0\n`; 
-                    } 
-                    else if (l instanceof L.Polygon || l instanceof L.Polyline) { 
-                        dxf += "0\nPOLYLINE\n8\nDESENHO_CAD_LIVRE\n66\n1\n70\n1\n62\n2\n"; 
-                        l.getLatLngs()[0].forEach(ll => { 
-                            var p = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgD, [ll.lng, ll.lat]); 
-                            dxf += `0\nVERTEX\n8\nDESENHO_CAD_LIVRE\n10\n${p[0].toFixed(4)}\n20\n${p[1].toFixed(4)}\n30\n0\n`; 
-                        }); 
-                        dxf += "0\nSEQEND\n"; 
-                    }
-                });
-            }
-            
-            // Construção DXF dos Shapefiles carregados e cruzados
-            if (hShp) {
-                obterRecorte().forEach(f => { 
-                    extractRings(f.geometry.coordinates, f.geometry.type).forEach(r => { 
-                        dxf += "0\nPOLYLINE\n8\nBASE_IMPORTADA_SHP\n66\n1\n70\n1\n62\n3\n"; 
-                        r.forEach(c => { 
-                            var p = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgD, [c[0], c[1]]); 
-                            dxf += `0\nVERTEX\n8\nBASE_IMPORTADA_SHP\n10\n${p[0].toFixed(4)}\n20\n${p[1].toFixed(4)}\n30\n0\n`; 
-                        }); 
-                        dxf += "0\nSEQEND\n"; 
-                    }); 
-                });
-            }
-            dwn("Projeto_Exportado_AutoCAD.dxf", dxf + "0\nENDSEC\n0\nEOF", "application/dxf");
+            return nF;
         }
 
         function baixarGeoJSON() {
             var f = [];
             if (memoria.lon.length > 0) {
-                var c = []; 
-                for(var i=0; i<memoria.lon.length; i++) { 
-                    var pt = [memoria.lon[i], memoria.lat[i], memoria.cotas[i]]; 
-                    c.push(pt); 
-                    f.push({ type: "Feature", geometry: { type: "Point", coordinates: pt }, properties: { Nome: memoria.nomes[i], Origem: "RTK_Vértice_Medido" } }); 
-                }
-                if(c.length > 2) { 
-                    c.push(c[0]); 
-                    f.push({ type: "Feature", geometry: { type: "Polygon", coordinates: [c] }, properties: { Origem: "RTK_Polígono_Calculado" } }); 
-                }
+                var c = []; for(var i=0; i<memoria.lon.length; i++) { var pt = [memoria.lon[i], memoria.lat[i], memoria.cotas[i]]; c.push(pt); f.push({ type: "Feature", geometry: { type: "Point", coordinates: pt }, properties: { Nome: memoria.nomes[i], Origem: "RTK" } }); }
+                if(c.length > 2) { c.push(c[0]); f.push({ type: "Feature", geometry: { type: "Polygon", coordinates: [c] }, properties: { Origem: "Poligono_RTK" } }); }
             }
-            cadLayerGroup.eachLayer(l => { 
-                try { var fg = l.toGeoJSON(); fg.properties = { Origem: "Desenho_CAD_Livre" }; f.push(fg); } catch(e){} 
-            });
-            obterRecorte().forEach(feat => { 
-                var nF = JSON.parse(JSON.stringify(feat)); 
-                nF.properties = nF.properties || {}; 
-                nF.properties.Origem = "Shapefile_Base"; 
-                f.push(nF); 
-            });
-            dwn("Base_Dados_QGIS.geojson", JSON.stringify({ type: "FeatureCollection", features: f }, null, 2), "application/json");
+            cadLayerGroup.eachLayer(l => { try { var fg = l.toGeoJSON(); fg.properties = { Origem: "CAD" }; f.push(fg); } catch(e){} });
+            
+            // Aplica a limpeza de colunas rigorosamente
+            obterRecorte().forEach(feat => { f.push(aplicarFiltroPropriedades(feat)); });
+            
+            dwn("Dados_LuiGIS.geojson", JSON.stringify({ type: "FeatureCollection", features: f }, null, 2), "application/json");
+        }
+
+        function baixarKML() {
+            var f = [];
+            if (memoria.lon.length > 0) {
+                for(var i=0; i<memoria.lon.length; i++) { f.push({ type: "Feature", geometry: { type: "Point", coordinates: [memoria.lon[i], memoria.lat[i]] }, properties: { name: memoria.nomes[i] } }); }
+            }
+            obterRecorte().forEach(feat => { var limpo = aplicarFiltroPropriedades(feat); if(!limpo.properties.name) limpo.properties.name = "Geometria"; f.push(limpo); });
+            var kmlStr = tokml({ type: "FeatureCollection", features: f });
+            dwn("Dados_GoogleEarth.kml", kmlStr, "application/vnd.google-earth.kml+xml");
+        }
+
+        function baixarCSV() {
+            var hRtk = memoria.lon.length > 0; var hShp = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel); if (!hRtk && !hShp) return;
+            var csv = "\uFEFFOrigem;Nome_ID;Coord_E_X;Coord_N_Y;Cota_Z;"; var ex = []; for (var k in colunasGlobais) if (colunasGlobais[k]) ex.push(k); csv += ex.join(";") + "\n";
+            var epsgD = (document.getElementById('out-formato').value === 'utm') ? obterEpsgEntrada() : "+proj=longlat +datum=WGS84 +no_defs";
+            if (hRtk) { for(var i=0; i<memoria.lon.length; i++) { var c = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgD, [memoria.lon[i], memoria.lat[i]]); var row = ["RTK", memoria.nomes[i], c[0].toFixed(5).replace('.',','), c[1].toFixed(5).replace('.',','), memoria.cotas[i].toString().replace('.',',')]; for(var e=0; e<ex.length; e++) row.push(""); csv += row.join(";") + "\n"; } }
+            if (hShp) { obterRecorte().forEach(f => { try { var ce = turf.centroid(f).geometry.coordinates; var c = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgD, [ce[0], ce[1]]); var row = ["SHP", "Centro", c[0].toFixed(5).replace('.',','), c[1].toFixed(5).replace('.',','), "0"]; ex.forEach(k => { var v = f.properties ? f.properties[k] : ""; row.push(v ? String(v).replace(/;/g, ',').replace(/\n/g, ' ') : ""); }); csv += row.join(";") + "\n"; } catch(e){} }); }
+            dwn("Relatorio.csv", csv, "text/csv;charset=utf-8;");
+        }
+
+        function baixarDXF() {
+            var hRtk = memoria.lon.length > 0; var hShp = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel); var hCad = false; cadLayerGroup.eachLayer(() => hCad = true);
+            if (!hRtk && !hShp && !hCad) return; var epsgD = (document.getElementById('out-formato').value === 'utm') ? obterEpsgEntrada() : "+proj=longlat +datum=WGS84 +no_defs"; var dxf = "0\nSECTION\n2\nENTITIES\n";
+            if (hRtk) { var pts = obterCoordenadasSaida(); dxf += "0\nPOLYLINE\n8\nLEVANTAMENTO\n66\n1\n70\n1\n62\n5\n"; pts.forEach(p => dxf += `0\nVERTEX\n8\nLEVANTAMENTO\n10\n${p.x.toFixed(4)}\n20\n${p.y.toFixed(4)}\n30\n${p.z}\n`); dxf += "0\nSEQEND\n"; pts.forEach(p => { dxf += `0\nPOINT\n8\nPONTOS\n10\n${p.x.toFixed(4)}\n20\n${p.y.toFixed(4)}\n30\n${p.z}\n`; dxf += `0\nTEXT\n8\nTEXTOS\n10\n${p.x.toFixed(4)}\n20\n${(p.y+1.5).toFixed(4)}\n30\n${p.z}\n40\n1.5\n1\n${p.nome}\n72\n1\n11\n${p.x.toFixed(4)}\n21\n${(p.y+1.5).toFixed(4)}\n31\n${p.z}\n73\n2\n`; }); }
+            if (hCad) { cadLayerGroup.eachLayer(l => { if (l instanceof L.Marker || l instanceof L.CircleMarker) { var p = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgD, [l.getLatLng().lng, l.getLatLng().lat]); dxf += `0\nPOINT\n8\nCAD\n10\n${p[0].toFixed(4)}\n20\n${p[1].toFixed(4)}\n30\n0\n`; } else if (l instanceof L.Polygon || l instanceof L.Polyline) { dxf += "0\nPOLYLINE\n8\nCAD\n66\n1\n70\n1\n62\n2\n"; l.getLatLngs()[0].forEach(ll => { var p = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgD, [ll.lng, ll.lat]); dxf += `0\nVERTEX\n8\nCAD\n10\n${p[0].toFixed(4)}\n20\n${p[1].toFixed(4)}\n30\n0\n`; }); dxf += "0\nSEQEND\n"; } }); }
+            if (hShp) { obterRecorte().forEach(f => { extractRings(f.geometry.coordinates, f.geometry.type).forEach(r => { dxf += "0\nPOLYLINE\n8\nBASE_SHP\n66\n1\n70\n1\n62\n3\n"; r.forEach(c => { var p = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgD, [c[0], c[1]]); dxf += `0\nVERTEX\n8\nBASE_SHP\n10\n${p[0].toFixed(4)}\n20\n${p[1].toFixed(4)}\n30\n0\n`; }); dxf += "0\nSEQEND\n"; }); }); }
+            dwn("Projeto_CAD.dxf", dxf + "0\nENDSEC\n0\nEOF", "application/dxf");
         }
 
         // ==========================================
-        // SISTEMA DOCGEO - GERAÇÃO AUTOMÁTICA DE LAUDOS E MEMORIAIS
+        // DOCGEO (GERAÇÃO AUTOMÁTICA)
         // ==========================================
         function calcAzDist(x1, y1, x2, y2) {
-            var dx = x2 - x1; 
-            var dy = y2 - y1; 
-            var dist = Math.sqrt(dx*dx + dy*dy);
-            
-            var az = Math.atan2(dx, dy) * (180 / Math.PI); 
-            if (az < 0) az += 360;
-            
-            var d = Math.floor(az); 
-            var m = Math.floor((az - d) * 60); 
-            var s = (((az - d) * 60) - m) * 60;
-            
+            var dx = x2 - x1, dy = y2 - y1, dist = Math.sqrt(dx*dx + dy*dy), az = Math.atan2(dx, dy) * (180 / Math.PI); if (az < 0) az += 360;
+            var d = Math.floor(az), m = Math.floor((az - d) * 60), s = (((az - d) * 60) - m) * 60;
             return { dist: dist.toFixed(2), az: `${d}° ${m.toString().padStart(2, '0')}' ${s.toFixed(2).padStart(5, '0')}"` };
         }
 
         function gerarDocumento(tipo) {
-            if (memoria.lon.length < 3) { alert("IMPORTANTE: O sistema DocGEO necessita que um polígono fechado de pelo menos 3 vértices esteja processado na aba 'Vértices'."); return; }
-
-            // Resgata variáveis digitadas pelo usuário (auto-salvas)
-            var propNome = document.getElementById('prop-nome').value || ".......................................................";
-            var propCpf = document.getElementById('prop-cpf').value || "...................................";
-            var propImovel = document.getElementById('prop-imovel').value || ".......................................................";
-            var propMun = document.getElementById('prop-mun').value || "...................................";
-            var propMat = document.getElementById('prop-mat').value || "...................................";
-            var propConf = document.getElementById('prop-conf').value || "...................................";
-            
-            var tecNome = document.getElementById('tec-nome').value || ".......................................................";
-            var tecForm = document.getElementById('tec-formacao').value || "...................................";
-            var tecReg = document.getElementById('tec-reg').value || "...................................";
-            var tecIncra = document.getElementById('tec-incra').value || "...................................";
-            var tecCpf = document.getElementById('tec-cpf').value || "...................................";
-
-            var areaHa = (ultimaAreaCalculada / 10000).toFixed(4).replace('.', ',');
-            var area = ultimaAreaCalculada.toFixed(2).replace('.', ','); 
-            var perim = ultimoPerimetroCalculado.toFixed(2).replace('.', ',');
-            
-            var m = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-            var d = new Date(); 
-            var dataStr = `${d.getDate()} de ${m[d.getMonth()]} de ${d.getFullYear()}`;
-
-            // Padroniza a Tabela do Doc para UTM na Zona escolhida pelo usuário (Independente da importação)
-            var epsgZona = document.getElementById('main-zona').value;
-            var epsgHemi = document.getElementById('main-hemi').value === 'S' ? '+south' : '';
-            var epsgUTM = `+proj=utm +zone=${epsgZona} ${epsgHemi} +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs`;
-            
-            var coords = [];
-            for(var i=0; i<memoria.lon.length; i++) {
-                var c = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgUTM, [memoria.lon[i], memoria.lat[i]]);
-                coords.push({x: c[0], y: c[1], z: memoria.cotas[i]});
-            }
+            if (memoria.lon.length < 3) { alert("Polígono ausente. Importe os vértices primeiro."); return; }
+            var propNome = document.getElementById('prop-nome').value || "...", propCpf = document.getElementById('prop-cpf').value || "...", propImovel = document.getElementById('prop-imovel').value || "...", propMun = document.getElementById('prop-mun').value || "...", propMat = document.getElementById('prop-mat').value || "...", propConf = document.getElementById('prop-conf').value || "...";
+            var tecNome = document.getElementById('tec-nome').value || "...", tecForm = document.getElementById('tec-formacao').value || "...", tecReg = document.getElementById('tec-reg').value || "...", tecIncra = document.getElementById('tec-incra').value || "...", tecCpf = document.getElementById('tec-cpf').value || "...";
+            var areaHa = (ultimaAreaCalculada / 10000).toFixed(4).replace('.', ','), area = ultimaAreaCalculada.toFixed(2).replace('.', ','), perim = ultimoPerimetroCalculado.toFixed(2).replace('.', ',');
+            var dM = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"], data = new Date(), dataStr = `${data.getDate()} de ${dM[data.getMonth()]} de ${data.getFullYear()}`;
+            var eZone = document.getElementById('main-zona').value, eHemi = document.getElementById('main-hemi').value === 'S' ? '+south' : '', eUTM = `+proj=utm +zone=${eZone} ${eHemi} +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs`;
+            var coords = []; for(var i=0; i<memoria.lon.length; i++) { var c = proj4("+proj=longlat +datum=WGS84 +no_defs", eUTM, [memoria.lon[i], memoria.lat[i]]); coords.push({x: c[0], y: c[1], z: memoria.cotas[i]}); }
 
             var html = "";
 
             if (tipo === 'memorial') {
-                html += `
-                    <div class="doc-page">
-                        <h2>MEMORIAL DESCRITIVO TÉCNICO</h2>
-                        <table class="doc-table" style="margin-bottom:30px;">
-                            <tr><td style="text-align:left;"><strong>Proprietário:</strong> ${propNome}</td><td style="text-align:left;"><strong>Área Total:</strong> ${areaHa} ha (${area} m²)</td></tr>
-                            <tr><td style="text-align:left;"><strong>Imóvel/Gleba:</strong> ${propImovel}</td><td style="text-align:left;"><strong>Perímetro:</strong> ${perim} m</td></tr>
-                            <tr><td style="text-align:left;"><strong>Município/UF:</strong> ${propMun}</td><td style="text-align:left;"><strong>Matrícula/CCIR:</strong> ${propMat}</td></tr>
-                        </table>
-                        
-                        <p style="text-align: justify; text-indent: 35px; line-height: 1.8;">Inicia-se a descrição do perímetro no vértice <strong>${memoria.nomes[0]}</strong>, de coordenadas UTM Planas N <strong>${coords[0].y.toFixed(3).replace('.',',')} m</strong> e E <strong>${coords[0].x.toFixed(3).replace('.',',')} m</strong>, referenciadas ao Meridiano Central do fuso ${epsgZona}, Datum SIRGAS 2000, com altitude ortométrica/geométrica de <strong>${coords[0].z.toFixed(2).replace('.',',')} m</strong>; deste, segue com os seguintes azimutes topográficos e distâncias horizontais, confrontando sequencialmente com ${propConf}:</p>`;
-                
+                html += `<div class="doc-page"><h2>MEMORIAL DESCRITIVO TÉCNICO</h2><table class="doc-table" style="margin-bottom:30px;"><tr><td style="text-align:left;"><strong>Proprietário:</strong> ${propNome}</td><td style="text-align:left;"><strong>Área Total:</strong> ${areaHa} ha (${area} m²)</td></tr><tr><td style="text-align:left;"><strong>Imóvel/Gleba:</strong> ${propImovel}</td><td style="text-align:left;"><strong>Perímetro:</strong> ${perim} m</td></tr><tr><td style="text-align:left;"><strong>Município/UF:</strong> ${propMun}</td><td style="text-align:left;"><strong>Matrícula:</strong> ${propMat}</td></tr></table>
+                        <p style="text-align: justify; text-indent: 35px; line-height: 1.8;">Inicia-se a descrição do perímetro no vértice <strong>${memoria.nomes[0]}</strong>, de coordenadas UTM Planas N <strong>${coords[0].y.toFixed(3).replace('.',',')} m</strong> e E <strong>${coords[0].x.toFixed(3).replace('.',',')} m</strong>, referenciadas ao Meridiano Central do fuso ${eZone}, Datum SIRGAS 2000, com altitude de <strong>${coords[0].z.toFixed(2).replace('.',',')} m</strong>; deste, segue com os seguintes azimutes e distâncias, confrontando sequencialmente com ${propConf}:</p>`;
                 var tb = `<table class="doc-table"><thead><tr><th>Vértice</th><th>Azimute (Plano)</th><th>Distância (m)</th><th>Coord Este (X)</th><th>Coord Norte (Y)</th><th>Cota (Z)</th></tr></thead><tbody>`;
-
                 for (var i = 0; i < coords.length; i++) {
-                    var p1 = i; var p2 = (i + 1) % coords.length;
-                    var calc = calcAzDist(coords[p1].x, coords[p1].y, coords[p2].x, coords[p2].y);
+                    var p1 = i, p2 = (i + 1) % coords.length, calc = calcAzDist(coords[p1].x, coords[p1].y, coords[p2].x, coords[p2].y);
                     html += `<p style="text-align: justify; margin: 6px 0; line-height: 1.6;">Do vértice <strong>${memoria.nomes[p1]}</strong> ao vértice <strong>${memoria.nomes[p2]}</strong>, com azimute de <strong>${calc.az}</strong> e distância de <strong>${calc.dist.replace('.',',')} m</strong>, atingindo as coordenadas N <strong>${coords[p2].y.toFixed(3).replace('.',',')} m</strong> e E <strong>${coords[p2].x.toFixed(3).replace('.',',')} m</strong>.</p>`;
                     tb += `<tr><td><strong>${memoria.nomes[p1]}</strong></td><td>${calc.az}</td><td>${calc.dist.replace('.',',')}</td><td>${coords[p1].x.toFixed(3).replace('.',',')}</td><td>${coords[p1].y.toFixed(3).replace('.',',')}</td><td>${coords[p1].z.toFixed(2).replace('.',',')}</td></tr>`;
                 }
-
-                html += `<p style="text-align: justify; text-indent: 35px; margin-top: 20px; line-height: 1.8;">Chegando novamente ao vértice <strong>${memoria.nomes[0]}</strong>, ponto inicial desta descrição, fechando assim o polígono delimitador da referida propriedade.</p>`;
-                
-                html += `<br><h3 style="font-size:12pt; margin-top:20px; border-bottom:1px solid #000; padding-bottom:5px;">Tabela Analítica Consolidada</h3>` + tb + `</tbody></table>`;
-                
-                html += `
-                        <div class="assinatura-box">
-                            <p>_______________________________________________________</p>
-                            <p style="font-size:12pt;"><strong>${tecNome}</strong><br>${tecForm}<br>Registro: ${tecReg} | INCRA: ${tecIncra}</p>
-                            <p style="margin-top:20px;">${propMun.split('-')[0].trim()}, ${dataStr}.</p>
-                        </div>
-                    </div>`;
-            }
-            else if (tipo === 'laudo') {
-                html += `
-                    <div class="doc-page">
-                        <h2>LAUDO TÉCNICO DE CONSTATAÇÃO DE LIMITES E CONFRONTAÇÕES</h2>
-                        
-                        <p style="text-align: justify; text-indent: 35px; margin-top:50px; line-height: 2;">Eu, <strong>${tecNome}</strong>, brasileiro(a), profissional habilitado sob o título de <strong>${tecForm}</strong>, inscrito no CPF sob o nº <strong>${tecCpf}</strong> e regularmente registrado no conselho de classe sob o nº <strong>${tecReg}</strong>, na qualidade de responsável técnico pelo georreferenciamento, <strong>DECLARO</strong> para os devidos fins legais, administrativos e de registro, e sob as penas da lei (art. 299 do Código Penal), que procedi pessoalmente o levantamento topográfico planialtimétrico e a demarcação dos limites do imóvel rural/urbano denominado <strong>${propImovel}</strong>, de propriedade ou posse de <strong>${propNome}</strong>, situado no município de <strong>${propMun}</strong>.</p>
-                        
-                        <p style="text-align: justify; text-indent: 35px; margin-top:30px; line-height: 2;"><strong>ATESTO E CERTIFICO</strong> que os limites e confrontações descritos na Planta Técnica e no Memorial Descritivo anexos refletem fielmente a realidade física <em>in loco</em> verificada na presente data, perfazendo uma área territorial total fechada de <strong>${areaHa} hectares</strong> (${area} metros quadrados) e um perímetro de <strong>${perim} metros</strong>.</p>
-                        
-                        <p style="text-align: justify; text-indent: 35px; margin-top:30px; line-height: 2;">Declaro ainda que a medição e os trabalhos técnicos respeitaram estritamente as divisas consolidadas antigas, muros, cercas vivas/aramadas e acidentes geográficos naturais. Confirmo que houve o reconhecimento das divisas pelos confrontantes, não constando, até a emissão deste laudo, nenhuma sobreposição física aparente ou litígio judicial/extrajudicial conhecido em relação ao polígono delimitado.</p>
-                        
-                        <div class="assinatura-box" style="margin-top:150px;">
-                            <p>_______________________________________________________</p>
-                            <p style="font-size:12pt;"><strong>${tecNome}</strong><br>Resp. Técnico: ${tecReg}</p>
-                            <p style="margin-top:20px;">${propMun.split('-')[0].trim()}, ${dataStr}.</p>
-                        </div>
-                    </div>`;
-            }
-            else if (tipo === 'anuencia') {
-                html += `
-                    <div class="doc-page" style="page-break-after: always;">
-                        <h2>CARTA DE ANUÊNCIA DE CONFRONTANTES (TERMO DE CONCORDÂNCIA)</h2>
-                        
-                        <p style="text-align: justify; text-indent: 35px; margin-top:40px; line-height: 2;">Nós, abaixo assinados, na qualidade de legítimos proprietários e/ou possuidores dos imóveis confrontantes e vizinhos diretos com a área pertencente a <strong>${propNome}</strong>, inscrito no CPF/CNPJ <strong>${propCpf}</strong>, correspondente ao imóvel e benfeitorias denominados <strong>${propImovel}</strong>, localizado no município de <strong>${propMun}</strong>.</p>
-                        
-                        <p style="text-align: justify; text-indent: 35px; margin-top:30px; line-height: 2;"><strong>DECLARAMOS E CERTIFICAMOS</strong> expressamente, nos exatos termos exigidos pela legislação civil e de registros públicos vigente (Lei 10.931/04 e congêneres), que acompanhamos a vistoria e a medição das divisas realizada pelo responsável técnico <strong>${tecNome}</strong> (Registro: ${tecReg}), e <strong>CONCORDAMOS PLENAMENTE</strong> com os limites físicos apurados, os marcos topográficos cravados, os azimutes e as metragens constantes na Planta e no Memorial que descrevem a divisa das nossas propriedades.</p>
-                        
-                        <p style="text-align: justify; text-indent: 35px; margin-top:30px; line-height: 2;">Por ser expressão da verdade e por não haver qualquer oposição, esbulho, reivindicação ou litígio sobre a referida linha limítrofe, firmamos o presente termo em caráter irrevogável e irretratável para que surta seus efeitos legais e jurídicos perante os Cartórios de Registro de Imóveis, Prefeituras e demais Órgãos Governamentais.</p>
-                        
-                        <table class="doc-table" style="margin-top: 60px; line-height: 2.5;">
-                            <thead><tr><th width="40%">Nome Completo do Confrontante</th><th width="20%">CPF / RG</th><th width="40%">Assinatura (Reconhecer Firma)</th></tr></thead>
-                            <tbody>
-                                <tr><td style="height:60px;"></td><td></td><td></td></tr>
-                                <tr><td style="height:60px;"></td><td></td><td></td></tr>
-                                <tr><td style="height:60px;"></td><td></td><td></td></tr>
-                                <tr><td style="height:60px;"></td><td></td><td></td></tr>
-                            </tbody>
-                        </table>
-                        
-                        <div class="assinatura-box" style="margin-top:100px;">
-                            <p>${propMun.split('-')[0].trim()}, ${dataStr}.</p>
-                        </div>
-                    </div>`;
-            }
-            else if (tipo === 'requerimento') {
-                html += `
-                    <div class="doc-page">
-                        <h2>REQUERIMENTO OFICIAL DE REGULARIZAÇÃO</h2>
-                        
-                        <p style="text-align: justify; margin-top:40px; font-size:12pt;"><strong>Ao Órgão Competente / Oficial do Cartório de Registro de Imóveis de ${propMun.split('-')[0].trim()}</strong>,</p><br>
-                        
-                        <p style="text-align: justify; text-indent: 35px; line-height: 2;"><strong>${propNome}</strong>, inscrito(a) no CPF/CNPJ sob o nº <strong>${propCpf}</strong>, doravante denominado simplesmente Requerente, na qualidade de legítimo(a) proprietário(a) / possuidor(a) do imóvel rural/urbano denominado <strong>${propImovel}</strong>, registrado sob o número de matrícula/CCIR <strong>${propMat}</strong>, vem mui respeitosamente à presença de Vossa Senhoria <strong>REQUERER</strong> a análise técnica, averbação, retificação de área e/ou aprovação do levantamento topográfico planialtimétrico anexo.</p>
-                        
-                        <p style="text-align: justify; text-indent: 35px; margin-top:30px; line-height: 2;">O presente levantamento técnico georreferenciado foi rigorosamente executado pelo profissional capacitado <strong>${tecNome}</strong> (CREA/CFT: ${tecReg} | INCRA: ${tecIncra}), resultando em uma área apurada de <strong>${area} m²</strong> (equivalente a ${areaHa} hectares), medidas estas que refletem a realidade física do terreno e respeitam integralmente os direitos de todos os confrontantes.</p>
-                        
-                        <p style="text-align: justify; text-indent: 35px; margin-top:30px; line-height: 2;">Para fundamentar o presente pedido, anexam-se a este requerimento: a Planta/Croqui assinada, o Memorial Descritivo Técnico, o Laudo de Constatação, as Cartas de Anuência (quando aplicável) e a respectiva Anotação/Termo de Responsabilidade Técnica (ART/TRT) devidamente quitada.</p>
-                        
-                        <p style="text-align: justify; text-indent: 35px; margin-top:30px; line-height: 2; font-weight: bold;">Nestes termos jurídicos e administrativos, pede e aguarda deferimento.</p>
-                        
-                        <div class="assinatura-box" style="margin-top:120px;">
-                            <p>_______________________________________________________</p>
-                            <p style="font-size:12pt;"><strong>${propNome}</strong><br>Requerente / Proprietário do Imóvel</p>
-                            <p style="margin-top:20px;">${propMun.split('-')[0].trim()}, ${dataStr}.</p>
-                        </div>
-                    </div>`;
-            }
-            else if (tipo === 'croqui') {
-                document.getElementById('doc-render-area').innerHTML = `<div style="display:flex; justify-content:center; align-items:center; height:100vh;"><h2 style="color:white; text-align:center; padding: 20px; background: #333; border-radius: 8px;">📸 Processando Motor Gráfico e Gerando Planta do Croqui... Por favor, Aguarde.</h2></div>`;
+                html += `<p style="text-align: justify; text-indent: 35px; margin-top: 20px; line-height: 1.8;">Chegando novamente ao vértice <strong>${memoria.nomes[0]}</strong>, fechando assim o polígono delimitador.</p><br><h3 style="font-size:12pt;">Tabela Analítica Consolidada</h3>` + tb + `</tbody></table>
+                        <div class="assinatura-box"><p>_______________________________________________________</p><p><strong>${tecNome}</strong><br>${tecForm}<br>Registro: ${tecReg} | INCRA: ${tecIncra}</p><p>${propMun.split('-')[0].trim()}, ${dataStr}.</p></div></div>`;
+            } else if (tipo === 'laudo') {
+                html += `<div class="doc-page"><h2>LAUDO TÉCNICO DE CONSTATAÇÃO DE LIMITES</h2><p style="text-align: justify; text-indent: 35px; margin-top:50px; line-height: 2;">Eu, <strong>${tecNome}</strong>, profissional habilitado sob o título de <strong>${tecForm}</strong>, CPF <strong>${tecCpf}</strong> e registrado no conselho de classe sob o nº <strong>${tecReg}</strong>, <strong>DECLARO</strong> para os devidos fins que procedi o levantamento topográfico e a demarcação dos limites do imóvel denominado <strong>${propImovel}</strong>, propriedade de <strong>${propNome}</strong>, situado em <strong>${propMun}</strong>.</p><p style="text-align: justify; text-indent: 35px; margin-top:30px; line-height: 2;"><strong>ATESTO E CERTIFICO</strong> que os limites refletem fielmente a realidade <em>in loco</em>, perfazendo uma área de <strong>${areaHa} ha</strong> (${area} m²) e perímetro de <strong>${perim} metros</strong>.</p><p style="text-align: justify; text-indent: 35px; margin-top:30px; line-height: 2;">Declaro ainda que a medição respeitou as divisas consolidadas, não constando sobreposição física aparente ou litígio judicial conhecido.</p><div class="assinatura-box" style="margin-top:150px;"><p>_______________________________________________________</p><p><strong>${tecNome}</strong><br>Resp. Técnico: ${tecReg}</p><p>${propMun.split('-')[0].trim()}, ${dataStr}.</p></div></div>`;
+            } else if (tipo === 'anuencia') {
+                html += `<div class="doc-page"><h2>CARTA DE ANUÊNCIA DE CONFRONTANTES</h2><p style="text-align: justify; text-indent: 35px; margin-top:40px; line-height: 2;">Nós, proprietários confrontantes da área pertencente a <strong>${propNome}</strong>, CPF/CNPJ <strong>${propCpf}</strong>, imóvel <strong>${propImovel}</strong>, município de <strong>${propMun}</strong>.</p><p style="text-align: justify; text-indent: 35px; margin-top:30px; line-height: 2;"><strong>DECLARAMOS</strong> que acompanhamos a medição realizada por <strong>${tecNome}</strong> (Registro: ${tecReg}), e <strong>CONCORDAMOS PLENAMENTE</strong> com os limites físicos apurados, os marcos cravados e metragens constantes na Planta.</p><table class="doc-table" style="margin-top: 60px; line-height: 2.5;"><thead><tr><th width="40%">Nome Completo do Confrontante</th><th width="20%">CPF / RG</th><th width="40%">Assinatura (Reconhecer Firma)</th></tr></thead><tbody><tr><td style="height:60px;"></td><td></td><td></td></tr><tr><td style="height:60px;"></td><td></td><td></td></tr><tr><td style="height:60px;"></td><td></td><td></td></tr></tbody></table><div class="assinatura-box" style="margin-top:100px;"><p>${propMun.split('-')[0].trim()}, ${dataStr}.</p></div></div>`;
+            } else if (tipo === 'requerimento') {
+                html += `<div class="doc-page"><h2>REQUERIMENTO OFICIAL DE REGULARIZAÇÃO</h2><p style="text-align: justify; margin-top:40px; font-size:12pt;"><strong>Ao Órgão Competente / Cartório de Registro de ${propMun.split('-')[0].trim()}</strong>,</p><br><p style="text-align: justify; text-indent: 35px; line-height: 2;"><strong>${propNome}</strong>, CPF/CNPJ <strong>${propCpf}</strong>, proprietário(a) do imóvel <strong>${propImovel}</strong>, matrícula <strong>${propMat}</strong>, vem <strong>REQUERER</strong> a averbação e retificação de área do levantamento anexo.</p><p style="text-align: justify; text-indent: 35px; margin-top:30px; line-height: 2;">O levantamento foi executado pelo profissional <strong>${tecNome}</strong> (CREA/CFT: ${tecReg}), resultando em uma área apurada de <strong>${area} m²</strong> (${areaHa} ha).</p><p style="text-align: justify; text-indent: 35px; margin-top:30px; line-height: 2;">Nestes termos, pede deferimento.</p><div class="assinatura-box" style="margin-top:120px;"><p>_______________________________________________________</p><p><strong>${propNome}</strong><br>Requerente</p><p>${propMun.split('-')[0].trim()}, ${dataStr}.</p></div></div>`;
+            } else if (tipo === 'croqui') {
+                document.getElementById('doc-render-area').innerHTML = `<h2 style="color:white; text-align:center; padding: 20px;">📸 Gerando Planta do Croqui... Aguarde.</h2>`;
                 document.getElementById('doc-preview-container').style.display = 'block';
-                
-                // Desliga controles da UI do Leaflet para a foto ficar limpa (Sem botões de zoom e layers)
                 document.querySelector('.leaflet-control-container').style.display = 'none';
-
-                // Usando HTML2Canvas com CORS ativado para pegar o TileLayer (Mapa)
-                html2canvas(document.getElementById('map'), { useCORS: true, allowTaint: true }).then(canvas => {
-                    // Liga de volta
+                html2canvas(document.getElementById('map'), { useCORS: true }).then(canvas => {
                     document.querySelector('.leaflet-control-container').style.display = 'block';
-                    
-                    var imgData = canvas.toDataURL("image/png");
-                    
-                    // Monta a Tabela Lateral do Croqui (Apenas os primeiros 35 vértices para caber na folha A4)
                     var tab = `<table class="doc-table" style="font-size:7pt; margin-top:0;"><thead><tr><th>Vértice</th><th>Coord E (X)</th><th>Coord N (Y)</th><th>Azimute</th><th>Dist(m)</th></tr></thead><tbody>`;
-                    var limit = Math.min(coords.length, 35); 
-                    for(var i=0; i<limit; i++) {
-                        var c = calcAzDist(coords[i].x, coords[i].y, coords[(i+1)%coords.length].x, coords[(i+1)%coords.length].y);
-                        tab += `<tr><td>${memoria.nomes[i]}</td><td>${coords[i].x.toFixed(2)}</td><td>${coords[i].y.toFixed(2)}</td><td>${c.az.split(' ')[0]}</td><td>${c.dist}</td></tr>`;
-                    }
-                    tab += `</tbody></table>`;
-                    
-                    if (coords.length > 35) tab += `<p style="font-size:7pt; text-align:center;"><em>(Lista de coordenadas truncada para exibição. Ver Memorial Anexo.)</em></p>`;
-
-                    var final = `
-                        <div class="doc-page" style="display:flex; flex-direction:column; padding:10mm; min-height: 297mm; height: 297mm;">
-                            <h2 style="font-size:14pt; margin-bottom:15px; border-bottom: 3px solid #000;">PLANTA DE LEVANTAMENTO TOPOGRÁFICO</h2>
-                            
-                            <div style="flex-grow:1; position:relative; border:3px solid #000; padding:2px; height: 50%;">
-                                <img src="${imgData}" style="width:100%; height:100%; object-fit:cover;">
-                                
-                                <div style="position:absolute; top:15px; right:15px; width:50px; height:50px; background:white; border:2px solid #000; text-align:center; line-height:50px; font-weight:bold; font-size:18px; border-radius:50%; box-shadow:3px 3px 10px rgba(0,0,0,0.6);">N▲</div>
-                                <div style="position:absolute; bottom:10px; left:10px; background:rgba(255,255,255,0.9); border:1px solid #000; padding:4px 8px; font-size:9pt; font-weight:bold;">SISTEMA: UTM - SIRGAS 2000 - FUSO ${epsgZona}${epsgHemi}</div>
+                    for(var i=0; i<Math.min(coords.length, 35); i++) { var c = calcAzDist(coords[i].x, coords[i].y, coords[(i+1)%coords.length].x, coords[(i+1)%coords.length].y); tab += `<tr><td>${memoria.nomes[i]}</td><td>${coords[i].x.toFixed(2)}</td><td>${coords[i].y.toFixed(2)}</td><td>${c.az.split(' ')[0]}</td><td>${c.dist}</td></tr>`; } tab += `</tbody></table>`;
+                    var final = `<div class="doc-page" style="display:flex; flex-direction:column; padding:10mm; min-height: 297mm;">
+                        <h2 style="font-size:14pt; margin-bottom:15px; border-bottom: 3px solid #000;">PLANTA DE LEVANTAMENTO TOPOGRÁFICO</h2>
+                        <div style="flex-grow:1; position:relative; border:3px solid #000; padding:2px; height: 50%;">
+                            <img src="${canvas.toDataURL("image/png")}" style="width:100%; height:100%; object-fit:cover;">
+                            <div style="position:absolute; top:15px; right:15px; width:40px; height:40px; background:white; border:2px solid #000; text-align:center; line-height:40px; font-weight:bold;">N▲</div>
+                        </div>
+                        <div style="display:flex; gap:15px; margin-top:15px; height: 35%;">
+                            <div style="flex:1.2; overflow:hidden;">${tab}</div>
+                            <div style="flex:1.8;" class="selo-croqui">
+                                <div style="grid-column: span 3; text-align:center; font-weight:bold; font-size:11pt; border-bottom:2px solid #000; padding-bottom:5px;">INFORMAÇÕES E RESPONSABILIDADES</div>
+                                <div><strong>Imóvel:</strong></div><div style="grid-column: span 2">${propImovel}</div><div><strong>Proprietário:</strong></div><div style="grid-column: span 2">${propNome}</div><div><strong>Município:</strong></div><div style="grid-column: span 2">${propMun}</div><div><strong>Área:</strong></div><div style="grid-column: span 2">${areaHa} ha</div>
+                                <div style="grid-column: span 3; border-top:1px dashed #000; margin-top: 5px;"></div>
+                                <div><strong>Técnico:</strong></div><div style="grid-column: span 2">${tecNome} - ${tecReg}</div>
+                                <div style="grid-column: span 3; text-align:center; margin-top:20px;">____________________________________<br>Assinatura Responsável</div>
                             </div>
-                            
-                            <div style="display:flex; gap:15px; margin-top:15px; height: 35%;">
-                                <div style="flex:1.2; overflow:hidden;">${tab}</div>
-                                
-                                <div style="flex:1.8;" class="selo-croqui">
-                                    <div style="grid-column: span 3; text-align:center; font-weight:bold; font-size:12pt; border-bottom:2px solid #000; padding-bottom:8px; margin-bottom: 5px;">INFORMAÇÕES E RESPONSABILIDADES TÉCNICAS</div>
-                                    
-                                    <div><strong>Imóvel/Local:</strong></div><div style="grid-column: span 2">${propImovel}</div>
-                                    <div><strong>Proprietário:</strong></div><div style="grid-column: span 2">${propNome}</div>
-                                    <div><strong>Município:</strong></div><div style="grid-column: span 2">${propMun}</div>
-                                    <div><strong>Matrícula:</strong></div><div style="grid-column: span 2">${propMat}</div>
-                                    <div><strong>Área Apurada:</strong></div><div style="grid-column: span 2">${areaHa} hectares (${area} m²)</div>
-                                    <div><strong>Perímetro:</strong></div><div style="grid-column: span 2">${perim} metros</div>
-                                    
-                                    <div style="grid-column: span 3; border-top:1px dashed #000; margin-top: 5px; padding-top: 5px;"></div>
-                                    
-                                    <div><strong>Técnico:</strong></div><div style="grid-column: span 2">${tecNome}</div>
-                                    <div><strong>Formação:</strong></div><div style="grid-column: span 2">${tecForm}</div>
-                                    <div><strong>Registro (CFT):</strong></div><div style="grid-column: span 2">${tecReg}</div>
-                                    
-                                    <div style="grid-column: span 3; text-align:center; margin-top:35px;">
-                                        __________________________________________________<br>Assinatura do Profissional Responsável<br>
-                                        <span style="font-size:8pt;">Data de Emissão: ${dataStr}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`;
-                    
+                        </div></div>`;
                     document.getElementById('doc-render-area').innerHTML = final;
-                }).catch(e => { 
-                    alert("Erro interno ao capturar o mapa 3D/Satélite. Dica: Algumas camadas de satélite do Google bloqueiam a impressão (CORS). Tente mudar o mapa base para 'Tema CAD Dark' e gerar o Croqui novamente."); 
-                    document.querySelector('.leaflet-control-container').style.display = 'block'; 
-                });
-                return;
+                }).catch(e => { alert("Erro de CORS no Canvas. Use o Tema CAD Escuro antes de gerar o Croqui."); document.querySelector('.leaflet-control-container').style.display = 'block'; }); return;
             }
-
-            // Exibir a Div Principal de Preview com o HTML Gerado
-            document.getElementById('doc-render-area').innerHTML = html;
-            document.getElementById('doc-preview-container').style.display = 'block';
-        }
-
-        // Função para Fechar o Preview de Impressão e voltar ao sistema
-        function fecharPreview() {
-            document.getElementById('doc-preview-container').style.display = 'none';
-            document.getElementById('doc-render-area').innerHTML = ''; // Limpar memória DOM
-        }
-
-        // ==========================================
-        // RÉGUA E FERRAMENTAS DO MAPA LIVRE
-        // ==========================================
-        var modoRegua = false; 
-        var reguaLayer = L.featureGroup().addTo(map); 
-        var reguaPts = []; 
-        var reguaLinha = null;
-        
-        function toggleRegua() {
-            modoRegua = !modoRegua; 
-            var btn = document.getElementById('btn-regua');
-            if(modoRegua) { 
-                btn.style.background = 'var(--warning)'; 
-                btn.style.color = '#000'; 
-                map.on('click', onClickRegua); 
-            } else { 
-                btn.style.background = '#333'; 
-                btn.style.color = 'white'; 
-                map.off('click', onClickRegua); 
-                reguaLayer.clearLayers(); 
-                reguaPts = []; 
-                reguaLinha = null; 
-            }
-        }
-        
-        function onClickRegua(e) {
-            reguaPts.push(e.latlng); 
-            L.circleMarker(e.latlng, {radius: 4, color: '#f59e0b', fillColor: '#fff', fillOpacity: 1}).addTo(reguaLayer);
-            
-            if(reguaPts.length > 1) {
-                if(reguaLinha) reguaLayer.removeLayer(reguaLinha);
-                
-                reguaLinha = L.polyline(reguaPts, {color: '#f59e0b', weight: 3, dashArray: '5, 5'}).addTo(reguaLayer);
-                
-                // Calcula a distância acumulada de todos os segmentos
-                var dist = 0; 
-                for(var i=0; i<reguaPts.length-1; i++) {
-                    dist += map.distance(reguaPts[i], reguaPts[i+1]);
-                }
-                
-                L.marker(e.latlng, {opacity: 0}).bindTooltip(dist.toFixed(2) + " metros", {permanent: true, direction: 'right', className: 'etiqueta-mapa'}).addTo(reguaLayer);
-            }
+            document.getElementById('doc-render-area').innerHTML = html; document.getElementById('doc-preview-container').style.display = 'block';
         }
     </script>
 </body>
