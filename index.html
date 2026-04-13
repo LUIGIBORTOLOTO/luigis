@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS v3.1 + v8.0 | Ultimate Fusion Edition MAX</title>
+    <title>LuiGIS 21:53</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -84,7 +84,7 @@
 
         .etiqueta-mapa { background: rgba(0,0,0,0.7); border: 1px solid #4fc1ff; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 3px; margin-left: 10px; box-shadow: none;}
 
-        /* CSS POPUP DO SHAPEFILE (CORREÇÃO DA IMAGEM DO USUÁRIO) */
+        /* CSS POPUP DO SHAPEFILE */
         .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--bg-card) !important; color: var(--text-light) !important; border: 1px solid var(--border); box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .leaflet-popup-content { margin: 10px; width: auto !important; min-width: 200px; }
         .popup-table { width: 100%; border-collapse: collapse; font-size: 10px; font-family: 'Inter', sans-serif; }
@@ -241,13 +241,25 @@
                     </div>
                 </div>
                 
-                <label style="display:flex; align-items:center; gap:8px; margin-top:15px; background:#1e1e1e; padding:10px; border-radius:4px; border:1px solid var(--border); cursor:pointer;">
+                <label style="display:flex; align-items:center; gap:8px; margin-top:15px; background:#1e1e1e; padding:10px; border-radius:4px; border:1px solid var(--border); cursor:pointer; justify-content:center;">
                     <input type="checkbox" id="chk-recorte" checked style="width:auto;">
                     ✂️ Exportar apenas o que está visível na tela (Clip)
                 </label>
             </div>
 
-            <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+            <div class="card" style="text-align: center;">
+                <div class="card-title">Filtrar Atributos do SHP</div>
+                <p style="font-size: 9px; color: var(--text-muted); margin: 5px 0 0 0;">O que você marcar aqui será mostrado no Pop-up e exportado no CSV/GeoJSON.</p>
+                <div style="display:flex; justify-content:center; gap: 10px; margin: 8px 0;">
+                    <button class="btn btn-outline btn-small" onclick="marcarTodasColunas(true)">Tudo</button>
+                    <button class="btn btn-outline btn-small" onclick="marcarTodasColunas(false)">Nada</button>
+                </div>
+                <div id="filtro-colunas-container" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-height: 180px; overflow-y: auto; padding: 10px; background: #121212; border: 1px solid var(--border); border-radius: 4px;">
+                    <p style="font-size: 10px; color: #555; width: 100%; text-align: center; margin: 0;">Importe um arquivo SHP/ZIP na aba CAD para ver as colunas e atributos.</p>
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:5px;">
                 <button class="btn btn-warning btn-block" onclick="baixarDXF()">📐 Exportar AutoCAD (.DXF)</button>
                 <button class="btn btn-success btn-block" onclick="baixarCSV()">📊 Exportar Tabela (.CSV)</button>
                 <button class="btn btn-purple btn-block" onclick="baixarGeoJSON()">🌍 Exportar GIS (.GeoJSON)</button>
@@ -354,7 +366,6 @@
     </div>
 
     <script>
-        // INIT MAP & GEOMAN
         var cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 22, attribution: '© CartoDB' });
         var googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20 });
         var map = L.map('map', { preserveDrawingBuffer: true, zoomControl: false, layers: [cartoDark] }).setView([-20.076, -44.225], 14);
@@ -370,29 +381,26 @@
 
         function atualizarSnap() { var active = document.getElementById('cad-snap-toggle').checked; var dist = parseInt(document.getElementById('cad-snap').value) || 20; map.pm.setGlobalOptions({ snappable: active, snapDistance: dist }); }
         
-        // NOVO: ATIVAÇÃO DIRETA DA FERRAMENTA DE MARCADOR
         function ativarDesenhoBloco() {
             var isSnap = document.getElementById('cad-snap-toggle').checked;
             var snapDist = parseInt(document.getElementById('cad-snap').value) || 20;
             map.pm.enableDraw('Marker', { snappable: isSnap, snapDistance: snapDist });
         }
 
-        // NOVO: GERADOR DE BLOCOS VETORIAIS (Árvore, Poste, Bueiro) PARA DXF
         function criarBlocoVetorial(latlng, tipo) {
-            // Conversão aproximada para metros em coordenadas geográficas
             const metrosLat = 1 / 111320;
             const metrosLng = 1 / (111320 * Math.cos(latlng.lat * Math.PI / 180));
             let pts = [];
 
             if (tipo === 'tree') {
-                for(let i=0; i<8; i++) { // Octógono (Raio 2m)
+                for(let i=0; i<8; i++) {
                     let angle = (i * 45) * Math.PI / 180;
                     pts.push([latlng.lat + (2 * Math.sin(angle) * metrosLat), latlng.lng + (2 * Math.cos(angle) * metrosLng)]);
                 }
                 return L.polygon(pts, {color: '#4caf50', weight: 2, fillColor: '#4caf50', fillOpacity: 0.4});
             }
             if (tipo === 'sewer') {
-                let r = 0.75; // Quadrado (1.5x1.5m)
+                let r = 0.75;
                 pts = [
                     [latlng.lat + r*metrosLat, latlng.lng - r*metrosLng],
                     [latlng.lat + r*metrosLat, latlng.lng + r*metrosLng],
@@ -402,7 +410,7 @@
                 return L.polygon(pts, {color: '#808080', weight: 2, fillColor: '#808080', fillOpacity: 0.6});
             }
             if (tipo === 'light') {
-                let r = 0.5; // Losango (Raio 0.5m)
+                let r = 0.5;
                 pts = [
                     [latlng.lat + r*metrosLat, latlng.lng],
                     [latlng.lat, latlng.lng + r*metrosLng],
@@ -421,8 +429,8 @@
                 if(type !== 'default') {
                     var vetorPronto = criarBlocoVetorial(layer.getLatLng(), type);
                     if(vetorPronto) {
-                        map.removeLayer(layer); // Remove o marcador padrão
-                        layer = vetorPronto;    // Substitui pelo polígono real vetorizado
+                        map.removeLayer(layer);
+                        layer = vetorPronto;
                         layer.addTo(map);
                     }
                 } else {
@@ -437,7 +445,34 @@
         var memoria = { nomes: [], cotas: [], lon: [], lat: [] };
         var gerenciadorCamadas = [];
         var camadaIdCounter = 0;
+        
+        // GESTÃO DAS COLUNAS (ATRIBUTOS SHP)
         var colunasGlobais = {}; 
+        
+        function renderizarFiltroColunas() {
+            var container = document.getElementById('filtro-colunas-container');
+            if(!container) return;
+            container.innerHTML = '';
+            var keys = Object.keys(colunasGlobais).sort();
+            if(keys.length === 0) {
+                container.innerHTML = '<p style="font-size: 10px; color: #555; width: 100%; text-align: center; margin: 0;">Nenhuma coluna carregada ainda.</p>';
+                return;
+            }
+            keys.forEach(k => {
+                var checked = colunasGlobais[k] ? 'checked' : '';
+                container.innerHTML += `<label style="display:flex; align-items:center; gap:5px; background:#1a1a1c; padding:6px 10px; border-radius:4px; border:1px solid #333; cursor:pointer; font-size:10px; color:#fff; text-transform:none; white-space:nowrap;"><input type="checkbox" onchange="atualizarColuna('${k}', this.checked)" ${checked}> ${k}</label>`;
+            });
+        }
+
+        function atualizarColuna(k, estado) {
+            colunasGlobais[k] = estado;
+        }
+
+        function marcarTodasColunas(estado) {
+            for (var k in colunasGlobais) colunasGlobais[k] = estado;
+            renderizarFiltroColunas();
+        }
+
         var ultimaAreaCalculada = 0; var ultimoPerimetroCalculado = 0;
         var datumsDef = { "WGS84": "+datum=WGS84", "SIRGAS2000": "+ellps=GRS80 +towgs84=0,0,0,0,0,0,0", "SAD69": "+ellps=aust_SA +towgs84=-66.87,4.37,-38.52,0,0,0,0" };
 
@@ -537,13 +572,12 @@
 
             ultimaAreaCalculada = 0; ultimoPerimetroCalculado = 0;
             
-            // NOVO: DESENHA A LINHA LIGANDO TODOS OS PONTOS (Mesmo se for polígono aberto)
             if(pts.length >= 2) {
                 L.polyline(pts, {color:'#0098ff', weight:2, dashArray: '5,5'}).addTo(cPoly);
             }
 
             if(pts.length >= 3) {
-                L.polygon(pts, {color:'#0098ff', weight:0, fillOpacity:0.1}).addTo(cPoly); // Apenas o preenchimento leve
+                L.polygon(pts, {color:'#0098ff', weight:0, fillOpacity:0.1}).addTo(cPoly); 
                 var a = 0, p = 0; for(var j=0; j<ptsP.length; j++) { var p1 = ptsP[j], p2 = ptsP[(j+1)%ptsP.length]; a += (p1.x * p2.y) - (p2.x * p1.y); p += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)); }
                 ultimaAreaCalculada = Math.abs(a)/2; ultimoPerimetroCalculado = p;
                 
@@ -566,19 +600,20 @@
             try { let response = await fetch(urlDownload, { headers: { 'Accept': 'application/octet-stream' } }); if (!response.ok) throw new Error("Falha no download."); let blob = await response.blob(); let fVirtual = new File([blob], nomeArquivoVisivel, { type: "application/zip" }); loading.innerText = `⏳ Processando...`; setTimeout(() => { importarShapefile({ target: { files: [fVirtual] } }); }, 200); } catch (error) { alert("Erro: " + error.message); loading.style.display = 'none'; }
         }
 
-        // NOVO: CONSTRUÇÃO CORRETA E LIMPA DO POPUP DO SHAPEFILE
+        // NOVO: CONSTRUÇÃO CORRETA E LIMPA DO POPUP COM FILTRO APLICADO
         function construirPopupCompleto(properties) {
             if (!properties) return "<p style='color:#888; font-size:10px;'>Sem dados.</p>"; 
             let html = "<div style='max-height: 250px; overflow-y: auto;'><table class='popup-table'><tbody>"; 
             let cont = 0;
             for (let key in properties) { 
+                if (colunasGlobais[key] !== true) continue; // Só renderiza se a caixa estiver marcada
                 let val = properties[key]; 
                 if(val !== null && val !== "" && String(val).trim() !== "") { 
                     html += `<tr><th>${key}</th><td>${val}</td></tr>`; 
                     cont++; 
                 } 
             }
-            if (cont === 0) return "<p>Sem colunas disponíveis.</p>"; 
+            if (cont === 0) return "<p style='color:#fff; text-align:center; padding:10px;'>Nenhum atributo marcado no filtro.</p>"; 
             return html + "</tbody></table></div>";
         }
 
@@ -591,6 +626,19 @@
         function processarGeoJSON_NoMapa(geojsonBruto, nomeOriginal, corOpcional, focarMapa) {
             const idNovaCamada = 'camada_' + camadaIdCounter++; const defaultColor = corOpcional || '#007acc';
             let geojson = reprojectGeoJSON(geojsonBruto);
+            
+            // Popula o Filtro de Colunas na Aba Exportar
+            if(geojson.features) {
+                geojson.features.forEach(f => {
+                    if(f.properties) {
+                        Object.keys(f.properties).forEach(k => {
+                            if(colunasGlobais[k] === undefined) colunasGlobais[k] = true;
+                        });
+                    }
+                });
+            }
+            renderizarFiltroColunas(); // Chama para atualizar visualmente no HTML
+
             var novaCamada = L.geoJSON(geojson, { style: { color: defaultColor, weight: 1, fillOpacity: 0.1 }, onEachFeature: function(feature, layer) { layer.bindPopup(function() { return construirPopupCompleto(feature.properties); }); } }).addTo(map);
             if (focarMapa) { map.fitBounds(novaCamada.getBounds()); }
             gerenciadorCamadas.push({ id: idNovaCamada, nome: "☁️ " + nomeOriginal, leafletLayer: novaCamada, visivel: true, tipo: 'shp', cor: defaultColor, rawGeoJSON: geojson });
@@ -643,14 +691,43 @@
         function baixarCSV() {
             var hasRtk = memoria.lon.length > 0; var hasLayers = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel);
             if (!hasRtk && !hasLayers) { alert("Sem dados."); return; }
-            var csvContent = "\uFEFFOrigem;Nome_ID;Coord_X;Coord_Y;Cota_Z\n";
-            var fmtOut = document.getElementById('out-formato').value; var epsgU = "+proj=longlat +datum=WGS84 +no_defs"; var epsgD = (fmtOut === 'utm') ? obterEpsgEntrada() : epsgU;
             
-            // NOVO: Aplica as casas decimais selecionadas pelo usuário
+            // FILTRA QUAIS COLUNAS DO SHAPEFILE VÃO ENTRAR NO CSV
+            var extras = [];
+            for (var k in colunasGlobais) { if (colunasGlobais[k]) extras.push(k); }
+
+            var headers = ["Origem", "Nome_ID", "Coord_X", "Coord_Y", "Cota_Z"].concat(extras);
+            var csvContent = "\uFEFF" + headers.join(";") + "\n";
+            
+            var fmtOut = document.getElementById('out-formato').value; var epsgU = "+proj=longlat +datum=WGS84 +no_defs"; var epsgD = (fmtOut === 'utm') ? obterEpsgEntrada() : epsgU;
             var casasDec = parseInt(document.getElementById('export-decimals').value) || 3;
 
-            if (hasRtk) { for(var i=0; i<memoria.lon.length; i++) { var c = proj4(epsgU, epsgD, [memoria.lon[i], memoria.lat[i]]); csvContent += `Base;${memoria.nomes[i]};${c[0].toFixed(casasDec).replace('.',',')};${c[1].toFixed(casasDec).replace('.',',')};${memoria.cotas[i]}\n`; } }
-            if (hasLayers) { var featuresClip = obterRecorteFeatures(); featuresClip.forEach(feat => { try { var centro = turf.centroid(feat).geometry.coordinates; var c = proj4(epsgU, epsgD, [centro[0], centro[1]]); csvContent += `SHP;Centroide;${c[0].toFixed(casasDec).replace('.',',')};${c[1].toFixed(casasDec).replace('.',',')};0\n`; } catch(e) {} }); }
+            if (hasRtk) { 
+                for(var i=0; i<memoria.lon.length; i++) { 
+                    var c = proj4(epsgU, epsgD, [memoria.lon[i], memoria.lat[i]]); 
+                    var row = ["Base_Vértices", memoria.nomes[i], c[0].toFixed(casasDec).replace('.',','), c[1].toFixed(casasDec).replace('.',','), memoria.cotas[i]];
+                    for(var e=0; e<extras.length; e++) row.push(""); // Deixa vazio nas colunas de atributos
+                    csvContent += row.join(";") + "\n"; 
+                } 
+            }
+            if (hasLayers) { 
+                var featuresClip = obterRecorteFeatures(); 
+                featuresClip.forEach(feat => { 
+                    try { 
+                        var centro = turf.centroid(feat).geometry.coordinates; 
+                        var c = proj4(epsgU, epsgD, [centro[0], centro[1]]); 
+                        var row = ["Shapefile", "Centroide", c[0].toFixed(casasDec).replace('.',','), c[1].toFixed(casasDec).replace('.',','), "0"];
+                        
+                        // PREENCHE APENAS OS ATRIBUTOS SELECIONADOS NO FILTRO
+                        extras.forEach(k => {
+                            var val = feat.properties ? feat.properties[k] : "";
+                            row.push(val !== undefined && val !== null ? String(val).replace(/;/g, ',').replace(/\n/g, ' ') : "");
+                        });
+                        
+                        csvContent += row.join(";") + "\n"; 
+                    } catch(e) {} 
+                }); 
+            }
             baixarArquivo("LuiGIS_Tabela_Exportada.csv", csvContent, "text/csv;charset=utf-8;");
         }
 
@@ -687,9 +764,34 @@
             var hasRtk = memoria.lon.length > 0; var hasLayers = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel); var hasCAD = false; cadLayerGroup.eachLayer(l => hasCAD = true);
             if (!hasRtk && !hasLayers && !hasCAD) { alert("Sem dados."); return; }
             var coords = [], features = [];
-            if (hasRtk) { for(var i=0; i<memoria.lon.length; i++) { var pt = [memoria.lon[i], memoria.lat[i], memoria.cotas[i]]; coords.push(pt); features.push({ type: "Feature", geometry: { type: "Point", coordinates: pt }, properties: { Nome: memoria.nomes[i], Origem: "RTK" } }); } if(coords.length > 2) { coords.push(coords[0]); features.push({ type: "Feature", geometry: { type: "Polygon", coordinates: [coords] }, properties: { Origem: "RTK_Perimetro" } }); } }
+            
+            if (hasRtk) { 
+                for(var i=0; i<memoria.lon.length; i++) { 
+                    var pt = [memoria.lon[i], memoria.lat[i], memoria.cotas[i]]; coords.push(pt); 
+                    features.push({ type: "Feature", geometry: { type: "Point", coordinates: pt }, properties: { Nome: memoria.nomes[i], Origem: "RTK" } }); 
+                } 
+                if(coords.length > 2) { 
+                    coords.push(coords[0]); features.push({ type: "Feature", geometry: { type: "Polygon", coordinates: [coords] }, properties: { Origem: "RTK_Perimetro" } }); 
+                } 
+            }
             if (hasCAD) cadLayerGroup.eachLayer(layer => { try { var f = layer.toGeoJSON(); f.properties = f.properties || {}; f.properties.Origem = "CAD"; features.push(f); } catch(e) {} });
-            if (hasLayers) { var featuresClip = obterRecorteFeatures(); featuresClip.forEach(f => { var newF = JSON.parse(JSON.stringify(f)); newF.properties = newF.properties || {}; newF.properties.Origem = "Shapefile"; features.push(newF); }); }
+            
+            if (hasLayers) { 
+                var featuresClip = obterRecorteFeatures(); 
+                featuresClip.forEach(f => { 
+                    var newF = JSON.parse(JSON.stringify(f)); 
+                    
+                    // APLICA O FILTRO DE COLUNAS NA EXPORTAÇÃO DO GEOJSON
+                    var propFiltrada = { Origem: "Shapefile" };
+                    if(newF.properties) {
+                        for(var k in newF.properties) {
+                            if(colunasGlobais[k]) propFiltrada[k] = newF.properties[k];
+                        }
+                    }
+                    newF.properties = propFiltrada;
+                    features.push(newF); 
+                }); 
+            }
             baixarArquivo("LuiGIS_Web.geojson", JSON.stringify({ type: "FeatureCollection", features: features }, null, 2), "application/json");
         }
 
