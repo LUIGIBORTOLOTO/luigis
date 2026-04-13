@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS v3.1 + v8.0 | Ultimate Fusion Edition</title>
+    <title>LuiGIS v3.1 + v8.0 | Ultimate Fusion Edition MAX</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -83,6 +83,14 @@
         .hud-divider { width: 1px; height: 40px; background: #333; }
 
         .etiqueta-mapa { background: rgba(0,0,0,0.7); border: 1px solid #4fc1ff; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 3px; margin-left: 10px; box-shadow: none;}
+
+        /* CSS POPUP DO SHAPEFILE (CORREÇÃO DA IMAGEM DO USUÁRIO) */
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--bg-card) !important; color: var(--text-light) !important; border: 1px solid var(--border); box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+        .leaflet-popup-content { margin: 10px; width: auto !important; min-width: 200px; }
+        .popup-table { width: 100%; border-collapse: collapse; font-size: 10px; font-family: 'Inter', sans-serif; }
+        .popup-table th, .popup-table td { border: 1px solid #444; padding: 6px; text-align: left; }
+        .popup-table th { background: #111; color: var(--accent); font-weight: 600; width: 40%; white-space: nowrap;}
+        .popup-table td { background: #1a1a1c; color: #fff; }
 
         .right-header { padding: 15px; background: #111; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--warning); display: flex; align-items: center; justify-content: space-between;}
         .right-content { padding: 15px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 15px; }
@@ -198,7 +206,7 @@
                 </div>
                 <textarea id="main-texto" style="height: 180px;" placeholder="ID; Descrição; Coordenada X (ou Long); Coordenada Y (ou Lat); Cota Z"></textarea>
             </div>
-            <button class="btn btn-primary btn-block" style="padding:15px; font-size:13px;" onclick="processarLevantamento()">📍 PLOTAR & FECHAR POLÍGONO</button>
+            <button class="btn btn-primary btn-block" style="padding:15px; font-size:13px;" onclick="processarLevantamento()">📍 PLOTAR & LIGAR PONTOS</button>
         </div>
 
         <div id="aba-editor" class="tab-content" style="padding:10px;">
@@ -214,11 +222,24 @@
         <div id="aba-exportar" class="tab-content">
             <div class="card">
                 <div class="card-title">Configuração de Saída</div>
-                <label>Sistema para Exportação</label>
-                <select id="out-formato">
-                    <option value="utm">UTM (Coordenadas Planas)</option>
-                    <option value="decimal">DD (Graus Geográficos WGS84)</option>
-                </select>
+                <div class="form-row">
+                    <div style="flex:2;">
+                        <label>Sistema para Exportação</label>
+                        <select id="out-formato">
+                            <option value="utm">UTM (Coordenadas Planas)</option>
+                            <option value="decimal">DD (Graus Geográficos WGS84)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Decimais (CSV)</label>
+                        <select id="export-decimals">
+                            <option value="2">2 (0.00)</option>
+                            <option value="3" selected>3 (0.000)</option>
+                            <option value="4">4 (0.0000)</option>
+                            <option value="5">5 (0.00000)</option>
+                        </select>
+                    </div>
+                </div>
                 
                 <label style="display:flex; align-items:center; gap:8px; margin-top:15px; background:#1e1e1e; padding:10px; border-radius:4px; border:1px solid var(--border); cursor:pointer;">
                     <input type="checkbox" id="chk-recorte" checked style="width:auto;">
@@ -271,7 +292,7 @@
                 </div>
                 <div class="form-row">
                     <div style="flex:2;">
-                        <label>Inserir Geometria Vetorial</label>
+                        <label>1. Escolher Bloco Vetorial</label>
                         <select id="cad-block-type">
                             <option value="default">📍 Ponto Livre</option>
                             <option value="tree">🌳 Árvore (Octógono 4m)</option>
@@ -281,7 +302,8 @@
                     </div>
                     <div><label>Cor</label><input type="color" id="cad-color" value="#0098ff" style="height:32px; padding:0; border:none; cursor:pointer;"></div>
                 </div>
-                <button class="btn btn-outline btn-small" style="margin-top:5px; border-color:var(--danger); color:var(--danger);" onclick="limparCAD()">🗑️ Apagar Desenho</button>
+                <button class="btn btn-outline btn-block" style="margin-top:5px; border-color:var(--accent); color:var(--accent);" onclick="ativarDesenhoBloco()">📍 2. CLIQUE AQUI E DEPOIS NO MAPA</button>
+                <button class="btn btn-outline btn-small btn-block" style="margin-top:5px; border-color:var(--danger); color:var(--danger);" onclick="limparCAD()">🗑️ Apagar Desenho</button>
             </div>
 
             <div class="card" style="border-color: var(--accent);">
@@ -332,13 +354,14 @@
     </div>
 
     <script>
+        // INIT MAP & GEOMAN
         var cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 22, attribution: '© CartoDB' });
         var googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20 });
         var map = L.map('map', { preserveDrawingBuffer: true, zoomControl: false, layers: [cartoDark] }).setView([-20.076, -44.225], 14);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
         L.control.layers({ "🌙 CAD Dark": cartoDark, "🛰️ Google Satélite": googleSat }, null, { position: 'topright' }).addTo(map);
 
-        map.pm.addControls({ position: 'topleft', drawCircle: false, drawCircleMarker: false, drawText: true, cutPolygon: true, editMode: true, dragMode: true, removalMode: true });
+        map.pm.addControls({ position: 'topleft', drawMarker: true, drawCircle: false, drawCircleMarker: false, drawText: true, cutPolygon: true, editMode: true, dragMode: true, removalMode: true });
         map.pm.setGlobalOptions({ snappable: true, snapDistance: 20, snapMiddle: true, allowSelfIntersection: false });
 
         var cadLayerGroup = L.featureGroup().addTo(map);
@@ -347,9 +370,16 @@
 
         function atualizarSnap() { var active = document.getElementById('cad-snap-toggle').checked; var dist = parseInt(document.getElementById('cad-snap').value) || 20; map.pm.setGlobalOptions({ snappable: active, snapDistance: dist }); }
         
+        // NOVO: ATIVAÇÃO DIRETA DA FERRAMENTA DE MARCADOR
+        function ativarDesenhoBloco() {
+            var isSnap = document.getElementById('cad-snap-toggle').checked;
+            var snapDist = parseInt(document.getElementById('cad-snap').value) || 20;
+            map.pm.enableDraw('Marker', { snappable: isSnap, snapDistance: snapDist });
+        }
+
         // NOVO: GERADOR DE BLOCOS VETORIAIS (Árvore, Poste, Bueiro) PARA DXF
         function criarBlocoVetorial(latlng, tipo) {
-            // Conversão aproximada para metros
+            // Conversão aproximada para metros em coordenadas geográficas
             const metrosLat = 1 / 111320;
             const metrosLng = 1 / (111320 * Math.cos(latlng.lat * Math.PI / 180));
             let pts = [];
@@ -391,8 +421,8 @@
                 if(type !== 'default') {
                     var vetorPronto = criarBlocoVetorial(layer.getLatLng(), type);
                     if(vetorPronto) {
-                        map.removeLayer(layer); // Remove o marcador
-                        layer = vetorPronto;    // Substitui pelo polígono real
+                        map.removeLayer(layer); // Remove o marcador padrão
+                        layer = vetorPronto;    // Substitui pelo polígono real vetorizado
                         layer.addTo(map);
                     }
                 } else {
@@ -506,8 +536,14 @@
             }
 
             ultimaAreaCalculada = 0; ultimoPerimetroCalculado = 0;
+            
+            // NOVO: DESENHA A LINHA LIGANDO TODOS OS PONTOS (Mesmo se for polígono aberto)
+            if(pts.length >= 2) {
+                L.polyline(pts, {color:'#0098ff', weight:2, dashArray: '5,5'}).addTo(cPoly);
+            }
+
             if(pts.length >= 3) {
-                L.polygon(pts, {color:'#0098ff', weight:2, fillOpacity:0.1, dashArray: '5,5'}).addTo(cPoly);
+                L.polygon(pts, {color:'#0098ff', weight:0, fillOpacity:0.1}).addTo(cPoly); // Apenas o preenchimento leve
                 var a = 0, p = 0; for(var j=0; j<ptsP.length; j++) { var p1 = ptsP[j], p2 = ptsP[(j+1)%ptsP.length]; a += (p1.x * p2.y) - (p2.x * p1.y); p += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)); }
                 ultimaAreaCalculada = Math.abs(a)/2; ultimoPerimetroCalculado = p;
                 
@@ -518,7 +554,7 @@
             cPoly.addTo(map); cPt.addTo(map); cTxt.addTo(map);
             if(zoom && pts.length > 0) map.fitBounds(cPt.getBounds(), {padding:[50,50]});
 
-            gerenciadorCamadas.unshift({ id: 'rtk_poly', nome: 'Limites Base (Polígono)', leafletLayer: cPoly, visivel: true, tipo: 'rtk_poly', cor: '#0098ff' });
+            gerenciadorCamadas.unshift({ id: 'rtk_poly', nome: 'Linha/Polígono Base', leafletLayer: cPoly, visivel: true, tipo: 'rtk_poly', cor: '#0098ff' });
             gerenciadorCamadas.unshift({ id: 'rtk_pt', nome: 'Vértices Levantamento', leafletLayer: cPt, visivel: true, tipo: 'rtk_pt', cor: '#0098ff' });
             gerenciadorCamadas.unshift({ id: 'rtk_text', nome: 'Textos & Cotas', leafletLayer: cTxt, visivel: true, tipo: 'rtk_text' });
             renderizarGestorCamadas();
@@ -530,10 +566,20 @@
             try { let response = await fetch(urlDownload, { headers: { 'Accept': 'application/octet-stream' } }); if (!response.ok) throw new Error("Falha no download."); let blob = await response.blob(); let fVirtual = new File([blob], nomeArquivoVisivel, { type: "application/zip" }); loading.innerText = `⏳ Processando...`; setTimeout(() => { importarShapefile({ target: { files: [fVirtual] } }); }, 200); } catch (error) { alert("Erro: " + error.message); loading.style.display = 'none'; }
         }
 
+        // NOVO: CONSTRUÇÃO CORRETA E LIMPA DO POPUP DO SHAPEFILE
         function construirPopupCompleto(properties) {
-            if (!properties) return "<p style='color:#888; font-size:10px;'>Sem dados.</p>"; let html = "<table class='tabela-editor' style='color:#000;'><tbody>"; let cont = 0;
-            for (let key in properties) { let val = properties[key]; if(val !== null && val !== "" && String(val).trim() !== "") { html += `<tr><th style='background:#ccc; color:#000;'>${key}</th><td style='background:#fff; color:#000;'>${val}</td></tr>`; cont++; } }
-            if (cont === 0) return "<p>Sem colunas.</p>"; return html + "</tbody></table>";
+            if (!properties) return "<p style='color:#888; font-size:10px;'>Sem dados.</p>"; 
+            let html = "<div style='max-height: 250px; overflow-y: auto;'><table class='popup-table'><tbody>"; 
+            let cont = 0;
+            for (let key in properties) { 
+                let val = properties[key]; 
+                if(val !== null && val !== "" && String(val).trim() !== "") { 
+                    html += `<tr><th>${key}</th><td>${val}</td></tr>`; 
+                    cont++; 
+                } 
+            }
+            if (cont === 0) return "<p>Sem colunas disponíveis.</p>"; 
+            return html + "</tbody></table></div>";
         }
 
         function reprojectGeoJSON(geojson) {
@@ -599,10 +645,13 @@
             if (!hasRtk && !hasLayers) { alert("Sem dados."); return; }
             var csvContent = "\uFEFFOrigem;Nome_ID;Coord_X;Coord_Y;Cota_Z\n";
             var fmtOut = document.getElementById('out-formato').value; var epsgU = "+proj=longlat +datum=WGS84 +no_defs"; var epsgD = (fmtOut === 'utm') ? obterEpsgEntrada() : epsgU;
+            
+            // NOVO: Aplica as casas decimais selecionadas pelo usuário
+            var casasDec = parseInt(document.getElementById('export-decimals').value) || 3;
 
-            if (hasRtk) { for(var i=0; i<memoria.lon.length; i++) { var c = proj4(epsgU, epsgD, [memoria.lon[i], memoria.lat[i]]); csvContent += `Base;${memoria.nomes[i]};${c[0].toFixed(5).replace('.',',')};${c[1].toFixed(5).replace('.',',')};${memoria.cotas[i]}\n`; } }
-            if (hasLayers) { var featuresClip = obterRecorteFeatures(); featuresClip.forEach(feat => { try { var centro = turf.centroid(feat).geometry.coordinates; var c = proj4(epsgU, epsgD, [centro[0], centro[1]]); csvContent += `SHP;Centroide;${c[0].toFixed(5).replace('.',',')};${c[1].toFixed(5).replace('.',',')};0\n`; } catch(e) {} }); }
-            baixarArquivo("Tabela_Geometrias.csv", csvContent, "text/csv;charset=utf-8;");
+            if (hasRtk) { for(var i=0; i<memoria.lon.length; i++) { var c = proj4(epsgU, epsgD, [memoria.lon[i], memoria.lat[i]]); csvContent += `Base;${memoria.nomes[i]};${c[0].toFixed(casasDec).replace('.',',')};${c[1].toFixed(casasDec).replace('.',',')};${memoria.cotas[i]}\n`; } }
+            if (hasLayers) { var featuresClip = obterRecorteFeatures(); featuresClip.forEach(feat => { try { var centro = turf.centroid(feat).geometry.coordinates; var c = proj4(epsgU, epsgD, [centro[0], centro[1]]); csvContent += `SHP;Centroide;${c[0].toFixed(casasDec).replace('.',',')};${c[1].toFixed(casasDec).replace('.',',')};0\n`; } catch(e) {} }); }
+            baixarArquivo("LuiGIS_Tabela_Exportada.csv", csvContent, "text/csv;charset=utf-8;");
         }
 
         function baixarDXF() {
@@ -617,7 +666,6 @@
                 for(var i=0; i<pts.length; i++) dxf += `0\nVERTEX\n8\nLEVANTAMENTO_RTK\n10\n${pts[i].x.toFixed(4)}\n20\n${pts[i].y.toFixed(4)}\n30\n${pts[i].z}\n`; dxf += "0\nSEQEND\n";
                 for(var j=0; j<pts.length; j++) { dxf += `0\nPOINT\n8\nPONTOS_RTK\n10\n${pts[j].x.toFixed(4)}\n20\n${pts[j].y.toFixed(4)}\n30\n${pts[j].z}\n`; var rtkX = pts[j].x.toFixed(4); var rtkY = (pts[j].y + 1.5).toFixed(4); dxf += `0\nTEXT\n8\nTEXTOS_RTK\n10\n${rtkX}\n20\n${rtkY}\n30\n${pts[j].z}\n40\n1.5\n1\n${pts[j].nome}\n72\n1\n11\n${rtkX}\n21\n${rtkY}\n31\n${pts[j].z}\n73\n2\n`; }
             }
-            // EXPORTA BLOCOS DESENHADOS COMO POLYLINE NO DXF
             if (hasCAD) { 
                 cadLayerGroup.eachLayer(layer => { 
                     if (layer instanceof L.Marker || layer instanceof L.CircleMarker) { 
@@ -640,7 +688,6 @@
             if (!hasRtk && !hasLayers && !hasCAD) { alert("Sem dados."); return; }
             var coords = [], features = [];
             if (hasRtk) { for(var i=0; i<memoria.lon.length; i++) { var pt = [memoria.lon[i], memoria.lat[i], memoria.cotas[i]]; coords.push(pt); features.push({ type: "Feature", geometry: { type: "Point", coordinates: pt }, properties: { Nome: memoria.nomes[i], Origem: "RTK" } }); } if(coords.length > 2) { coords.push(coords[0]); features.push({ type: "Feature", geometry: { type: "Polygon", coordinates: [coords] }, properties: { Origem: "RTK_Perimetro" } }); } }
-            // EXPORTA BLOCOS DESENHADOS PARA GEOJSON
             if (hasCAD) cadLayerGroup.eachLayer(layer => { try { var f = layer.toGeoJSON(); f.properties = f.properties || {}; f.properties.Origem = "CAD"; features.push(f); } catch(e) {} });
             if (hasLayers) { var featuresClip = obterRecorteFeatures(); featuresClip.forEach(f => { var newF = JSON.parse(JSON.stringify(f)); newF.properties = newF.properties || {}; newF.properties.Origem = "Shapefile"; features.push(newF); }); }
             baixarArquivo("LuiGIS_Web.geojson", JSON.stringify({ type: "FeatureCollection", features: features }, null, 2), "application/json");
