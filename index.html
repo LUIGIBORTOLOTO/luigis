@@ -41,9 +41,16 @@
         #center-workspace { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
         #right-sidebar { width: 340px; min-width: 340px; background-color: var(--bg-panel); display: flex; flex-direction: column; border-left: 1px solid var(--border); z-index: 1000; box-shadow: -2px 0 15px rgba(0,0,0,0.5); }
 
-        .header { padding: 15px; border-bottom: 1px solid var(--border); background-color: #111; display: flex; align-items: center; justify-content: space-between; }
-        .header h1 { margin: 0; font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px;}
+        .header { padding: 12px 15px; border-bottom: 1px solid var(--border); background-color: #111; display: flex; align-items: center; justify-content: space-between; }
+        .header-title { display: flex; align-items: center; gap: 10px; }
+        .header h1 { margin: 0; font-size: 16px; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 1px;}
         
+        /* NOVO LAYOUT DA BARRA DE FERRAMENTAS DO TOPO */
+        .top-toolbar { display: flex; gap: 5px; background: #1e1e1e; padding: 4px; border-radius: 6px; border: 1px solid #333; }
+        .btn-tool-top { background: transparent; border: none; color: #fff; cursor: pointer; padding: 4px 10px; border-radius: 4px; font-size: 14px; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .btn-tool-top:hover:not(:disabled) { background: #333; color: var(--accent); }
+        .btn-tool-top:disabled { opacity: 0.3; cursor: not-allowed; }
+
         .tabs { display: flex; flex-wrap: wrap; background-color: #1a1a1c; border-bottom: 1px solid var(--border);}
         .tab-btn { flex: 1; padding: 10px 4px; background: transparent; border: none; border-bottom: 2px solid transparent; color: #888; cursor: pointer; font-size: 10px; text-transform: uppercase; font-weight: 700; transition: 0.2s; text-align: center; }
         .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); background: #222; }
@@ -78,7 +85,6 @@
         
         #bottom-hud { height: 70px; min-height: 70px; background-color: #0a0a0c; border-top: 2px solid var(--accent); display: flex; align-items: center; padding: 0 20px; gap: 20px; z-index: 1000; font-family: 'Fira Code', monospace; box-shadow: 0 -5px 15px rgba(0,0,0,0.5);}
         .hud-block { display: flex; flex-direction: column; justify-content: center; background: #151515; padding: 6px 15px; border-radius: 4px; border: 1px solid #222; min-width: 140px; transition: 0.2s; }
-        .hud-block.clickable:hover { background: #2a2a2d; cursor: pointer; border-color: var(--accent); }
         .hud-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-family: 'Inter', sans-serif; letter-spacing: 1px; margin-bottom: 2px; }
         .hud-value { font-size: 16px; color: #4fc1ff; font-weight: 600; }
         .hud-value.highlight { color: var(--warning); }
@@ -140,7 +146,6 @@
         .toast { background: var(--accent); color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); opacity: 0; animation: fadeToast 2s forwards; }
         @keyframes fadeToast { 0% { opacity: 0; transform: translateY(20px); } 15% { opacity: 1; transform: translateY(0); } 85% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-20px); } }
 
-        /* Estilos do Modal de Gráfico */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10001; align-items: center; justify-content: center; }
         .modal-content { background: var(--bg-panel); border: 1px solid var(--border); padding: 20px; border-radius: 8px; width: 80%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -153,8 +158,13 @@
 
     <aside id="left-sidebar">
         <div class="header">
-            <h1>🌍 LuiGIS</h1>
-            <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1</span>
+            <div class="header-title">
+                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA</span></h1>
+            </div>
+            <div class="top-toolbar">
+                <button class="btn-tool-top" id="btn-undo" onclick="desfazerAcao()" title="Desfazer Ação (Ctrl+Z)" disabled>↩️</button>
+                <button class="btn-tool-top" id="btn-redo" onclick="refazerAcao()" title="Refazer Ação (Ctrl+Y)" disabled>↪️</button>
+            </div>
         </div>
 
         <div class="tabs">
@@ -326,10 +336,6 @@
             <div class="hud-divider"></div>
             <div class="hud-block"><span class="hud-label">Área Levantada</span><span class="hud-value highlight" id="lbl-area">0.00 m²</span></div>
             <div class="hud-block"><span class="hud-label">Perímetro</span><span class="hud-value" id="lbl-perimetro">0.00 m</span></div>
-            
-            <div class="hud-block clickable" style="margin-left: auto; border-color: var(--danger);" onclick="desfazerAcao()">
-                <span class="hud-value" style="color: #fff; font-size: 14px;">↩️ Desfazer (Ctrl+Z)</span>
-            </div>
         </div>
     </main>
 
@@ -452,11 +458,28 @@
 
         document.getElementById('tec-data').valueAsDate = new Date();
 
+        // ====================================================================
+        // NOVOS BASEMAPS ESTILO GPX.STUDIO
+        // ====================================================================
         var cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 22, attribution: '© CartoDB' });
         var googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20 });
+        var googleTerrain = L.tileLayer('https://mt1.google.com/vt/lyrs=p&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 22, maxNativeZoom: 20 });
+        var googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 22, maxNativeZoom: 20 });
+        var openTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenTopoMap' });
+        var esriImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: '© Esri' });
+
         var map = L.map('map', { preserveDrawingBuffer: true, zoomControl: false, layers: [cartoDark] }).setView([-20.076, -44.225], 14);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
-        L.control.layers({ "🌙 CAD Dark": cartoDark, "🛰️ Google Satélite": googleSat }, null, { position: 'topright' }).addTo(map);
+        
+        var baseMaps = {
+            "🌙 Tema Escuro (CAD)": cartoDark,
+            "🛰️ Google Satélite": googleSat,
+            "⛰️ Google Relevo": googleTerrain,
+            "🗺️ Google Ruas": googleStreets,
+            "⛰️ OpenTopoMap": openTopoMap,
+            "🌍 Esri Satélite": esriImagery
+        };
+        L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
         map.pm.addControls({ position: 'topleft', drawMarker: true, drawCircle: false, drawCircleMarker: false, drawText: true, cutPolygon: true, editMode: true, dragMode: true, removalMode: true });
         map.pm.setGlobalOptions({ snappable: true, snapDistance: 20, snapMiddle: true, allowSelfIntersection: false });
@@ -579,52 +602,66 @@
             return null;
         }
 
+        // =========================================================================
+        // NOVO SISTEMA DE UNDO / REDO (DESFAZER / REFAZER NO TOPO)
+        // =========================================================================
         var historicoAcoes = []; 
+        var acoesDesfeitas = [];
+
+        function atualizarBotoesUndoRedo() {
+            document.getElementById('btn-undo').disabled = historicoAcoes.length === 0;
+            document.getElementById('btn-redo').disabled = acoesDesfeitas.length === 0;
+        }
 
         function desfazerAcao() {
-            var desenhoAtivo = null;
-            if (map.pm.Draw.Polygon && map.pm.Draw.Polygon.enabled()) desenhoAtivo = map.pm.Draw.Polygon;
-            else if (map.pm.Draw.Line && map.pm.Draw.Line.enabled()) desenhoAtivo = map.pm.Draw.Line;
-
-            if (desenhoAtivo) {
-                try {
-                    if (typeof desenhoAtivo._removeLastVertex === 'function') {
-                        desenhoAtivo._removeLastVertex();
-                        mostrarToast("Último clique removido!");
-                        return;
-                    }
-                } catch(e) {}
-            }
-
-            if (historicoAcoes.length > 0) {
-                var ultimaAcao = historicoAcoes.pop();
-                
-                if (ultimaAcao.tipo === 'add') {
-                    map.removeLayer(ultimaAcao.layer);
-                    if (ultimaAcao.parentLayer && ultimaAcao.parentLayer.hasLayer(ultimaAcao.layer)) {
-                        ultimaAcao.parentLayer.removeLayer(ultimaAcao.layer);
-                    }
-                    mostrarToast("Desenho apagado (Ctrl+Z)!");
-                } 
-                else if (ultimaAcao.tipo === 'remove') {
-                    if (ultimaAcao.parentLayer) {
-                        ultimaAcao.parentLayer.addLayer(ultimaAcao.layer);
-                    } else {
-                        ultimaAcao.layer.addTo(map);
-                    }
-                    mostrarToast("Desenho restaurado (Ctrl+Z)!");
+            if (historicoAcoes.length === 0) return mostrarToast("Nada para desfazer.");
+            var ultimaAcao = historicoAcoes.pop();
+            
+            if (ultimaAcao.tipo === 'add') {
+                map.removeLayer(ultimaAcao.layer);
+                if (ultimaAcao.parentLayer && ultimaAcao.parentLayer.hasLayer(ultimaAcao.layer)) {
+                    ultimaAcao.parentLayer.removeLayer(ultimaAcao.layer);
                 }
-            } else {
-                mostrarToast("Nada para desfazer.");
+            } else if (ultimaAcao.tipo === 'remove') {
+                if (ultimaAcao.parentLayer) {
+                    ultimaAcao.parentLayer.addLayer(ultimaAcao.layer);
+                } else {
+                    ultimaAcao.layer.addTo(map);
+                }
             }
+            acoesDesfeitas.push(ultimaAcao);
+            atualizarBotoesUndoRedo();
+            mostrarToast("Ação Desfeita.");
+        }
+
+        function refazerAcao() {
+            if (acoesDesfeitas.length === 0) return mostrarToast("Nada para refazer.");
+            var acaoRestaurada = acoesDesfeitas.pop();
+            
+            if (acaoRestaurada.tipo === 'add') {
+                if (acaoRestaurada.parentLayer) {
+                    acaoRestaurada.parentLayer.addLayer(acaoRestaurada.layer);
+                } else {
+                    acaoRestaurada.layer.addTo(map);
+                }
+            } else if (acaoRestaurada.tipo === 'remove') {
+                map.removeLayer(acaoRestaurada.layer);
+                if (acaoRestaurada.parentLayer && acaoRestaurada.parentLayer.hasLayer(acaoRestaurada.layer)) {
+                    acaoRestaurada.parentLayer.removeLayer(acaoRestaurada.layer);
+                }
+            }
+            historicoAcoes.push(acaoRestaurada);
+            atualizarBotoesUndoRedo();
+            mostrarToast("Ação Refeita.");
         }
 
         document.addEventListener('keydown', function(e) {
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
 
-            if (e.ctrlKey && (e.key === 'z' || e.key === 'Z')) {
-                e.preventDefault(); 
-                desfazerAcao();
+            if (e.ctrlKey && !e.shiftKey && (e.key === 'z' || e.key === 'Z')) {
+                e.preventDefault(); desfazerAcao();
+            } else if (e.ctrlKey && (e.key === 'y' || e.key === 'Y' || (e.shiftKey && (e.key === 'z' || e.key === 'Z')))) {
+                e.preventDefault(); refazerAcao();
             }
         });
 
@@ -648,6 +685,8 @@
             
             layer.addTo(activeLayerData.leafletLayer);
             historicoAcoes.push({ tipo: 'add', layer: layer, parentLayer: activeLayerData.leafletLayer });
+            acoesDesfeitas = []; // Limpa o refazer
+            atualizarBotoesUndoRedo();
         });
 
         map.on('pm:remove', function(e) {
@@ -658,7 +697,10 @@
                 }
             });
             historicoAcoes.push({ tipo: 'remove', layer: e.layer, parentLayer: parent });
+            acoesDesfeitas = []; // Limpa o refazer
+            atualizarBotoesUndoRedo();
         });
+        // =========================================================================
 
         function limparLayerAtiva() {
             var activeLayerData = getActiveCadLayerData();
@@ -809,40 +851,73 @@
         }
 
         // ====================================================================
-        // NOVAS FERRAMENTAS ESTILO DATAGEOSIS (MDT, PERFIL, TABELAS)
+        // CURVAS DE NÍVEL AVANÇADAS (MESTRAS E SECUNDÁRIAS) + MALHA DINÂMICA
         // ====================================================================
 
         function gerarCurvasNivel() {
-            if(memoria.lon.length < 3) return mostrarToast("Mínimo de 3 pontos necessários.");
+            if(memoria.lon.length < 3) return mostrarToast("Mínimo de 3 pontos cotados necessários.");
             var zVals = memoria.cotas;
             var maxZ = Math.max(...zVals); 
             var minZ = Math.min(...zVals);
-            if(maxZ === minZ || isNaN(maxZ)) return alert("Todos os pontos têm a mesma cota (ou cota zero). Impossível gerar curvas.");
+            if(maxZ === minZ || isNaN(maxZ)) return alert("Todos os pontos têm a mesma cota. Impossível interpolar MDT.");
             
             mostrarToast("Calculando malha triangular (MDT)...");
             
             setTimeout(() => {
                 try {
-                    // Criar os pontos Turf com as propriedades Z
                     var pts = memoria.lon.map((lng, i) => turf.point([lng, memoria.lat[i]], {z: memoria.cotas[i]}));
                     var fc = turf.featureCollection(pts);
                     
-                    // Interpolação para criar a malha (Grid de 5 metros)
+                    // Ajuste Dinâmico da Malha para Lotes Pequenos (Resolução mínima de 50cm)
+                    var bbox = turf.bbox(fc);
+                    var distX = turf.distance([bbox[0], bbox[1]], [bbox[2], bbox[1]], {units: 'meters'});
+                    var distY = turf.distance([bbox[0], bbox[1]], [bbox[0], bbox[3]], {units: 'meters'});
+                    var maiorEixo = Math.max(distX, distY);
+                    
+                    // Malha fina: 1 ponto a cada 2% do lote, com mínimo de 0.5 metros.
+                    var gridSize = Math.max(0.5, maiorEixo / 50); 
+                    
                     var options = {gridType: 'points', property: 'z', units: 'meters', weight: 2};
-                    var grid = turf.interpolate(fc, 5, options); 
+                    var grid = turf.interpolate(fc, gridSize, options); 
                     
-                    // Definir os intervalos de quebra das curvas (Isolines)
-                    var breaks = [];
-                    var step = (maxZ - minZ) / 10; 
-                    if (step < 0.5) step = 0.5; // Resolução mínima
-                    for(var b = Math.floor(minZ); b <= Math.ceil(maxZ); b += step) breaks.push(b);
+                    // Definição Inteligente de Curvas Mestras vs Intermediárias (Secundárias)
+                    var zRange = maxZ - minZ;
+                    var interInterval = 1; // Secundárias a cada 1m
+                    var masterInterval = 5; // Mestras a cada 5m
+
+                    if (zRange < 5) {
+                        masterInterval = 1; // Lotes planos: Mestras a cada 1m
+                        interInterval = 0.2; // Lotes planos: Secundárias a cada 20cm
+                    } else if (zRange > 50) {
+                        masterInterval = 10;
+                        interInterval = 2;
+                    }
+
+                    var breaksInter = [];
+                    var breaksMaster = [];
+
+                    for(var b = Math.floor(minZ / interInterval) * interInterval; b <= Math.ceil(maxZ); b += interInterval) {
+                        var bArredondado = parseFloat(b.toFixed(2));
+                        if (bArredondado % masterInterval === 0 || Math.abs(bArredondado % masterInterval) < 0.001) {
+                            breaksMaster.push(bArredondado);
+                        } else {
+                            breaksInter.push(bArredondado);
+                        }
+                    }
                     
-                    var lines = turf.isolines(grid, breaks, {zProperty: 'z'});
-                    processarGeoJSON_NoMapa(lines, "MDT Curvas de Nível", "#c586c0", true);
-                    mostrarToast("Curvas geradas e adicionadas à aba CAD!");
+                    if(breaksInter.length > 0) {
+                        var linesInter = turf.isolines(grid, breaksInter, {zProperty: 'z'});
+                        processarGeoJSON_NoMapa(linesInter, "Curvas Secundárias", "#757575", false, 1);
+                    }
+                    if(breaksMaster.length > 0) {
+                        var linesMaster = turf.isolines(grid, breaksMaster, {zProperty: 'z'});
+                        processarGeoJSON_NoMapa(linesMaster, "Curvas Mestras", "#ff9800", true, 3);
+                    }
+                    
+                    mostrarToast("Curvas Mestras e Secundárias geradas!");
                 } catch(e) {
                     console.error(e);
-                    alert("Erro ao processar as curvas de nível. Tente reduzir o número de pontos.");
+                    alert("Erro ao processar as curvas de nível. Tente verificar as coordenadas e cotas.");
                 }
             }, 100);
         }
@@ -860,7 +935,6 @@
             var distAcumulada = 0;
             var epsgIn = obterEpsgEntrada();
             
-            // Calcular distâncias progressivas acompanhando o perímetro da poligonal
             for(var i = 1; i < memoria.lon.length; i++) {
                 var c1 = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgIn, [memoria.lon[i-1], memoria.lat[i-1]]);
                 var c2 = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgIn, [memoria.lon[i], memoria.lat[i]]);
@@ -912,7 +986,6 @@
             
             var epsgIn = obterEpsgEntrada();
             var trs = "";
-            var deltaE = 0, deltaN = 0;
 
             for(var i = 0; i < memoria.lon.length; i++) {
                 var pProx = (i + 1) % memoria.lon.length;
@@ -960,35 +1033,7 @@
 
         // ====================================================================
 
-        function baixarBaseSelecionada() { var select = document.getElementById('select-bases-nuvem'); var url = select.value; if(!url) { alert("Selecione um arquivo."); return; } var nomeLimpo = select.options[select.selectedIndex].text.replace(/[^\w\sÀ-ú]/g, '').trim().replace(/\s+/g, '_') + '.zip'; carregarBaseDaInternet(url, nomeLimpo); }
-        async function carregarBaseDaInternet(urlDownload, nomeArquivoVisivel) {
-            var loading = document.getElementById('loading-shp'); loading.style.display = 'block'; loading.innerText = `⏳ Baixando...`;
-            try { let response = await fetch(urlDownload, { headers: { 'Accept': 'application/octet-stream' } }); if (!response.ok) throw new Error("Falha no download."); let blob = await response.blob(); let fVirtual = new File([blob], nomeArquivoVisivel, { type: "application/zip" }); loading.innerText = `⏳ Processando...`; setTimeout(() => { importarShapefile({ target: { files: [fVirtual] } }); }, 200); } catch (error) { alert("Erro: " + error.message); loading.style.display = 'none'; }
-        }
-
-        function construirPopupCompleto(properties) {
-            if (!properties) return "<p style='color:#888; font-size:10px;'>Sem dados.</p>"; 
-            let html = "<div style='max-height: 250px; overflow-y: auto;'><table class='popup-table'><tbody>"; 
-            let cont = 0;
-            for (let key in properties) { 
-                if (colunasGlobais[key] !== true) continue; 
-                let val = properties[key]; 
-                if(val !== null && val !== "" && String(val).trim() !== "") { 
-                    html += `<tr><th>${key}</th><td>${val}</td></tr>`; 
-                    cont++; 
-                } 
-            }
-            if (cont === 0) return "<p style='color:#fff; text-align:center; padding:10px;'>Nenhum atributo marcado no filtro.</p>"; 
-            return html + "</tbody></table></div>";
-        }
-
-        function reprojectGeoJSON(geojson) {
-            var epsgIn = obterEpsgEntrada(); var epsgOut = "+proj=longlat +datum=WGS84 +no_defs";
-            function pCoords(coords) { if (typeof coords[0] === 'number') { if(Math.abs(coords[0]) > 180 || Math.abs(coords[1]) > 90) { try { var c = proj4(epsgIn, epsgOut, [coords[0], coords[1]]); coords[0] = c[0]; coords[1] = c[1]; } catch(e) {} } } else { for (var i = 0; i < coords.length; i++) pCoords(coords[i]); } }
-            if (geojson.type === "FeatureCollection") { geojson.features.forEach(f => { if(f.geometry && f.geometry.coordinates) pCoords(f.geometry.coordinates); }); } else if (geojson.type === "Feature") { if(geojson.geometry && geojson.geometry.coordinates) pCoords(geojson.geometry.coordinates); } return geojson;
-        }
-
-        function processarGeoJSON_NoMapa(geojsonBruto, nomeOriginal, corOpcional, focarMapa) {
+        function processarGeoJSON_NoMapa(geojsonBruto, nomeOriginal, corOpcional, focarMapa, customWeight) {
             const idNovaCamada = 'shp_layer_' + camadaIdCounter++; const defaultColor = corOpcional || getRandomColor();
             let geojson = reprojectGeoJSON(geojsonBruto);
             
@@ -1003,19 +1048,19 @@
             }
             renderizarFiltroColunas(); 
 
-            var novaCamada = L.geoJSON(geojson, { style: { color: defaultColor, weight: 1, fillOpacity: 0.1 }, onEachFeature: function(feature, layer) { layer.bindPopup(function() { return construirPopupCompleto(feature.properties); }); } }).addTo(map);
+            var novaCamada = L.geoJSON(geojson, { style: { color: defaultColor, weight: customWeight || 1, fillOpacity: 0.1 }, onEachFeature: function(feature, layer) { layer.bindPopup(function() { return construirPopupCompleto(feature.properties); }); } }).addTo(map);
             if (focarMapa) { map.fitBounds(novaCamada.getBounds()); }
             gerenciadorCamadas.push({ id: idNovaCamada, nome: "☁️ " + nomeOriginal, leafletLayer: novaCamada, visivel: true, tipo: 'shp', cor: defaultColor, rawGeoJSON: geojson });
-            renderizarGestorCamadas(); document.getElementById('loading-shp').style.display = 'none'; mostrarToast("Camada Importada!");
+            renderizarGestorCamadas(); document.getElementById('loading-shp').style.display = 'none'; 
         }
 
         async function importarShapefile(event) {
             const file = event.target.files[0]; if (!file) return; document.getElementById('loading-shp').style.display = 'block'; const reader = new FileReader(); var fileNameStr = file.name.toLowerCase();
-            if (fileNameStr.endsWith('.shp')) { reader.onload = async (e) => { try { const geojsonArray = shp.parseShp(e.target.result); let features = geojsonArray.map(geom => ({ type: "Feature", properties: {}, geometry: geom })); processarGeoJSON_NoMapa({ type: "FeatureCollection", features: features }, file.name, null, true); } catch (err) { alert("Erro shp"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsArrayBuffer(file); } 
-            else if (fileNameStr.endsWith('.zip')) { reader.onload = async (e) => { try { let geojson = await shp(e.target.result); processarGeoJSON_NoMapa(geojson, file.name, null, true); } catch (err) { alert("Erro zip"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsArrayBuffer(file); } 
-            else if (fileNameStr.endsWith('.kmz')) { reader.onload = async (e) => { try { var zip = await JSZip.loadAsync(e.target.result); var kmlFileName = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml')); var kmlText = await zip.files[kmlFileName].async("text"); var kmlDom = new DOMParser().parseFromString(kmlText, 'text/xml'); processarGeoJSON_NoMapa(toGeoJSON.kml(kmlDom), file.name, null, true); } catch (err) { alert("Erro kmz"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsArrayBuffer(file); } 
-            else if (fileNameStr.endsWith('.kml')) { reader.onload = (e) => { try { var kmlDom = new DOMParser().parseFromString(e.target.result, 'text/xml'); processarGeoJSON_NoMapa(toGeoJSON.kml(kmlDom), file.name, null, true); } catch (err) { alert("Erro kml"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsText(file); } 
-            else { reader.onload = (e) => { try { processarGeoJSON_NoMapa(JSON.parse(e.target.result), file.name, null, true); } catch(err) { alert("Inválido"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsText(file); }
+            if (fileNameStr.endsWith('.shp')) { reader.onload = async (e) => { try { const geojsonArray = shp.parseShp(e.target.result); let features = geojsonArray.map(geom => ({ type: "Feature", properties: {}, geometry: geom })); processarGeoJSON_NoMapa({ type: "FeatureCollection", features: features }, file.name, null, true); mostrarToast("SHP Importado");} catch (err) { alert("Erro shp"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsArrayBuffer(file); } 
+            else if (fileNameStr.endsWith('.zip')) { reader.onload = async (e) => { try { let geojson = await shp(e.target.result); processarGeoJSON_NoMapa(geojson, file.name, null, true); mostrarToast("ZIP Importado");} catch (err) { alert("Erro zip"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsArrayBuffer(file); } 
+            else if (fileNameStr.endsWith('.kmz')) { reader.onload = async (e) => { try { var zip = await JSZip.loadAsync(e.target.result); var kmlFileName = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml')); var kmlText = await zip.files[kmlFileName].async("text"); var kmlDom = new DOMParser().parseFromString(kmlText, 'text/xml'); processarGeoJSON_NoMapa(toGeoJSON.kml(kmlDom), file.name, null, true); mostrarToast("KMZ Importado");} catch (err) { alert("Erro kmz"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsArrayBuffer(file); } 
+            else if (fileNameStr.endsWith('.kml')) { reader.onload = (e) => { try { var kmlDom = new DOMParser().parseFromString(e.target.result, 'text/xml'); processarGeoJSON_NoMapa(toGeoJSON.kml(kmlDom), file.name, null, true); mostrarToast("KML Importado");} catch (err) { alert("Erro kml"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsText(file); } 
+            else { reader.onload = (e) => { try { processarGeoJSON_NoMapa(JSON.parse(e.target.result), file.name, null, true); mostrarToast("JSON Importado");} catch(err) { alert("Inválido"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsText(file); }
         }
 
         function renderizarGestorCamadas() {
@@ -1521,6 +1566,8 @@
             document.getElementById('doc-preview-container').style.display = 'block';
         }
 
+        function checkToolButtons() { atualizarBotoesUndoRedo(); }
+        setInterval(checkToolButtons, 1000); // Garante que a barra atualize mesmo se mexer no mouse
         inicializarSistemaCAD();
     </script>
 </body>
