@@ -818,7 +818,8 @@
                         var c1 = parseDMS(partesDMS[0]); var c2 = parseDMS(partesDMS[1]);
                         if (partesDMS[0].toUpperCase().includes('W') || partesDMS[0].toUpperCase().includes('O')) { x = c1; y = c2; } else if (partesDMS[1].toUpperCase().includes('W') || partesDMS[1].toUpperCase().includes('O')) { x = c2; y = c1; } else { y = c1; x = c2; } 
                         var partesSplit = linhaLimpa.split(/[\t;]+/); if(partesSplit.length > 0) nomeMarco = partesSplit[0].replace(/[^a-zA-Z0-9-]/g,'');
-                        var lastPart = partesSplit[partesSplit.length-1].replace(',','.'); if(!isNaN(parseFloat(lastPart))) z = parseFloat(lastPart);
+                        var res = partesSplit.filter(p => !isNaN(parseFloat(p.replace(',','.'))) && !p.includes('°'));
+                        if(res.length > 0) z = parseFloat(res[0].replace(',', '.'));
                     }
                 } else {
                     var partes = linhaLimpa.split(/[\t;]+/); if (partes.length < 2) partes = linhaLimpa.split(',');
@@ -828,8 +829,19 @@
                         nomeMarco = textos.length > 0 ? textos[0] : (partes[1] && isNaN(parseFloat(partes[1])) ? partes[1] : "P" + (i+1));
                         if(fmtIn === 'utm') {
                             var pN = numeros.find(n => n > 1000000 && n < 10000000); var pE = numeros.find(n => n > 100000 && n < 1000000 && n !== pN);
-                            if(pN && pE) { y = pN; x = pE; var res = numeros.filter(n => n !== pN && n !== pE); z = res.length > 0 ? res[res.length - 1] : 0; } else { x = numeros[0]; y = numeros[1]; if(numeros.length > 2) z = numeros[numeros.length - 1]; }
-                        } else { x = numeros[0]; y = numeros[1]; if(numeros.length > 2) z = numeros[numeros.length - 1]; }
+                            if(pN && pE) { 
+                                y = pN; x = pE; 
+                                var idxN = numeros.indexOf(pN); var idxE = numeros.indexOf(pE);
+                                var maxIdx = Math.max(idxN, idxE);
+                                // Pega obrigatoriamente a Cota Z como o número logo após as coordenadas
+                                if(maxIdx !== -1 && maxIdx + 1 < numeros.length) { z = numeros[maxIdx + 1]; }
+                                else { var res = numeros.filter(n => n !== pN && n !== pE); z = res.length > 0 ? res[0] : 0; }
+                            } else { 
+                                x = numeros[0]; y = numeros[1]; if(numeros.length > 2) z = numeros[2]; 
+                            }
+                        } else { 
+                            x = numeros[0]; y = numeros[1]; if(numeros.length > 2) z = numeros[2]; 
+                        }
                     }
                 }
                 if(x === null || y === null || isNaN(x) || isNaN(y)) continue;
