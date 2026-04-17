@@ -21,6 +21,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
     
     <style>
         :root {
@@ -45,7 +48,6 @@
         .header-title { display: flex; align-items: center; gap: 10px; }
         .header h1 { margin: 0; font-size: 16px; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 1px;}
         
-        /* NOVO LAYOUT DA BARRA DE FERRAMENTAS DO TOPO */
         .top-toolbar { display: flex; gap: 5px; background: #1e1e1e; padding: 4px; border-radius: 6px; border: 1px solid #333; }
         .btn-tool-top { background: transparent; border: none; color: #fff; cursor: pointer; padding: 4px 10px; border-radius: 4px; font-size: 14px; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
         .btn-tool-top:hover:not(:disabled) { background: #333; color: var(--accent); }
@@ -146,10 +148,15 @@
         .toast { background: var(--accent); color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); opacity: 0; animation: fadeToast 2s forwards; }
         @keyframes fadeToast { 0% { opacity: 0; transform: translateY(20px); } 15% { opacity: 1; transform: translateY(0); } 85% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-20px); } }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10001; align-items: center; justify-content: center; }
-        .modal-content { background: var(--bg-panel); border: 1px solid var(--border); padding: 20px; border-radius: 8px; width: 80%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10001; align-items: center; justify-content: center; backdrop-filter: blur(3px);}
+        .modal-content { background: var(--bg-panel); border: 1px solid var(--border); padding: 20px; border-radius: 8px; width: 80%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; flex-direction: column;}
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .modal-header h3 { margin: 0; color: var(--purple); font-size: 16px; text-transform: uppercase; }
+
+        /* Estilo específico para o visualizador 3D */
+        #map3d-container { width: 95%; height: 90%; max-width: 1400px; }
+        #map3d { width: 100%; height: 100%; border-radius: 6px; border: 1px solid #444; }
+        .maplibregl-ctrl-bottom-right { display: none !important; }
     </style>
 </head>
 <body>
@@ -251,7 +258,8 @@
                 <div class="card-title" style="color:var(--purple);">Análise Topográfica (Geosis)</div>
                 <button class="btn btn-outline btn-block" onclick="gerarCurvasNivel()" style="margin-bottom:6px; color:var(--purple); border-color:var(--purple);">🏔️ Gerar Curvas de Nível (MDT)</button>
                 <button class="btn btn-outline btn-block" onclick="abrirPerfilElevacao()" style="margin-bottom:6px; color:var(--purple); border-color:var(--purple);">📈 Perfil Longitudinal (Elevação)</button>
-                <button class="btn btn-outline btn-block" onclick="calcularFechamento()" style="color:var(--purple); border-color:var(--purple);">📊 Relatório de Poligonal (Tabelas)</button>
+                <button class="btn btn-outline btn-block" onclick="calcularFechamento()" style="margin-bottom:6px; color:var(--purple); border-color:var(--purple);">📊 Relatório de Poligonal (Tabelas)</button>
+                <button class="btn btn-block" onclick="abrirVisualizador3D()" style="background-color:#4a148c; border-color:#4a148c; color: #fff;">🌍 Visualizador 3D (Relevo)</button>
             </div>
 
         </div>
@@ -436,13 +444,26 @@
     </div>
 
     <div id="modal-perfil" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 800px; height: auto;">
             <div class="modal-header">
                 <h3>📈 Perfil Longitudinal de Elevação</h3>
                 <button class="btn btn-danger btn-small" onclick="document.getElementById('modal-perfil').style.display='none'">❌ Fechar</button>
             </div>
             <canvas id="chartPerfil" width="800" height="300"></canvas>
             <p style="text-align: center; font-size: 10px; color: #aaa; margin-top: 10px;">Perfil gerado acompanhando o perímetro da poligonal RTK da primeira até a última coordenada.</p>
+        </div>
+    </div>
+
+    <div id="modal-mapa3d" class="modal-overlay">
+        <div class="modal-content" id="map3d-container">
+            <div class="modal-header">
+                <div style="display: flex; flex-direction: column;">
+                    <h3 style="color:#0098ff; display:flex; align-items:center; gap:8px;">🌍 Visualizador 3D de Relevo <span style="background:#0098ff; color:#fff; font-size:9px; padding:2px 5px; border-radius:3px;">WebGL</span></h3>
+                    <span style="font-size:10px; color:#aaa;">Pressiona o botão direito do rato e arrasta para inclinar e rodar a câmara.</span>
+                </div>
+                <button class="btn" style="background:var(--danger); border-color:darkred;" onclick="fecharVisualizador3D()">❌ Fechar 3D</button>
+            </div>
+            <div id="map3d"></div>
         </div>
     </div>
 
@@ -458,9 +479,6 @@
 
         document.getElementById('tec-data').valueAsDate = new Date();
 
-        // ====================================================================
-        // NOVOS BASEMAPS ESTILO GPX.STUDIO
-        // ====================================================================
         var cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 22, attribution: '© CartoDB' });
         var googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20 });
         var googleTerrain = L.tileLayer('https://mt1.google.com/vt/lyrs=p&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 22, maxNativeZoom: 20 });
@@ -602,9 +620,6 @@
             return null;
         }
 
-        // =========================================================================
-        // NOVO SISTEMA DE UNDO / REDO (DESFAZER / REFAZER NO TOPO)
-        // =========================================================================
         var historicoAcoes = []; 
         var acoesDesfeitas = [];
 
@@ -685,7 +700,7 @@
             
             layer.addTo(activeLayerData.leafletLayer);
             historicoAcoes.push({ tipo: 'add', layer: layer, parentLayer: activeLayerData.leafletLayer });
-            acoesDesfeitas = []; // Limpa o refazer
+            acoesDesfeitas = []; 
             atualizarBotoesUndoRedo();
         });
 
@@ -697,10 +712,9 @@
                 }
             });
             historicoAcoes.push({ tipo: 'remove', layer: e.layer, parentLayer: parent });
-            acoesDesfeitas = []; // Limpa o refazer
+            acoesDesfeitas = []; 
             atualizarBotoesUndoRedo();
         });
-        // =========================================================================
 
         function limparLayerAtiva() {
             var activeLayerData = getActiveCadLayerData();
@@ -851,7 +865,7 @@
         }
 
         // ====================================================================
-        // CURVAS DE NÍVEL AVANÇADAS (MESTRAS E SECUNDÁRIAS) + MALHA DINÂMICA
+        // CURVAS DE NÍVEL AVANÇADAS E PERFIL
         // ====================================================================
 
         function gerarCurvasNivel() {
@@ -868,26 +882,23 @@
                     var pts = memoria.lon.map((lng, i) => turf.point([lng, memoria.lat[i]], {z: memoria.cotas[i]}));
                     var fc = turf.featureCollection(pts);
                     
-                    // Ajuste Dinâmico da Malha para Lotes Pequenos (Resolução mínima de 50cm)
                     var bbox = turf.bbox(fc);
                     var distX = turf.distance([bbox[0], bbox[1]], [bbox[2], bbox[1]], {units: 'meters'});
                     var distY = turf.distance([bbox[0], bbox[1]], [bbox[0], bbox[3]], {units: 'meters'});
                     var maiorEixo = Math.max(distX, distY);
                     
-                    // Malha fina: 1 ponto a cada 2% do lote, com mínimo de 0.5 metros.
                     var gridSize = Math.max(0.5, maiorEixo / 50); 
                     
                     var options = {gridType: 'points', property: 'z', units: 'meters', weight: 2};
                     var grid = turf.interpolate(fc, gridSize, options); 
                     
-                    // Definição Inteligente de Curvas Mestras vs Intermediárias (Secundárias)
                     var zRange = maxZ - minZ;
-                    var interInterval = 1; // Secundárias a cada 1m
-                    var masterInterval = 5; // Mestras a cada 5m
+                    var interInterval = 1; 
+                    var masterInterval = 5; 
 
                     if (zRange < 5) {
-                        masterInterval = 1; // Lotes planos: Mestras a cada 1m
-                        interInterval = 0.2; // Lotes planos: Secundárias a cada 20cm
+                        masterInterval = 1; 
+                        interInterval = 0.2; 
                     } else if (zRange > 50) {
                         masterInterval = 10;
                         interInterval = 2;
@@ -1029,6 +1040,138 @@
 
             document.getElementById('doc-render-area').innerHTML = html;
             document.getElementById('doc-preview-container').style.display = 'block';
+        }
+
+        // ====================================================================
+        // INTEGRAÇÃO MAPLIBRE GL JS (VISUALIZADOR 3D DE RELEVO)
+        // ====================================================================
+        var map3dInstance = null;
+
+        function abrirVisualizador3D() {
+            document.getElementById('modal-mapa3d').style.display = 'flex';
+            
+            // Coordenadas iniciais baseadas no polígono ou padrão (Igarapé)
+            var centerLng = -44.225;
+            var centerLat = -20.076;
+            
+            if(memoria.lon.length > 0) {
+                // Calcular centroide dos pontos
+                var sumLng = 0, sumLat = 0;
+                for(var i=0; i<memoria.lon.length; i++){
+                    sumLng += memoria.lon[i];
+                    sumLat += memoria.lat[i];
+                }
+                centerLng = sumLng / memoria.lon.length;
+                centerLat = sumLat / memoria.lat.length;
+            }
+
+            if(!map3dInstance) {
+                map3dInstance = new maplibregl.Map({
+                    container: 'map3d',
+                    style: {
+                        "version": 8,
+                        "sources": {
+                            "satellite": {
+                                "type": "raster",
+                                "tiles": ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+                                "tileSize": 256,
+                                "attribution": "© Esri World Imagery"
+                            },
+                            "terrainSource": {
+                                "type": "raster-dem",
+                                "tiles": ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+                                "encoding": "terrarium",
+                                "tileSize": 256,
+                                "maxzoom": 14
+                            }
+                        },
+                        "layers": [
+                            {
+                                "id": "satellite-layer",
+                                "type": "raster",
+                                "source": "satellite",
+                                "minzoom": 0,
+                                "maxzoom": 22
+                            }
+                        ],
+                        "terrain": {
+                            "source": "terrainSource",
+                            "exaggeration": 1.5
+                        }
+                    },
+                    center: [centerLng, centerLat],
+                    zoom: 15,
+                    pitch: 60,
+                    bearing: 0
+                });
+
+                map3dInstance.addControl(new maplibregl.NavigationControl({
+                    visualizePitch: true
+                }), 'top-right');
+
+                map3dInstance.on('load', function() {
+                    atualizarDesenho3D();
+                });
+            } else {
+                map3dInstance.flyTo({ center: [centerLng, centerLat], zoom: 15, pitch: 60 });
+                atualizarDesenho3D();
+            }
+        }
+
+        function fecharVisualizador3D() {
+            document.getElementById('modal-mapa3d').style.display = 'none';
+        }
+
+        function atualizarDesenho3D() {
+            if(!map3dInstance || !map3dInstance.isStyleLoaded()) return;
+
+            var features = [];
+            if(memoria.lon.length > 2) {
+                var ring = [];
+                for(var i=0; i<memoria.lon.length; i++) {
+                    ring.push([memoria.lon[i], memoria.lat[i]]);
+                }
+                ring.push([memoria.lon[0], memoria.lat[0]]); // Fecha o polígono
+                
+                features.push({
+                    "type": "Feature",
+                    "geometry": { "type": "Polygon", "coordinates": [ring] }
+                });
+            }
+
+            var geojson = {
+                "type": "FeatureCollection",
+                "features": features
+            };
+
+            if(map3dInstance.getSource('rtk-polygon')) {
+                map3dInstance.getSource('rtk-polygon').setData(geojson);
+            } else {
+                map3dInstance.addSource('rtk-polygon', {
+                    'type': 'geojson',
+                    'data': geojson
+                });
+
+                map3dInstance.addLayer({
+                    'id': 'rtk-fill',
+                    'type': 'fill',
+                    'source': 'rtk-polygon',
+                    'paint': {
+                        'fill-color': '#0098ff',
+                        'fill-opacity': 0.3
+                    }
+                });
+
+                map3dInstance.addLayer({
+                    'id': 'rtk-line',
+                    'type': 'line',
+                    'source': 'rtk-polygon',
+                    'paint': {
+                        'line-color': '#0098ff',
+                        'line-width': 3
+                    }
+                });
+            }
         }
 
         // ====================================================================
@@ -1567,7 +1710,7 @@
         }
 
         function checkToolButtons() { atualizarBotoesUndoRedo(); }
-        setInterval(checkToolButtons, 1000); // Garante que a barra atualize mesmo se mexer no mouse
+        setInterval(checkToolButtons, 1000); 
         inicializarSistemaCAD();
     </script>
 </body>
