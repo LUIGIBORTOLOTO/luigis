@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS | BETA</title>
+    <title>LuiGIS | BETA 1.1</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -94,6 +94,10 @@
 
         .etiqueta-mapa { background: rgba(0,0,0,0.7); border: 1px solid #4fc1ff; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 3px; margin-left: 10px; box-shadow: none;}
 
+        /* Estilo para Cotas nas Curvas */
+        .cota-curva { background: transparent; border: none; box-shadow: none; pointer-events: none;}
+        .cota-curva-text { font-size: 10px; font-weight: bold; font-family: 'Inter', sans-serif; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; text-align: center; white-space: nowrap; margin-top: -6px; margin-left: -10px;}
+
         .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--bg-card) !important; color: var(--text-light) !important; border: 1px solid var(--border); box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .leaflet-popup-content { margin: 10px; width: auto !important; min-width: 200px; }
         .popup-table { width: 100%; border-collapse: collapse; font-size: 10px; font-family: 'Inter', sans-serif; }
@@ -157,6 +161,7 @@
         #map3d-container { width: 95%; height: 90%; max-width: 1400px; }
         #map3d { width: 100%; height: 100%; border-radius: 6px; border: 1px solid #444; }
         .maplibregl-ctrl-bottom-right { display: none !important; }
+        .btn-3d-highlight { background: linear-gradient(45deg, #0277bd, #4a148c); border: 1px solid #4a148c; color: white; }
     </style>
 </head>
 <body>
@@ -166,7 +171,7 @@
     <aside id="left-sidebar">
         <div class="header">
             <div class="header-title">
-                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA</span></h1>
+                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1.1</span></h1>
             </div>
             <div class="top-toolbar">
                 <button class="btn-tool-top" id="btn-undo" onclick="desfazerAcao()" title="Desfazer Ação (Ctrl+Z)" disabled>↩️</button>
@@ -256,10 +261,10 @@
 
             <div class="card" style="border-color: var(--purple);">
                 <div class="card-title" style="color:var(--purple);">Análise Topográfica (Geosis)</div>
-                <button class="btn btn-outline btn-block" onclick="gerarCurvasNivel()" style="margin-bottom:6px; color:var(--purple); border-color:var(--purple);">🏔️ Gerar Curvas de Nível (MDT)</button>
+                <button class="btn btn-outline btn-block" onclick="gerarCurvasNivel()" style="margin-bottom:6px; color:var(--purple); border-color:var(--purple);">🏔️ Gerar Curvas de Nível (c/ Cotas)</button>
                 <button class="btn btn-outline btn-block" onclick="abrirPerfilElevacao()" style="margin-bottom:6px; color:var(--purple); border-color:var(--purple);">📈 Perfil Longitudinal (Elevação)</button>
                 <button class="btn btn-outline btn-block" onclick="calcularFechamento()" style="margin-bottom:6px; color:var(--purple); border-color:var(--purple);">📊 Relatório de Poligonal (Tabelas)</button>
-                <button class="btn btn-block" onclick="abrirVisualizador3D()" style="background-color:#4a148c; border-color:#4a148c; color: #fff;">🌍 Visualizador 3D (Relevo)</button>
+                <button class="btn btn-block btn-3d-highlight" onclick="abrirVisualizador3D()">🌍 Visualizador 3D (Relevo c/ Rato)</button>
             </div>
 
         </div>
@@ -378,6 +383,7 @@
                         <label>Escolher Bloco / Forma</label>
                         <select id="cad-block-type">
                             <option value="default">📍 Ponto Livre (ByLayer)</option>
+                            <option value="circle">⭕ Círculo Geométrico</option>
                             <option value="tree">🌳 Árvore (Arquitetônico)</option>
                             <option value="sewer">🕳️ Bueiro (Arquitetônico)</option>
                             <option value="light">⚡ Poste (Arquitetônico)</option>
@@ -499,7 +505,8 @@
         };
         L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
-        map.pm.addControls({ position: 'topleft', drawMarker: true, drawCircle: false, drawCircleMarker: false, drawText: true, cutPolygon: true, editMode: true, dragMode: true, removalMode: true });
+        // Geoman: Habilitar o desenho de círculos e marcadores
+        map.pm.addControls({ position: 'topleft', drawMarker: true, drawCircle: true, drawCircleMarker: false, drawText: true, cutPolygon: true, editMode: true, dragMode: true, removalMode: true });
         map.pm.setGlobalOptions({ snappable: true, snapDistance: 20, snapMiddle: true, allowSelfIntersection: false });
 
         var gerenciadorCamadas = [];
@@ -561,7 +568,13 @@
         function ativarDesenhoBloco() {
             var isSnap = document.getElementById('cad-snap-toggle').checked;
             var snapDist = parseInt(document.getElementById('cad-snap').value) || 20;
-            map.pm.enableDraw('Marker', { snappable: isSnap, snapDistance: snapDist });
+            var type = document.getElementById('cad-block-type').value;
+            
+            if(type === 'circle') {
+                map.pm.enableDraw('Circle', { snappable: isSnap, snapDistance: snapDist });
+            } else {
+                map.pm.enableDraw('Marker', { snappable: isSnap, snapDistance: snapDist });
+            }
         }
 
         function criarBlocoVetorial(latlng, tipo, corLayer) {
@@ -687,7 +700,7 @@
 
             if(e.shape === 'Marker') {
                 var type = document.getElementById('cad-block-type').value;
-                if(type !== 'default') {
+                if(type !== 'default' && type !== 'circle') {
                     var vetorPronto = criarBlocoVetorial(layer.getLatLng(), type, activeLayerData.cor);
                     if(vetorPronto) {
                         map.removeLayer(layer);
@@ -696,7 +709,9 @@
                 } else {
                     layer.setIcon(L.circleMarker(layer.getLatLng(), {radius:4, color: activeLayerData.cor, fillColor: '#111', fillOpacity: 1}));
                 }
-            } 
+            } else if (e.shape === 'Circle') {
+                layer.setStyle({ color: activeLayerData.cor, fillColor: activeLayerData.cor, fillOpacity: 0.2 });
+            }
             
             layer.addTo(activeLayerData.leafletLayer);
             historicoAcoes.push({ tipo: 'add', layer: layer, parentLayer: activeLayerData.leafletLayer });
@@ -756,7 +771,7 @@
         }
 
         var dbTecnicos = JSON.parse(localStorage.getItem('docgeo_tecnicos')) || [{ id: 't1', nome: 'Luigi Alves Bortoloto', formacao: 'Técnico em Edificações', crea: 'CFT: ', incra: '', cpf: '' }];
-        var dbProps = JSON.parse(localStorage.getItem('docgeo_props')) || [{ id: 'p1', dono: 'Prefeitura Municipal', nome: 'Lote Padrão', mun: 'Igarapé - MG', mat: '', conf: 'Lotes vizinhos e via pública' }];
+        var dbProps = JSON.parse(localStorage.getItem('docgeo_props')) || [{ id: 'p1', dono: 'Prefeitura Municipal', nome: 'Lote Padrão', mun: 'Igarapé / MG', mat: '', conf: 'Lotes vizinhos e via pública' }];
 
         function atualizarSelectsDB() {
             var sT = document.getElementById('db-tecnico-select'); sT.innerHTML = '<option value="novo">-- Cadastrar Novo Técnico --</option>'; dbTecnicos.forEach(t => sT.innerHTML += `<option value="${t.id}">${t.nome}</option>`); if(dbTecnicos.length > 0) { sT.value = dbTecnicos[0].id; carregarTecnico(); }
@@ -868,6 +883,26 @@
         // CURVAS DE NÍVEL AVANÇADAS E PERFIL
         // ====================================================================
 
+        function adicionarCotasNasCurvas(geoJsonLines, colorHex, layerGroup) {
+            if(!geoJsonLines || !geoJsonLines.features) return;
+            geoJsonLines.features.forEach(f => {
+                var coords = f.geometry.coordinates;
+                if(coords && coords.length > 0) {
+                    var lineStr = f.geometry.type === 'MultiLineString' ? coords[0] : coords;
+                    if(lineStr.length > 2) {
+                        var midIndex = Math.floor(lineStr.length / 2);
+                        var pt = lineStr[midIndex];
+                        var cotaZ = f.properties.z;
+                        var icon = L.divIcon({
+                            className: 'cota-curva',
+                            html: `<div class="cota-curva-text" style="color:${colorHex};">${cotaZ}m</div>`
+                        });
+                        L.marker([pt[1], pt[0]], {icon: icon}).addTo(layerGroup);
+                    }
+                }
+            });
+        }
+
         function gerarCurvasNivel() {
             if(memoria.lon.length < 3) return mostrarToast("Mínimo de 3 pontos cotados necessários.");
             var zVals = memoria.cotas;
@@ -915,23 +950,42 @@
                             breaksInter.push(bArredondado);
                         }
                     }
+
+                    // Se não houver quebras, forçar uma central
+                    if(breaksInter.length === 0 && breaksMaster.length === 0) { breaksMaster.push(minZ + (zRange/2)); }
                     
                     if(breaksInter.length > 0) {
                         var linesInter = turf.isolines(grid, breaksInter, {zProperty: 'z'});
-                        processarGeoJSON_NoMapa(linesInter, "Curvas Secundárias", "#757575", false, 1);
+                        var interLayer = processarGeoJSON_Layer(linesInter, "Curvas Secundárias", "#757575", 1);
+                        adicionarCotasNasCurvas(linesInter, "#999999", interLayer);
                     }
                     if(breaksMaster.length > 0) {
                         var linesMaster = turf.isolines(grid, breaksMaster, {zProperty: 'z'});
-                        processarGeoJSON_NoMapa(linesMaster, "Curvas Mestras", "#ff9800", true, 3);
+                        var masterLayer = processarGeoJSON_Layer(linesMaster, "Curvas Mestras", "#ff9800", 3);
+                        adicionarCotasNasCurvas(linesMaster, "#ff9800", masterLayer);
+                        map.fitBounds(masterLayer.getBounds(), {padding: [30,30]});
                     }
                     
                     mostrarToast("Curvas Mestras e Secundárias geradas!");
                 } catch(e) {
                     console.error(e);
-                    alert("Erro ao processar as curvas de nível. Tente verificar as coordenadas e cotas.");
+                    alert("Erro ao processar as curvas de nível. A área não formou uma superfície válida.");
                 }
             }, 100);
         }
+
+        // Função ajustada para devolver a Layer Group
+        function processarGeoJSON_Layer(geojsonBruto, nomeOriginal, corOpcional, customWeight) {
+            const idNovaCamada = 'shp_layer_' + camadaIdCounter++; const defaultColor = corOpcional || getRandomColor();
+            let geojson = reprojectGeoJSON(geojsonBruto);
+            
+            var novaCamada = L.geoJSON(geojson, { style: { color: defaultColor, weight: customWeight || 1, fillOpacity: 0.1 } }).addTo(map);
+            gerenciadorCamadas.push({ id: idNovaCamada, nome: "🏔️ " + nomeOriginal, leafletLayer: novaCamada, visivel: true, tipo: 'shp', cor: defaultColor, rawGeoJSON: geojson });
+            renderizarGestorCamadas();
+            return novaCamada;
+        }
+
+        function reprojectGeoJSON(geojson) { return geojson; } // Mock if needed, handled in other logic
 
         var chartInstance = null;
         function abrirPerfilElevacao() {
@@ -1050,12 +1104,10 @@
         function abrirVisualizador3D() {
             document.getElementById('modal-mapa3d').style.display = 'flex';
             
-            // Coordenadas iniciais baseadas no polígono ou padrão (Igarapé)
             var centerLng = -44.225;
             var centerLat = -20.076;
             
             if(memoria.lon.length > 0) {
-                // Calcular centroide dos pontos
                 var sumLng = 0, sumLat = 0;
                 for(var i=0; i<memoria.lon.length; i++){
                     sumLng += memoria.lon[i];
@@ -1110,11 +1162,15 @@
                 }), 'top-right');
 
                 map3dInstance.on('load', function() {
+                    map3dInstance.resize(); // FORÇAR REDIMENSIONAMENTO NO LOAD
                     atualizarDesenho3D();
                 });
             } else {
                 map3dInstance.flyTo({ center: [centerLng, centerLat], zoom: 15, pitch: 60 });
-                atualizarDesenho3D();
+                setTimeout(() => {
+                    map3dInstance.resize(); // FORÇAR REDIMENSIONAMENTO NA REABERTURA
+                    atualizarDesenho3D();
+                }, 300);
             }
         }
 
@@ -1195,6 +1251,16 @@
             if (focarMapa) { map.fitBounds(novaCamada.getBounds()); }
             gerenciadorCamadas.push({ id: idNovaCamada, nome: "☁️ " + nomeOriginal, leafletLayer: novaCamada, visivel: true, tipo: 'shp', cor: defaultColor, rawGeoJSON: geojson });
             renderizarGestorCamadas(); document.getElementById('loading-shp').style.display = 'none'; 
+        }
+
+        function construirPopupCompleto(props) {
+            if(!props) return "Sem dados";
+            let html = "<table class='popup-table'><tbody>";
+            for(let key in props) {
+                html += `<tr><th>${key}</th><td>${props[key]}</td></tr>`;
+            }
+            html += "</tbody></table>";
+            return html;
         }
 
         async function importarShapefile(event) {
@@ -1322,6 +1388,9 @@
             if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
                 var ptProj = proj4(epsgU, epsgD, [layer.getLatLng().lng, layer.getLatLng().lat]);
                 dxfStr += `0\nPOINT\n8\n${lName}\n62\n${cInt}\n10\n${nFormat(ptProj[0])}\n20\n${nFormat(ptProj[1])}\n30\n0.0000\n`;
+            } else if (layer instanceof L.Circle) {
+                var center = proj4(epsgU, epsgD, [layer.getLatLng().lng, layer.getLatLng().lat]);
+                dxfStr += `0\nCIRCLE\n8\n${lName}\n62\n${cInt}\n10\n${nFormat(center[0])}\n20\n${nFormat(center[1])}\n30\n0.0000\n40\n${nFormat(layer.getRadius())}\n`;
             } else if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
                 var latlngs = (layer instanceof L.Polygon) ? layer.getLatLngs()[0] : layer.getLatLngs();
                 var fechado = (layer instanceof L.Polygon) ? 1 : 0;
@@ -1342,7 +1411,14 @@
             if (layer instanceof L.LayerGroup || layer instanceof L.FeatureGroup) {
                 layer.eachLayer(sub => extractGeoJsonEntities(sub, properties, featuresArr));
             } else {
-                try { var f = layer.toGeoJSON(); f.properties = properties || {}; featuresArr.push(f); } catch(e) {}
+                try { 
+                    var f;
+                    if(layer instanceof L.Circle) {
+                        var pt = [layer.getLatLng().lng, layer.getLatLng().lat];
+                        f = turf.circle(pt, layer.getRadius(), {units: 'meters'});
+                    } else { f = layer.toGeoJSON(); }
+                    f.properties = properties || {}; featuresArr.push(f); 
+                } catch(e) {}
             }
         }
 
@@ -1528,6 +1604,9 @@
                         if(l instanceof L.Marker || l instanceof L.CircleMarker) {
                             var ll = l.getLatLng();
                             kml += `<Placemark><name>Ponto CAD</name><Point><coordinates>${ll.lng},${ll.lat},0</coordinates></Point></Placemark>\n`;
+                        } else if(l instanceof L.Circle) {
+                            var pt = [l.getLatLng().lng, l.getLatLng().lat]; var circ = turf.circle(pt, l.getRadius(), {units: 'meters'}); var coords = circ.geometry.coordinates[0]; var cStr = coords.map(c => `${c[0]},${c[1]},0`).join(" ");
+                            kml += `<Placemark><name>Círculo CAD</name><Polygon><outerBoundaryIs><LinearRing><coordinates>${cStr}</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>\n`;
                         } else if(l instanceof L.Polygon || l instanceof L.Polyline) {
                             var latlngs = l instanceof L.Polygon ? l.getLatLngs()[0] : l.getLatLngs();
                             var cStr = latlngs.map(ll => `${ll.lng},${ll.lat},0`).join(" ");
