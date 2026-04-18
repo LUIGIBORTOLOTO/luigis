@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS | BETA 1.1</title>
+    <title>LuiGIS | BETA 1.2</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
     <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -42,7 +41,7 @@
 
         #left-sidebar { width: 420px; min-width: 420px; background-color: var(--bg-panel); display: flex; flex-direction: column; border-right: 1px solid var(--border); z-index: 1000; box-shadow: 2px 0 15px rgba(0,0,0,0.5); }
         #center-workspace { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
-        #right-sidebar { width: 340px; min-width: 340px; background-color: var(--bg-panel); display: flex; flex-direction: column; border-left: 1px solid var(--border); z-index: 1000; box-shadow: -2px 0 15px rgba(0,0,0,0.5); }
+        #right-sidebar { width: 340px; min-width: 340px; background-color: var(--bg-panel); display: flex; flex-direction: column; border-left: 1px solid var(--border); z-index: 1000; box-shadow: -2px 0 15px rgba(0,0,0,0.5); overflow-y: auto;}
 
         .header { padding: 12px 15px; border-bottom: 1px solid var(--border); background-color: #111; display: flex; align-items: center; justify-content: space-between; }
         .header-title { display: flex; align-items: center; gap: 10px; }
@@ -82,6 +81,9 @@
         .btn-outline { background-color: transparent; border: 1px solid var(--accent); color: var(--accent); } .btn-outline:hover { background: rgba(0, 122, 204, 0.1); }
         .btn-small { padding: 6px 8px; font-size: 10px; }
 
+        .btn-tool-advanced { background: #1a1a1c; border: 1px solid #333; color: #eee; padding: 10px 12px; text-align: left; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.2s; width: 100%; margin-bottom: 5px; }
+        .btn-tool-advanced:hover { background: #252526; border-color: var(--accent); color: #fff;}
+
         #map { flex-grow: 1; background: var(--cad-canvas); cursor: crosshair !important; z-index: 1;}
         .leaflet-container { background: var(--cad-canvas) !important; }
         
@@ -93,8 +95,6 @@
         .hud-divider { width: 1px; height: 40px; background: #333; }
 
         .etiqueta-mapa { background: rgba(0,0,0,0.7); border: 1px solid #4fc1ff; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 3px; margin-left: 10px; box-shadow: none;}
-
-        /* Estilo para Cotas nas Curvas */
         .cota-curva { background: transparent; border: none; box-shadow: none; pointer-events: none;}
         .cota-curva-text { font-size: 10px; font-weight: bold; font-family: 'Inter', sans-serif; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; text-align: center; white-space: nowrap; margin-top: -6px; margin-left: -10px;}
 
@@ -106,7 +106,7 @@
         .popup-table td { background: #1a1a1c; color: #fff; }
 
         .right-header { padding: 15px; background: #111; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--warning); display: flex; align-items: center; justify-content: space-between;}
-        .right-content { padding: 15px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 15px; }
+        .right-content { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; gap: 15px; }
         
         .layer-item { background: #1a1a1c; border: 1px solid #333; border-radius: 4px; padding: 10px; margin-bottom: 6px; border-left: 3px solid #555; transition: 0.2s;}
         .layer-item:hover { background: #222; border-color: #555; }
@@ -124,27 +124,6 @@
         .tabela-editor td { background-color: #1a1a1c; text-align: right; }
         .tabela-editor input { background: transparent; border: none; color: #4fc1ff; width: 100%; font-family: 'Fira Code', monospace; font-size: 11px; text-align: right; outline: none;}
 
-        .doc-preview-wrapper { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #525659; padding: 20px; overflow-y: auto; display: none; z-index: 10000; box-sizing: border-box;}
-        
-        .doc-page { background: white; color: black; width: 210mm; min-height: 297mm; margin: 0 auto 20px auto; padding: 20mm; box-shadow: 0 10px 30px rgba(0,0,0,0.8); font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 1.5; box-sizing: border-box; position: relative;}
-        .doc-page h2 { text-align: left; font-size: 12pt; font-family: Arial, sans-serif; font-weight: bold; margin-bottom: 15px; border: none;}
-        .doc-page h3 { text-align: left; font-size: 11pt; font-family: Arial, sans-serif; font-weight: bold; margin-top: 20px; margin-bottom: 10px;}
-        .doc-identificacao { font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.6; margin-bottom: 20px;}
-        .doc-identificacao span { font-weight: bold; display: inline-block; width: 140px;}
-        .doc-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 10pt; font-family: Arial, sans-serif;}
-        .doc-table th, .doc-table td { border: 1px solid #000; padding: 6px; text-align: center; }
-        .doc-table th { background-color: #eee; font-weight: bold; }
-        .assinatura-box { margin-top: 50px; text-align: center; page-break-inside: avoid; font-family: Arial, sans-serif;}
-
-        @media print {
-            body * { visibility: hidden; }
-            #doc-render-area, #doc-render-area * { visibility: visible; }
-            #doc-render-area { position: absolute; left: 0; top: 0; width: 100%; background: white;}
-            .doc-page { box-shadow: none; margin: 0; padding: 15mm; width: 100%; min-height: auto; page-break-after: always;}
-            .doc-preview-wrapper { display: block !important; padding: 0; background: white;}
-            .no-print { display: none !important; }
-        }
-        
         .section-divider { width: 100%; text-align: center; border-bottom: 1px solid #444; line-height: 0.1em; margin: 20px 0 15px 0; }
         .section-divider span { background: var(--bg-panel); padding: 0 10px; font-size: 10px; color: #aaa; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
         
@@ -157,7 +136,6 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .modal-header h3 { margin: 0; color: var(--purple); font-size: 16px; text-transform: uppercase; }
 
-        /* Estilo específico para o visualizador 3D */
         #map3d-container { width: 95%; height: 90%; max-width: 1400px; }
         #map3d { width: 100%; height: 100%; border-radius: 6px; border: 1px solid #444; }
         .maplibregl-ctrl-bottom-right { display: none !important; }
@@ -171,7 +149,7 @@
     <aside id="left-sidebar">
         <div class="header">
             <div class="header-title">
-                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1.1</span></h1>
+                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1.2</span></h1>
             </div>
             <div class="top-toolbar">
                 <button class="btn-tool-top" id="btn-undo" onclick="desfazerAcao()" title="Desfazer Ação (Ctrl+Z)" disabled>↩️</button>
@@ -180,56 +158,12 @@
         </div>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="abrirAba('aba-db', this)">1. Cadastro</button>
-            <button class="tab-btn" onclick="abrirAba('aba-entrada', this)">2. Vértices</button>
-            <button class="tab-btn" onclick="abrirAba('aba-editor', this)">3. Tabela</button>
-            <button class="tab-btn" onclick="abrirAba('aba-exportar', this)" style="color:var(--warning);">4. Exportar</button>
-            <button class="tab-btn" onclick="abrirAba('aba-documentos', this)" style="color:var(--success);">5. DocGEO</button>
+            <button class="tab-btn active" onclick="abrirAba('aba-entrada', this)">1. Vértices</button>
+            <button class="tab-btn" onclick="abrirAba('aba-editor', this)">2. Tabela</button>
+            <button class="tab-btn" onclick="abrirAba('aba-exportar', this)" style="color:var(--warning);">3. Exportar</button>
         </div>
 
-        <div id="aba-db" class="tab-content active">
-            <div class="card">
-                <div class="card-title">Banco de Profissionais & RTK</div>
-                <select id="db-tecnico-select" onchange="carregarTecnico()" style="margin-bottom:8px;"><option value="novo">-- Cadastrar Novo Técnico --</option></select>
-                <div class="form-row">
-                    <div style="flex:2;"><label>Responsável Técnico</label><input type="text" id="tec-nome" value="Luigi Alves Bortoloto"></div>
-                </div>
-                <div class="form-row">
-                    <div><label>Formação</label><input type="text" id="tec-formacao" value="Técnico em Edificações"></div>
-                    <div><label>CREA/CFT</label><input type="text" id="tec-crea" value="CFT: 000.000.000-00"></div>
-                </div>
-                <div class="form-row">
-                    <div><label>ART / TRT nº</label><input type="text" id="tec-art" value="BR-0000000-0"></div>
-                    <div><label>Data Levantamento</label><input type="date" id="tec-data"></div>
-                </div>
-                <hr style="border-color: #333; margin: 4px 0;">
-                <div class="form-row">
-                    <div><label>Modelo GNSS</label><input type="text" id="eq-modelo" value="Topcon Hiper HR"></div>
-                    <div><label>Método</label><input type="text" id="eq-metodo" value="GPS RTK"></div>
-                </div>
-                <button class="btn btn-outline btn-block" style="margin-top:5px;" onclick="salvarTecnico()">💾 Salvar no Banco</button>
-            </div>
-
-            <div class="card">
-                <div class="card-title">Dados do Imóvel & Proprietário</div>
-                <select id="db-prop-select" onchange="carregarPropriedade()" style="margin-bottom:8px;"><option value="novo">-- Cadastrar Nova Propriedade --</option></select>
-                <div class="form-row">
-                    <div style="flex:2;"><label>Proprietário</label><input type="text" id="prop-dono" value="Prefeitura Municipal"></div>
-                    <div><label>CPF/CNPJ</label><input type="text" id="prop-cpf" value="000.000.000-00"></div>
-                </div>
-                <div class="form-row">
-                    <div style="flex:2;"><label>Imóvel / Denominação</label><input type="text" id="prop-nome" value="Lote Padrão"></div>
-                    <div><label>Matrícula</label><input type="text" id="prop-mat" value="12.345"></div>
-                </div>
-                <div class="form-row">
-                    <div><label>Município/UF</label><input type="text" id="prop-mun" value="Igarapé / MG"></div>
-                    <div><label>Comarca</label><input type="text" id="prop-comarca" value="CRI de Igarapé"></div>
-                </div>
-                <button class="btn btn-outline btn-block" style="margin-top:5px;" onclick="salvarPropriedade()">💾 Salvar no Banco</button>
-            </div>
-        </div>
-
-        <div id="aba-entrada" class="tab-content">
+        <div id="aba-entrada" class="tab-content active">
             <div class="card">
                 <div class="card-title">Sistema de Entrada</div>
                 <div class="form-row">
@@ -266,12 +200,11 @@
                 <button class="btn btn-outline btn-block" onclick="calcularFechamento()" style="margin-bottom:6px; color:var(--purple); border-color:var(--purple);">📊 Relatório de Poligonal (Tabelas)</button>
                 <button class="btn btn-block btn-3d-highlight" onclick="abrirVisualizador3D()">🌍 Visualizador 3D (Relevo c/ Rato)</button>
             </div>
-
         </div>
 
         <div id="aba-editor" class="tab-content" style="padding:10px;">
             <button class="btn btn-success btn-block" style="margin-bottom:10px;" onclick="salvarEdicoes()">✅ Aplicar Edições no Mapa</button>
-            <p style="font-size: 9px; color: #aaa; margin: 0 0 5px 0;">O preenchimento do Confrontante é utilizado para gerar as tabelas do documento.</p>
+            <p style="font-size: 9px; color: #aaa; margin: 0 0 5px 0;">O preenchimento é utilizado para controle e exportação.</p>
             <div class="spreadsheet-container">
                 <table class="tabela-editor">
                     <thead><tr><th>Vértice</th><th>Coord E(X)</th><th>Coord N(Y)</th><th>Cota(Z)</th><th style="width: 120px;">Confrontante</th></tr></thead>
@@ -325,19 +258,6 @@
                 <button class="btn btn-block" style="background-color:#0277bd; border-color:#0277bd;" onclick="baixarKMZ()">🌎 Exportar Google Earth (.KMZ)</button>
                 <button class="btn btn-success btn-block" onclick="baixarCSV()">📊 Exportar Tabela (.CSV)</button>
                 <button class="btn btn-purple btn-block" onclick="baixarGeoJSON()">🌍 Exportar GIS (.GeoJSON)</button>
-            </div>
-        </div>
-
-        <div id="aba-documentos" class="tab-content">
-            <div class="card" style="border-color: var(--success); background: rgba(76, 175, 80, 0.05);">
-                <div class="card-title" style="color:var(--success);">Automação de Documentação</div>
-                <p style="font-size: 10px; color: #aaa; margin: 0 0 15px 0;">Baseado no Polígono da aba "Vértices" e nos dados da aba "Cadastro".</p>
-                
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button class="btn btn-primary" onclick="gerarDocumentacaoCompleta('memorial')">📄 1. Memorial Descritivo</button>
-                    <button class="btn btn-warning" onclick="gerarDocumentacaoCompleta('laudo')">⚖️ 4. Laudo Técnico</button>
-                    <button class="btn btn-success" onclick="gerarDocumentacaoCompleta('croqui')">🗺️ 5. Croqui c/ Tabela A4</button>
-                </div>
             </div>
         </div>
     </aside>
@@ -400,6 +320,19 @@
                 <button class="btn btn-outline btn-small btn-block" style="margin-top:5px; border-color:var(--danger); color:var(--danger);" onclick="limparLayerAtiva()">🗑️ Apagar Tudo da Layer Ativa</button>
             </div>
 
+            <div class="card" style="border-color: #64b5f6; margin-top:5px;">
+                <div class="card-title" style="color:#64b5f6;">Ferramentas de Desenho</div>
+                <div style="display:flex; flex-direction:column; margin-top: 8px;">
+                    <button class="btn-tool-advanced" onclick="toolMedirDistancia()">📏 Medir Distância (Régua)</button>
+                    <button class="btn-tool-advanced" onclick="toolCortarPoligono()">✂️ Cortar Polígono (Split)</button>
+                    <button class="btn-tool-advanced" onclick="toolMedirAngulo()">📐 Medir Ângulo (3 Pontos)</button>
+                    <button class="btn-tool-advanced" onclick="toolSuavizar()">✨ Suavizar Linhas (BETA)</button>
+                    <button class="btn-tool-advanced" id="btn-tool-snap" onclick="toolSnap()">🧲 Ativar Snap / Ímã</button>
+                    <button class="btn-tool-advanced" onclick="toolApagarVertice()">🗑️ Apagar Vértice Específico</button>
+                    <button class="btn-tool-advanced" onclick="toolInverterSentido()">🔄 Inverter Sentido (Azimutes)</button>
+                </div>
+            </div>
+
             <div class="section-divider"><span>2. Bases Externas (XREF)</span></div>
             <div class="card" style="border-color: var(--accent); margin-top:0;">
                 <div class="card-title">SHP / Nuvem</div>
@@ -438,17 +371,6 @@
         </div>
     </aside>
 
-    <div id="doc-preview-container" class="doc-preview-wrapper">
-        <div class="no-print" style="max-width: 210mm; margin: 0 auto 15px auto; display: flex; justify-content: space-between; background: #fff; padding: 15px; border-radius: 4px;">
-            <span style="font-weight:bold; color:#000;">DocGEO - Visualização de Impressão</span>
-            <div>
-                <button class="btn" style="background:var(--danger); border-color:darkred;" onclick="document.getElementById('doc-preview-container').style.display='none'">❌ FECHAR</button>
-                <button class="btn btn-primary" onclick="window.print()">🖨️ IMPRIMIR / SALVAR PDF</button>
-            </div>
-        </div>
-        <div id="doc-render-area"></div>
-    </div>
-
     <div id="modal-perfil" class="modal-overlay">
         <div class="modal-content" style="max-width: 800px; height: auto;">
             <div class="modal-header">
@@ -483,8 +405,6 @@
             setTimeout(() => { toast.remove(); }, 2500);
         }
 
-        document.getElementById('tec-data').valueAsDate = new Date();
-
         var cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 22, attribution: '© CartoDB' });
         var googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20 });
         var googleTerrain = L.tileLayer('https://mt1.google.com/vt/lyrs=p&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 22, maxNativeZoom: 20 });
@@ -505,7 +425,6 @@
         };
         L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
-        // Geoman: Habilitar o desenho de círculos e marcadores
         map.pm.addControls({ position: 'topleft', drawMarker: true, drawCircle: true, drawCircleMarker: false, drawText: true, cutPolygon: true, editMode: true, dragMode: true, removalMode: true });
         map.pm.setGlobalOptions({ snappable: true, snapDistance: 20, snapMiddle: true, allowSelfIntersection: false });
 
@@ -540,9 +459,7 @@
             var select = document.getElementById('active-cad-layer');
             select.innerHTML = '';
             var layersCAD = gerenciadorCamadas.filter(c => c.tipo === 'cad');
-            layersCAD.forEach(l => {
-                select.innerHTML += `<option value="${l.id}">${l.nome}</option>`;
-            });
+            layersCAD.forEach(l => { select.innerHTML += `<option value="${l.id}">${l.nome}</option>`; });
             if(idParaSelecionar) select.value = idParaSelecionar;
         }
 
@@ -695,6 +612,15 @@
 
         map.on('pm:create', function(e) {
             var layer = e.layer;
+            
+            if (e.shape === 'Line') {
+                try {
+                    let length = turf.length(layer.toGeoJSON(), {units: 'meters'});
+                    mostrarToast(`Distância Desenhada: ${length.toFixed(2)} metros`);
+                    layer.bindPopup(`Distância: ${length.toFixed(2)}m`).openPopup();
+                } catch(err) {}
+            }
+
             var activeLayerData = getActiveCadLayerData();
             if(!activeLayerData) { alert("Crie uma Layer CAD primeiro."); map.removeLayer(layer); return; }
 
@@ -739,6 +665,150 @@
             }
         }
 
+        // =======================================================
+        // FERRAMENTAS DE DESENHO E EDIÇÃO (NOVAS)
+        // =======================================================
+
+        function toolMedirDistancia() {
+            mostrarToast("Régua ativada. Clique no mapa para desenhar o trajeto.");
+            map.pm.enableDraw('Line', {
+                snappable: true,
+                continueDrawing: true,
+                finishOn: 'dblclick'
+            });
+        }
+
+        function toolCortarPoligono() {
+            mostrarToast("Cortar Polígono ativado. Desenhe uma linha atravessando o polígono que deseja cortar.");
+            map.pm.enableDraw('Cut');
+        }
+
+        let medindoAngulo = false;
+        let anguloLineTemp = null;
+        function toolMedirAngulo() {
+            if(medindoAngulo) { 
+                map.off('click', handleAnguloClick); 
+                medindoAngulo = false; 
+                if(anguloLineTemp) map.removeLayer(anguloLineTemp);
+                return mostrarToast("Medição cancelada."); 
+            }
+            
+            mostrarToast("Clique em 3 pontos (1. Início, 2. Centro, 3. Fim)");
+            medindoAngulo = true;
+            let pts = [];
+            anguloLineTemp = L.polyline([], {color: '#fbc02d', dashArray: '5,5', weight: 2}).addTo(map);
+
+            window.handleAnguloClick = function(e) {
+                pts.push(e.latlng);
+                anguloLineTemp.addLatLng(e.latlng);
+                
+                if(pts.length === 3) {
+                    let p1 = turf.point([pts[0].lng, pts[0].lat]);
+                    let p2 = turf.point([pts[1].lng, pts[1].lat]);
+                    let p3 = turf.point([pts[2].lng, pts[2].lat]);
+                    
+                    let b1 = turf.bearing(p2, p1);
+                    let b2 = turf.bearing(p2, p3);
+                    
+                    let angulo = Math.abs(b1 - b2);
+                    if(angulo > 180) angulo = 360 - angulo;
+                    
+                    L.marker(pts[1]).bindTooltip(`Ângulo: ${angulo.toFixed(2)}°`, {permanent: true, direction: 'right', className:'etiqueta-mapa'}).addTo(map);
+                    mostrarToast(`Ângulo medido: ${angulo.toFixed(2)}°`);
+                    
+                    map.off('click', handleAnguloClick);
+                    medindoAngulo = false;
+                    setTimeout(() => { if(anguloLineTemp) map.removeLayer(anguloLineTemp); }, 2500);
+                }
+            };
+            map.on('click', handleAnguloClick);
+        }
+
+        function toolSuavizar() {
+            mostrarToast("BETA: Clique na LINHA que deseja suavizar (Curvas de Bezier)");
+            let clicou = false;
+            
+            // Timeout escape just in case they don't click anything
+            map.once('click', function() {
+               setTimeout(()=>{ if(!clicou) mostrarToast("Ação de suavizar expirada."); }, 500);
+            });
+            
+            gerenciadorCamadas.forEach(c => {
+                if(c.tipo === 'cad' || c.tipo === 'rtk_poly' || c.tipo === 'shp') {
+                    c.leafletLayer.eachLayer(l => {
+                        l.once('click', function(e) {
+                            clicou = true;
+                            if(l instanceof L.Polyline && !(l instanceof L.Polygon)) {
+                                try {
+                                    let feat = l.toGeoJSON();
+                                    let smoothed = turf.bezierSpline(feat);
+                                    let newCoords = smoothed.geometry.coordinates.map(pt => [pt[1], pt[0]]);
+                                    l.setLatLngs(newCoords);
+                                    mostrarToast("Linha suavizada com sucesso!");
+                                } catch(err) { mostrarToast("Erro ao suavizar linha. Tente em linhas simples."); }
+                            } else {
+                                mostrarToast("Apenas linhas abertas podem ser suavizadas.");
+                            }
+                        });
+                    });
+                }
+            });
+        }
+
+        function toolSnap() {
+            let chk = document.getElementById('cad-snap-toggle');
+            if(chk) {
+                chk.checked = !chk.checked;
+                atualizarSnap();
+                document.getElementById('btn-tool-snap').innerText = chk.checked ? "🧲 Snap: LIGADO" : "🧲 Ativar Snap / Ímã";
+                mostrarToast(chk.checked ? "Snap Ligado" : "Snap Desligado");
+            }
+        }
+
+        let apagandoVertice = false;
+        function toolApagarVertice() {
+            apagandoVertice = !apagandoVertice;
+            if(apagandoVertice) {
+                map.pm.enableGlobalEditMode();
+                mostrarToast("MODO DE EDIÇÃO: Clique com o botão DIREITO no vértice para apagar. Clique na ferramenta novamente para sair.");
+            } else {
+                map.pm.disableGlobalEditMode();
+                mostrarToast("Modo de edição desativado.");
+            }
+        }
+
+        function toolInverterSentido() {
+            mostrarToast("Clique na linha ou polígono para INVERTER a direção das coordenadas");
+            let clicou = false;
+            
+            map.once('click', function() {
+               setTimeout(()=>{ if(!clicou) mostrarToast("Ação expirada."); }, 500);
+            });
+
+            gerenciadorCamadas.forEach(c => {
+                if(c.leafletLayer && c.leafletLayer.eachLayer) {
+                    c.leafletLayer.eachLayer(l => {
+                        l.once('click', function(e) {
+                            clicou = true;
+                            if(l instanceof L.Polyline) {
+                                let latlngs = l.getLatLngs();
+                                if(l instanceof L.Polygon) {
+                                    latlngs[0].reverse();
+                                } else {
+                                    latlngs.reverse();
+                                }
+                                l.setLatLngs(latlngs);
+                                mostrarToast("Sentido das coordenadas invertido com sucesso!");
+                            }
+                        });
+                    });
+                }
+            });
+        }
+        
+        // =======================================================
+
+
         var memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [] };
         var colunasGlobais = {}; 
         
@@ -770,19 +840,6 @@
             btn.classList.add('active');
         }
 
-        var dbTecnicos = JSON.parse(localStorage.getItem('docgeo_tecnicos')) || [{ id: 't1', nome: 'Luigi Alves Bortoloto', formacao: 'Técnico em Edificações', crea: 'CFT: ', incra: '', cpf: '' }];
-        var dbProps = JSON.parse(localStorage.getItem('docgeo_props')) || [{ id: 'p1', dono: 'Prefeitura Municipal', nome: 'Lote Padrão', mun: 'Igarapé / MG', mat: '', conf: 'Lotes vizinhos e via pública' }];
-
-        function atualizarSelectsDB() {
-            var sT = document.getElementById('db-tecnico-select'); sT.innerHTML = '<option value="novo">-- Cadastrar Novo Técnico --</option>'; dbTecnicos.forEach(t => sT.innerHTML += `<option value="${t.id}">${t.nome}</option>`); if(dbTecnicos.length > 0) { sT.value = dbTecnicos[0].id; carregarTecnico(); }
-            var sP = document.getElementById('db-prop-select'); sP.innerHTML = '<option value="novo">-- Cadastrar Nova Propriedade --</option>'; dbProps.forEach(p => sP.innerHTML += `<option value="${p.id}">${p.nome} (${p.dono})</option>`); if(dbProps.length > 0) { sP.value = dbProps[0].id; carregarPropriedade(); }
-        }
-        function carregarTecnico() { var id = document.getElementById('db-tecnico-select').value; if (id === 'novo') { document.getElementById('tec-nome').value = ''; document.getElementById('tec-formacao').value = ''; return; } var t = dbTecnicos.find(x => x.id === id); if(t) { document.getElementById('tec-nome').value = t.nome; document.getElementById('tec-formacao').value = t.formacao; document.getElementById('tec-crea').value = t.crea; } }
-        function salvarTecnico() { var t = { id: 't_' + Date.now(), nome: document.getElementById('tec-nome').value, formacao: document.getElementById('tec-formacao').value, crea: document.getElementById('tec-crea').value }; dbTecnicos.push(t); localStorage.setItem('docgeo_tecnicos', JSON.stringify(dbTecnicos)); atualizarSelectsDB(); mostrarToast("Técnico salvo!"); }
-        function carregarPropriedade() { var id = document.getElementById('db-prop-select').value; if (id === 'novo') return; var p = dbProps.find(x => x.id === id); if(p) { document.getElementById('prop-dono').value = p.dono; document.getElementById('prop-nome').value = p.nome; document.getElementById('prop-mun').value = p.mun; document.getElementById('prop-mat').value = p.mat; } }
-        function salvarPropriedade() { var p = { id: 'p_' + Date.now(), dono: document.getElementById('prop-dono').value, nome: document.getElementById('prop-nome').value, mun: document.getElementById('prop-mun').value, mat: document.getElementById('prop-mat').value }; dbProps.push(p); localStorage.setItem('docgeo_props', JSON.stringify(dbProps)); atualizarSelectsDB(); mostrarToast("Propriedade salva!"); }
-        atualizarSelectsDB();
-
         document.getElementById('main-formato').addEventListener('change', function(e) { document.getElementById('utm-options').style.display = (e.target.value === 'utm') ? 'flex' : 'none'; });
         function parseDMS(str) { var match = str.match(/(\d+)[^\d]+(\d+)[^\d]+([\d.,]+)[^\d]*([NSWE]?)/i); if(!match) return null; var deg = parseFloat(match[1]); var min = parseFloat(match[2]); var sec = parseFloat(match[3].replace(',','.')); var dec = deg + (min/60) + (sec/3600); var dir = match[4] ? match[4].toUpperCase() : ''; if (dir === 'S' || dir === 'W' || dir === 'O') dec = dec * -1; return dec; }
 
@@ -807,6 +864,7 @@
             var txt = document.getElementById('main-texto').value; if(!txt.trim()) { alert("Insira dados."); return; }
             var fmtIn = document.getElementById('main-formato').value; var epsgIn = obterEpsgEntrada(); var epsgOut = "+proj=longlat +datum=WGS84 +no_defs";
             memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [] }; var linhas = txt.split('\n');
+            var coordSet = new Set(); 
 
             for (var i = 0; i < linhas.length; i++) {
                 var linhaLimpa = linhas[i].trim().replace(/"/g, ''); if (linhaLimpa === "" || linhaLimpa.startsWith("CO;")) continue; 
@@ -833,7 +891,6 @@
                                 y = pN; x = pE; 
                                 var idxN = numeros.indexOf(pN); var idxE = numeros.indexOf(pE);
                                 var maxIdx = Math.max(idxN, idxE);
-                                // Pega obrigatoriamente a Cota Z como o número logo após as coordenadas
                                 if(maxIdx !== -1 && maxIdx + 1 < numeros.length) { z = numeros[maxIdx + 1]; }
                                 else { var res = numeros.filter(n => n !== pN && n !== pE); z = res.length > 0 ? res[0] : 0; }
                             } else { 
@@ -845,6 +902,11 @@
                     }
                 }
                 if(x === null || y === null || isNaN(x) || isNaN(y)) continue;
+                
+                var coordKey = x.toFixed(3) + "_" + y.toFixed(3); 
+                if(coordSet.has(coordKey)) { continue; }
+                coordSet.add(coordKey);
+
                 try { var conv = (fmtIn === 'sgl' || fmtIn === 'decimal') ? [x, y] : proj4(epsgIn, epsgOut, [x, y]); memoria.nomes.push(nomeMarco); memoria.cotas.push(z); memoria.lon.push(conv[0]); memoria.lat.push(conv[1]); memoria.confs.push(""); } catch(e) {}
             }
             if(memoria.lon.length === 0) { alert("Nenhum dado válido."); return; }
@@ -963,7 +1025,6 @@
                         }
                     }
 
-                    // Se não houver quebras, forçar uma central
                     if(breaksInter.length === 0 && breaksMaster.length === 0) { breaksMaster.push(minZ + (zRange/2)); }
                     
                     if(breaksInter.length > 0) {
@@ -986,7 +1047,6 @@
             }, 100);
         }
 
-        // Função ajustada para devolver a Layer Group
         function processarGeoJSON_Layer(geojsonBruto, nomeOriginal, corOpcional, customWeight) {
             const idNovaCamada = 'shp_layer_' + camadaIdCounter++; const defaultColor = corOpcional || getRandomColor();
             let geojson = reprojectGeoJSON(geojsonBruto);
@@ -997,7 +1057,7 @@
             return novaCamada;
         }
 
-        function reprojectGeoJSON(geojson) { return geojson; } // Mock if needed, handled in other logic
+        function reprojectGeoJSON(geojson) { return geojson; } 
 
         var chartInstance = null;
         function abrirPerfilElevacao() {
@@ -1059,53 +1119,8 @@
         }
 
         function calcularFechamento() {
-            if(memoria.lon.length < 3) return mostrarToast("Mínimo de 3 pontos para formar uma poligonal.");
-            
-            var epsgIn = obterEpsgEntrada();
-            var trs = "";
-
-            for(var i = 0; i < memoria.lon.length; i++) {
-                var pProx = (i + 1) % memoria.lon.length;
-                var c1 = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgIn, [memoria.lon[i], memoria.lat[i]]);
-                var c2 = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgIn, [memoria.lon[pProx], memoria.lat[pProx]]);
-                
-                var calc = calcAzimuteDist(c1[0], c1[1], c2[0], c2[1]);
-                
-                trs += `<tr>
-                    <td>${memoria.nomes[i]}</td>
-                    <td>${memoria.nomes[pProx]}</td>
-                    <td>${calc.azimute}</td>
-                    <td>${calc.dist} m</td>
-                    <td>${c1[0].toFixed(3)}</td>
-                    <td>${c1[1].toFixed(3)}</td>
-                    <td>${memoria.cotas[i].toFixed(2)}</td>
-                </tr>`;
-            }
-
-            var html = `
-            <div class="doc-page" style="background:#1a1a1c; color:#fff; width:100%; box-shadow:none; padding:10px;">
-                <h2 style="color:var(--purple); border-bottom:1px solid #333; padding-bottom:10px;">📊 Relatório Analítico da Poligonal (Topografia)</h2>
-                <div style="display:flex; justify-content:space-between; margin-bottom:15px; background:#111; padding:10px; border:1px solid #333; border-radius:4px;">
-                    <div><span style="color:#aaa;">Sistema de Coordenadas:</span> <br><b>${document.getElementById('main-datum').value}</b></div>
-                    <div><span style="color:#aaa;">Área Topográfica:</span> <br><b style="color:var(--warning);">${ultimaAreaCalculada.toFixed(3)} m²</b></div>
-                    <div><span style="color:#aaa;">Perímetro Total:</span> <br><b>${ultimoPerimetroCalculado.toFixed(3)} m</b></div>
-                </div>
-                <table class="popup-table" style="width:100%;">
-                    <thead><tr>
-                        <th>Ponto INICIAL</th>
-                        <th>Ponto VANTE</th>
-                        <th>Azimute Plano</th>
-                        <th>Dist. Horizontal</th>
-                        <th>Coordenada E (X)</th>
-                        <th>Coordenada N (Y)</th>
-                        <th>Cota (Z)</th>
-                    </tr></thead>
-                    <tbody>${trs}</tbody>
-                </table>
-            </div>`;
-
-            document.getElementById('doc-render-area').innerHTML = html;
-            document.getElementById('doc-preview-container').style.display = 'block';
+            // Reutilizando o alert padrão
+            alert("Poligonal: \nÁrea: " + ultimaAreaCalculada.toFixed(3) + " m²\nPerímetro: " + ultimoPerimetroCalculado.toFixed(3) + " m");
         }
 
         // ====================================================================
@@ -1174,13 +1189,13 @@
                 }), 'top-right');
 
                 map3dInstance.on('load', function() {
-                    map3dInstance.resize(); // FORÇAR REDIMENSIONAMENTO NO LOAD
+                    map3dInstance.resize(); 
                     atualizarDesenho3D();
                 });
             } else {
                 map3dInstance.flyTo({ center: [centerLng, centerLat], zoom: 15, pitch: 60 });
                 setTimeout(() => {
-                    map3dInstance.resize(); // FORÇAR REDIMENSIONAMENTO NA REABERTURA
+                    map3dInstance.resize(); 
                     atualizarDesenho3D();
                 }, 300);
             }
@@ -1199,7 +1214,7 @@
                 for(var i=0; i<memoria.lon.length; i++) {
                     ring.push([memoria.lon[i], memoria.lat[i]]);
                 }
-                ring.push([memoria.lon[0], memoria.lat[0]]); // Fecha o polígono
+                ring.push([memoria.lon[0], memoria.lat[0]]); 
                 
                 features.push({
                     "type": "Feature",
@@ -1512,7 +1527,7 @@
             var dxf = "0\nSECTION\n2\nENTITIES\n";
             
             var pts = obterCoordenadasExportacao();
-            var colorRTK = 4; // Ciano
+            var colorRTK = 4; 
             
             if (hasRtkPoly) {
                 dxf += `0\nPOLYLINE\n8\nLEVANTAMENTO_RTK\n62\n${colorRTK}\n66\n1\n70\n1\n10\n0.0\n20\n0.0\n30\n0.0\n`; 
@@ -1703,101 +1718,6 @@
             }
             baixarArquivo("LuiGIS_Web.geojson", JSON.stringify({ type: "FeatureCollection", features: features }, null, 2), "application/json");
             mostrarToast("GeoJSON Exportado!");
-        }
-
-        function calcAzimuteDist(x1, y1, x2, y2) { var dx = x2 - x1; var dy = y2 - y1; var dist = Math.sqrt(dx*dx + dy*dy); var az = Math.atan2(dx, dy) * (180 / Math.PI); if (az < 0) az += 360; var d = Math.floor(az); var m = Math.floor((az - d) * 60); var s = (((az - d) * 60) - m) * 60; return { dist: dist.toFixed(2), azimute: `${d}°${m.toString().padStart(2, '0')}'${Math.floor(s).toString().padStart(2, '0')}"` }; }
-        function getDataFormatada(dData) { var m = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"]; var d = dData ? new Date(dData) : new Date(); if(dData) d.setMinutes(d.getMinutes() + d.getTimezoneOffset()); return `${String(d.getDate()).padStart(2,'0')} de ${m[d.getMonth()]} de ${d.getFullYear()}`; }
-
-        async function gerarDocumentacaoCompleta(tipo) {
-            if (memoria.lon.length < 3) { alert("Polígono não fechado."); return; }
-
-            var prop = document.getElementById('prop-dono').value; var mun = document.getElementById('prop-mun').value;
-            var gleba = document.getElementById('prop-nome').value; var mat = document.getElementById('prop-mat').value;
-            var cpf = document.getElementById('prop-cpf').value; var comarca = document.getElementById('prop-comarca').value;
-
-            var tecNome = document.getElementById('tec-nome').value; var tecForm = document.getElementById('tec-formacao').value;
-            var tecCrea = document.getElementById('tec-crea').value; var tecArt = document.getElementById('tec-art').value;
-            var tecData = getDataFormatada(document.getElementById('tec-data').value);
-            var eqMetodo = document.getElementById('eq-metodo').value;
-
-            var areaHa = (ultimaAreaCalculada / 10000).toFixed(4).replace('.', ',');
-            var area = ultimaAreaCalculada.toFixed(2).replace('.', ','); var perim = ultimoPerimetroCalculado.toFixed(2).replace('.', ',');
-            var dataFormatada = getDataFormatada();
-
-            var epsgUTM = obterEpsgEntrada();
-            var coords = []; for(var i=0; i<memoria.lon.length; i++) { var c = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgUTM, [memoria.lon[i], memoria.lat[i]]); coords.push({x: c[0], y: c[1], z: memoria.cotas[i]}); }
-
-            var html = "";
-
-            if (tipo === 'memorial') {
-                html += `<div class="doc-page">
-                    <h2>1. MEMORIAL DESCRITIVO</h2>
-                    
-                    <h3>1.1 IDENTIFICAÇÃO DO IMÓVEL</h3>
-                    <div class="doc-identificacao">
-                        <span>Proprietário:</span> ${prop}<br>
-                        <span>CPF/CNPJ:</span> ${cpf}<br>
-                        <span>Imóvel:</span> ${gleba} – Matrícula nº ${mat} – ${comarca}<br>
-                        <span>Município/UF:</span> ${mun}<br>
-                        <span>Comarca:</span> ${comarca}<br>
-                        <span>Área Calculada:</span> ${area} m² (${areaHa} ha)<br>
-                        <span>Perímetro:</span> ${perim} m
-                    </div>
-
-                    <h3>1.2 DESCRIÇÃO PERIMÉTRICA</h3>
-                    <p style="text-align: justify; text-indent: 30px;">Inicia-se a descrição no vértice <strong>${memoria.nomes[0]}</strong>, de coordenadas N ${coords[0].y.toFixed(3).replace('.',',')} m e E ${coords[0].x.toFixed(3).replace('.',',')} m, situado na divisa com ${memoria.confs[0] || '---'};</p>`;
-                
-                for (var i = 0; i < coords.length; i++) {
-                    var pAtual = i; var pProx = (i + 1) % coords.length; var calc = calcAzimuteDist(coords[pAtual].x, coords[pAtual].y, coords[pProx].x, coords[pProx].y);
-                    var confStr = memoria.confs[pAtual] || "---";
-                    html += `<p style="text-align: justify; margin: 5px 0;">Do vértice <strong>${memoria.nomes[pAtual]}</strong>, segue confrontando com <strong>${confStr}</strong>, com azimute de ${calc.azimute} e distância de ${calc.dist.replace('.',',')} m, até o vértice <strong>${memoria.nomes[pProx]}</strong>;</p>`;
-                }
-                
-                html += `
-                    <h3>1.3 COORDENADAS DOS VÉRTICES</h3>
-                    <table class="doc-table"><thead><tr><th>VÉRTICE</th><th>COORD. N (m)</th><th>COORD. E (m)</th><th>ALTITUDE (m)</th><th>MÉTODO</th></tr></thead><tbody>`;
-                for (var i = 0; i < coords.length; i++) { html += `<tr><td>${memoria.nomes[i]}</td><td>${coords[i].y.toFixed(3).replace('.',',')}</td><td>${coords[i].x.toFixed(3).replace('.',',')}</td><td>${coords[i].z.toFixed(2).replace('.',',')}</td><td>${eqMetodo}</td></tr>`; }
-                html += `</tbody></table>
-
-                    <h3>1.4 CONFRONTAÇÕES E DIVISAS</h3>
-                    <table class="doc-table"><thead><tr><th>DE</th><th>ATÉ</th><th>AZIMUTE</th><th>DISTÂNCIA (m)</th><th>CONFRONTANTE</th></tr></thead><tbody>`;
-                for (var i = 0; i < coords.length; i++) { var pProx = (i + 1) % coords.length; var calc = calcAzimuteDist(coords[i].x, coords[i].y, coords[pProx].x, coords[pProx].y); html += `<tr><td>${memoria.nomes[i]}</td><td>${memoria.nomes[pProx]}</td><td>${calc.azimute}</td><td>${calc.dist.replace('.',',')}</td><td>${memoria.confs[i] || '---'}</td></tr>`; }
-                html += `</tbody></table>
-
-                    <h3>1.5 RESPONSÁVEL TÉCNICO</h3>
-                    <div class="doc-identificacao"><span>Responsável:</span> ${tecNome}<br><span>Registro:</span> ${tecCrea}<br><span>Data Levant.:</span> ${tecData}<br><span>ART/TRT nº:</span> ${tecArt}</div>
-                    
-                    <div class="assinatura-box"><p>_____________________________________</p><p><strong>${tecNome}</strong><br>${tecForm}<br>${tecCrea}</p><p>${mun.split('/')[0]}, ${dataFormatada}.</p></div>
-                </div>`;
-            }
-
-            if (tipo === 'laudo') {
-                html += `<div class="doc-page"><h2>LAUDO TÉCNICO DE CONSTATAÇÃO</h2><p style="text-align: justify; text-indent: 30px;">Eu, <strong>${tecNome}</strong>, profissional habilitado (${tecCrea}), declaro para os devidos fins legais que procedi o levantamento topográfico e a demarcação dos limites do imóvel <strong>${gleba}</strong>, de <strong>${prop}</strong>, em <strong>${mun}</strong>.</p><p style="text-align: justify; text-indent: 30px;">ATESTO que os limites refletem a realidade física do local, perfazendo área de <strong>${areaHa} hectares</strong> e perímetro de <strong>${perim} metros</strong>.</p><div class="assinatura-box" style="margin-top:100px;"><p>_____________________________________</p><p><strong>${tecNome}</strong><br>ART/TRT: ${tecArt}</p><p>${mun.split('/')[0]}, ${dataFormatada}.</p></div></div>`;
-            }
-
-            if (tipo === 'croqui') {
-                document.getElementById('doc-render-area').innerHTML = `<h2 style="color:white; text-align:center;">Gerando Croqui...</h2>`;
-                document.getElementById('doc-preview-container').style.display = 'block';
-                document.querySelector('.leaflet-control-container').style.display = 'none';
-
-                html2canvas(document.getElementById('map'), { useCORS: true }).then(canvas => {
-                    document.querySelector('.leaflet-control-container').style.display = 'block';
-                    var imgData = canvas.toDataURL("image/png");
-                    
-                    var tabHTML = `<table class="doc-table" style="font-size:7pt;"><thead><tr><th>Vértice</th><th>Coord N</th><th>Coord E</th><th>Azim.</th><th>Dist.</th><th>Confrontante</th></tr></thead><tbody>`;
-                    var limit = Math.min(coords.length, 40);
-                    for(var i=0; i<limit; i++) { var c = calcAzimuteDist(coords[i].x, coords[i].y, coords[(i+1)%coords.length].x, coords[(i+1)%coords.length].y); tabHTML += `<tr><td>${memoria.nomes[i]}</td><td>${coords[i].y.toFixed(2)}</td><td>${coords[i].x.toFixed(2)}</td><td>${c.azimute}</td><td>${c.dist}m</td><td>${memoria.confs[i] || '-'}</td></tr>`; }
-                    tabHTML += `</tbody></table>`;
-
-                    var finalHTML = `<div class="doc-page" style="display:flex; flex-direction:column; padding:10mm; min-height: 297mm; page-break-after: always;"><h2 style="font-size:12pt; text-align:center;">PLANTA ESQUEMÁTICA DO IMÓVEL</h2><table class="doc-table" style="font-size:9pt; margin-bottom:10px; text-align:left;"><tr><td style="text-align:left;"><strong>Proprietário:</strong> ${prop}</td><td style="text-align:left;"><strong>Matrícula:</strong> ${mat}</td></tr><tr><td style="text-align:left;"><strong>Município:</strong> ${mun}</td><td style="text-align:left;"><strong>Área:</strong> ${area} m²</td></tr><tr><td style="text-align:left;"><strong>Perímetro:</strong> ${perim} m</td><td style="text-align:left;"><strong>Escala:</strong> S/ Escala</td></tr></table><div style="flex-grow:1; position:relative; border:2px solid #000; padding:2px; min-height:300px;"><img src="${imgData}" style="width:100%; height:100%; object-fit:cover;"><div style="position:absolute; top:10px; right:10px; width:40px; height:40px; background:white; border:1px solid #000; text-align:center; line-height:40px; font-weight:bold; border-radius:50%;">N▲</div></div><div style="margin-top:10px;">${tabHTML}</div></div>`;
-                    
-                    document.getElementById('doc-render-area').innerHTML = finalHTML;
-                }).catch(e => { alert("Erro ao gerar mapa. Use o tema Escuro."); document.querySelector('.leaflet-control-container').style.display = 'block'; });
-                return;
-            }
-
-            document.getElementById('doc-render-area').innerHTML = html;
-            document.getElementById('doc-preview-container').style.display = 'block';
         }
 
         function checkToolButtons() { atualizarBotoesUndoRedo(); }
