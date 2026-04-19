@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS | BETA 1.3</title>
+    <title>LuiGIS | BETA 1.4 - Professional Edition</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,7 +39,7 @@
         ::-webkit-scrollbar-thumb { background: #424242; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
 
-        #left-sidebar { width: 420px; min-width: 420px; background-color: var(--bg-panel); display: flex; flex-direction: column; border-right: 1px solid var(--border); z-index: 1000; box-shadow: 2px 0 15px rgba(0,0,0,0.5); }
+        #left-sidebar { width: 420px; min-width: 420px; background-color: var(--bg-panel); display: flex; flex-direction: column; border-right: 1px solid var(--border); z-index: 1000; box-shadow: 2px 0 15px rgba(0,0,0,0.5); overflow-y: auto;}
         #center-workspace { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
         #right-sidebar { width: 340px; min-width: 340px; background-color: var(--bg-panel); display: flex; flex-direction: column; border-left: 1px solid var(--border); z-index: 1000; box-shadow: -2px 0 15px rgba(0,0,0,0.5); overflow-y: auto;}
 
@@ -57,7 +57,7 @@
         .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); background: #222; }
         .tab-btn:hover:not(.active) { color: #fff; background: #252526; }
 
-        .tab-content { display: none; padding: 15px; flex-direction: column; gap: 15px; overflow-y: auto; flex-grow: 1; }
+        .tab-content { display: none; padding: 15px; flex-direction: column; gap: 15px; flex-grow: 1; }
         .tab-content.active { display: flex; animation: fadeIn 0.2s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -150,7 +150,7 @@
     <aside id="left-sidebar">
         <div class="header">
             <div class="header-title">
-                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1.3</span></h1>
+                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1.4</span></h1>
             </div>
             <div class="top-toolbar">
                 <button class="btn-tool-top" id="btn-undo" onclick="desfazerAcao()" title="Desfazer Ação (Ctrl+Z)" disabled>↩️</button>
@@ -191,8 +191,19 @@
                     <input type="file" id="arquivo-csv" accept=".csv,.txt,.pdf" style="display:none;" onchange="lerArquivoEntrada(event)">
                 </div>
                 <textarea id="main-texto" style="height: 100px;" placeholder="ID; Descrição; Coordenada X (ou Long); Coordenada Y (ou Lat); Cota Z"></textarea>
+                <button class="btn btn-primary btn-block" style="margin-top:5px;" onclick="processarLevantamento()">📍 PLOTAR & LIGAR PONTOS</button>
             </div>
-            <button class="btn btn-primary btn-block" style="padding:15px; font-size:13px;" onclick="processarLevantamento()">📍 PLOTAR & LIGAR PONTOS</button>
+
+            <div class="card" style="border-color: #4caf50;">
+                <div class="card-title" style="color:#4caf50;">Motor de Poligonal (Az/Dist)</div>
+                <div class="form-row">
+                    <div><label>Pt. Inicial E(X)</label><input type="number" id="pol-start-x" value="500000"></div>
+                    <div><label>Pt. Inicial N(Y)</label><input type="number" id="pol-start-y" value="7000000"></div>
+                </div>
+                <label>Memorial (Azimute Graus ; Distância)</label>
+                <textarea id="pol-texto" style="height: 60px;" placeholder="Ex:\n92.24; 67.12\n182.08; 91.45"></textarea>
+                <button class="btn btn-success btn-block" style="margin-top:5px;" onclick="executarMotorPoligonal()">📐 CALCULAR POLIGONAL</button>
+            </div>
 
             <div class="card" style="border-color: var(--purple);">
                 <div class="card-title" style="color:var(--purple);">Análise Topográfica (Geosis)</div>
@@ -867,6 +878,75 @@
             return { dist: dist.toFixed(2), azimute: `${d}°${m.toString().padStart(2, '0')}'${Math.floor(s).toString().padStart(2, '0')}"` }; 
         }
 
+        // NOVO: Função para processar Poligonal via Azimute e Distância (Memorial)
+        function executarMotorPoligonal() {
+            let startX = parseFloat(document.getElementById('pol-start-x').value);
+            let startY = parseFloat(document.getElementById('pol-start-y').value);
+            let texto = document.getElementById('pol-texto').value;
+            
+            if(isNaN(startX) || isNaN(startY) || !texto.trim()) {
+                return alert("Insira o ponto de partida E/N e os dados do memorial (Azimute; Distância).");
+            }
+
+            let linhas = texto.split('\n');
+            let xAtual = startX;
+            let yAtual = startY;
+            
+            // Força configuração UTM baseada no datum atual
+            document.getElementById('main-formato').value = 'utm';
+            document.getElementById('utm-options').style.display = 'flex';
+
+            let epsgIn = obterEpsgEntrada();
+            let epsgOut = "+proj=longlat +datum=WGS84 +no_defs";
+            
+            memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [] };
+            let pCount = 1;
+
+            // Insere o ponto de partida
+            try { 
+                let conv = proj4(epsgIn, epsgOut, [xAtual, yAtual]); 
+                memoria.nomes.push("P" + pCount++);
+                memoria.cotas.push(0);
+                memoria.lon.push(conv[0]); 
+                memoria.lat.push(conv[1]); 
+                memoria.confs.push("Início");
+            } catch(e) { return alert("Erro de projeção no ponto inicial. Verifique fuso/datum."); }
+
+            // Loop no azimute/distância
+            linhas.forEach(linha => {
+                let partes = linha.split(';');
+                if(partes.length >= 2) {
+                    let azText = partes[0].trim().replace(',', '.');
+                    let distText = partes[1].trim().replace(',', '.');
+                    
+                    let az = parseFloat(azText);
+                    let dist = parseFloat(distText);
+                    
+                    if(!isNaN(az) && !isNaN(dist)) {
+                        // Converte para radianos considerando Azimute (0 é Norte, 90 é Leste)
+                        let azRad = az * (Math.PI / 180);
+                        xAtual += dist * Math.sin(azRad);
+                        yAtual += dist * Math.cos(azRad);
+                        
+                        try { 
+                            let conv = proj4(epsgIn, epsgOut, [xAtual, yAtual]); 
+                            memoria.nomes.push("P" + pCount++);
+                            memoria.cotas.push(0);
+                            memoria.lon.push(conv[0]); 
+                            memoria.lat.push(conv[1]); 
+                            memoria.confs.push("");
+                        } catch(e) {}
+                    }
+                }
+            });
+            
+            if(memoria.lon.length > 1) {
+                atualizarEditor(); 
+                atualizarMapa(true);
+                mostrarToast("Poligonal gerada com sucesso a partir de Azimutes!");
+            }
+        }
+
         function processarLevantamento() {
             var txt = document.getElementById('main-texto').value; if(!txt.trim()) { alert("Insira dados."); return; }
             var fmtIn = document.getElementById('main-formato').value; var epsgIn = obterEpsgEntrada(); var epsgOut = "+proj=longlat +datum=WGS84 +no_defs";
@@ -991,22 +1071,35 @@
             var minZ = Math.min(...zVals);
             if(maxZ === minZ || isNaN(maxZ)) return alert("Todos os pontos têm a mesma cota. Impossível interpolar MDT.");
             
-            mostrarToast("Calculando malha triangular (MDT)...");
+            mostrarToast("Calculando malha triangular (MDT) e suavizando curvas...");
             
             setTimeout(() => {
                 try {
-                    var pts = memoria.lon.map((lng, i) => turf.point([lng, memoria.lat[i]], {z: memoria.cotas[i]}));
-                    var fc = turf.featureCollection(pts);
-                    
+                    // 1. FILTRO ANTI-BUG: Remover pontos duplicados e adicionar micro-ruído para evitar divisão por zero no Turf
+                    let uniquePoints = [];
+                    let seen = new Set();
+                    for(let i=0; i < memoria.lon.length; i++) {
+                        let key = memoria.lon[i].toFixed(6) + "_" + memoria.lat[i].toFixed(6);
+                        if(!seen.has(key)) {
+                            seen.add(key);
+                            let noiseLon = (Math.random() - 0.5) * 0.0000001;
+                            let noiseLat = (Math.random() - 0.5) * 0.0000001;
+                            uniquePoints.push(turf.point([memoria.lon[i] + noiseLon, memoria.lat[i] + noiseLat], {z: memoria.cotas[i]}));
+                        }
+                    }
+
+                    var fc = turf.featureCollection(uniquePoints);
                     var bbox = turf.bbox(fc);
-                    var distX = turf.distance([bbox[0], bbox[1]], [bbox[2], bbox[1]], {units: 'meters'});
-                    var distY = turf.distance([bbox[0], bbox[1]], [bbox[0], bbox[3]], {units: 'meters'});
-                    var maiorEixo = Math.max(distX, distY);
                     
-                    var gridSize = Math.max(0.5, maiorEixo / 50); 
+                    var polyBbox = turf.bboxPolygon(bbox);
+                    var bboxExpanded = turf.bbox(turf.buffer(polyBbox, 0.05, {units: 'kilometers'})); 
                     
-                    var options = {gridType: 'points', property: 'z', units: 'meters', weight: 2};
-                    var grid = turf.interpolate(fc, gridSize, options); 
+                    var distX = turf.distance([bboxExpanded[0], bboxExpanded[1]], [bboxExpanded[2], bboxExpanded[1]], {units: 'meters'});
+                    var maiorEixo = Math.max(distX, 100);
+                    
+                    var gridSize = Math.max(0.5, maiorEixo / 100); 
+                    
+                    var grid = turf.interpolate(fc, gridSize, {gridType: 'points', property: 'z', units: 'meters', weight: 2, boundingBox: bboxExpanded}); 
                     
                     var zRange = maxZ - minZ;
                     var interInterval = 1; 
@@ -1015,9 +1108,7 @@
                     if (zRange < 5) { masterInterval = 1; interInterval = 0.2; } 
                     else if (zRange > 50) { masterInterval = 10; interInterval = 2; }
 
-                    var breaksInter = [];
-                    var breaksMaster = [];
-
+                    var breaksInter = []; var breaksMaster = [];
                     for(var b = Math.floor(minZ / interInterval) * interInterval; b <= Math.ceil(maxZ); b += interInterval) {
                         var bArredondado = parseFloat(b.toFixed(2));
                         if (bArredondado % masterInterval === 0 || Math.abs(bArredondado % masterInterval) < 0.001) { breaksMaster.push(bArredondado); } 
@@ -1026,20 +1117,33 @@
 
                     if(breaksInter.length === 0 && breaksMaster.length === 0) { breaksMaster.push(minZ + (zRange/2)); }
                     
+                    // Função auxiliar para suavizar as curvas (Bezier Spline)
+                    const smoothLines = (isolines) => {
+                        isolines.features.forEach((feature, index) => {
+                            if(feature.geometry.coordinates.length > 0 && feature.geometry.coordinates[0].length > 2) {
+                                try {
+                                    isolines.features[index] = turf.bezierSpline(feature, {resolution: 10000, sharpness: 0.5});
+                                } catch(e) {} 
+                            }
+                        });
+                        return isolines;
+                    };
+
                     if(breaksInter.length > 0) {
-                        var linesInter = turf.isolines(grid, breaksInter, {zProperty: 'z'});
+                        var linesInter = smoothLines(turf.isolines(grid, breaksInter, {zProperty: 'z'}));
                         var interLayer = processarGeoJSON_Layer(linesInter, "Curvas Secundárias", "#757575", 1);
                         adicionarCotasNasCurvas(linesInter, "#999999", interLayer);
                     }
                     if(breaksMaster.length > 0) {
-                        var linesMaster = turf.isolines(grid, breaksMaster, {zProperty: 'z'});
+                        var linesMaster = smoothLines(turf.isolines(grid, breaksMaster, {zProperty: 'z'}));
                         var masterLayer = processarGeoJSON_Layer(linesMaster, "Curvas Mestras", "#ff9800", 3);
                         adicionarCotasNasCurvas(linesMaster, "#ff9800", masterLayer);
                         map.fitBounds(masterLayer.getBounds(), {padding: [30,30]});
                     }
-                    mostrarToast("Curvas Mestras e Secundárias geradas!");
+                    mostrarToast("Curvas Mestras e Secundárias geradas e suavizadas!");
                 } catch(e) {
-                    alert("Erro ao processar as curvas de nível. A área não formou uma superfície válida.");
+                    console.error(e);
+                    alert("Aviso: A dispersão dos pontos não formou uma superfície contínua válida.");
                 }
             }, 100);
         }
@@ -1110,7 +1214,6 @@
             });
         }
 
-        // NOVO: Relatório de Poligonal reconstruído com Tabela Pop-up
         function calcularFechamento() {
             if(memoria.lon.length < 3) return mostrarToast("Mínimo de 3 pontos para formar uma poligonal.");
 
@@ -1262,7 +1365,6 @@
             return html;
         }
 
-        // CORREÇÃO: FETCH COMPLETO PARA BAIXAR AS BASES DA NUVEM EM TEMPO REAL
         async function baixarBaseSelecionada() {
             var select = document.getElementById('select-bases-nuvem');
             var url = select.value;
@@ -1281,7 +1383,7 @@
                 if (!response.ok) throw new Error("Erro de rede ao baixar a base.");
                 
                 const buffer = await response.arrayBuffer();
-                let geojson = await shp(buffer); // Biblioteca SHP descompacta e converte
+                let geojson = await shp(buffer); 
                 
                 processarGeoJSON_NoMapa(geojson, nomeBase, null, true);
                 mostrarToast(nomeBase + " carregada com sucesso!");
@@ -1456,6 +1558,34 @@
             var fmtOut = document.getElementById('out-formato').value; var epsgU = "+proj=longlat +datum=WGS84 +no_defs"; var epsgD = (fmtOut === 'utm') ? obterEpsgEntrada() : epsgU;
             var dxf = "0\nSECTION\n2\nENTITIES\n"; var pts = obterCoordenadasExportacao(); var colorRTK = 4; 
             
+            // --- NOVO: GERAÇÃO DA MALHA DE QUADRANTES (GRID) ---
+            if (pts.length > 0 && fmtOut === 'utm') {
+                let minE = Infinity, maxE = -Infinity, minN = Infinity, maxN = -Infinity;
+                pts.forEach(p => { 
+                    if(p.x < minE) minE = p.x; if(p.x > maxE) maxE = p.x; 
+                    if(p.y < minN) minN = p.y; if(p.y > maxN) maxN = p.y; 
+                });
+
+                let gridStep = 50;
+                let startE = Math.floor(minE / gridStep) * gridStep - gridStep;
+                let endE = Math.ceil(maxE / gridStep) * gridStep + gridStep;
+                let startN = Math.floor(minN / gridStep) * gridStep - gridStep;
+                let endN = Math.ceil(maxN / gridStep) * gridStep + gridStep;
+                
+                let crossSize = 2.0; 
+                
+                for (let x = startE; x <= endE; x += gridStep) {
+                    for (let y = startN; y <= endN; y += gridStep) {
+                        dxf += `0\nLINE\n8\nMALHA_COORDENADAS\n62\n8\n10\n${nFormat(x - crossSize)}\n20\n${nFormat(y)}\n30\n0.0\n11\n${nFormat(x + crossSize)}\n21\n${nFormat(y)}\n31\n0.0\n`;
+                        dxf += `0\nLINE\n8\nMALHA_COORDENADAS\n62\n8\n10\n${nFormat(x)}\n20\n${nFormat(y - crossSize)}\n30\n0.0\n11\n${nFormat(x)}\n21\n${nFormat(y + crossSize)}\n31\n0.0\n`;
+                        
+                        dxf += `0\nTEXT\n8\nMALHA_TEXTOS\n62\n8\n10\n${nFormat(x + 1)}\n20\n${nFormat(y + 1)}\n30\n0.0\n40\n1.5\n1\nE: ${x}\n`;
+                        dxf += `0\nTEXT\n8\nMALHA_TEXTOS\n62\n8\n10\n${nFormat(x + 1)}\n20\n${nFormat(y - 2)}\n30\n0.0\n40\n1.5\n1\nN: ${y}\n`;
+                    }
+                }
+            }
+            // --------------------------------------------------
+
             if (hasRtkPoly) {
                 dxf += `0\nPOLYLINE\n8\nLEVANTAMENTO_RTK\n62\n${colorRTK}\n66\n1\n70\n1\n10\n0.0\n20\n0.0\n30\n0.0\n`; 
                 for(var i=0; i<pts.length; i++) { dxf += `0\nVERTEX\n8\nLEVANTAMENTO_RTK\n10\n${nFormat(pts[i].x)}\n20\n${nFormat(pts[i].y)}\n30\n${nFormat(pts[i].z)}\n`; }
