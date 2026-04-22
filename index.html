@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS | BETA 1.5.0 - Professional Edition</title>
+    <title>LuiGIS | BETA 1.6 - Professional Edition</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,7 +39,7 @@
         ::-webkit-scrollbar-thumb { background: #424242; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
 
-        #left-sidebar { width: 420px; min-width: 420px; background-color: var(--bg-panel); display: flex; flex-direction: column; border-right: 1px solid var(--border); z-index: 1000; box-shadow: 2px 0 15px rgba(0,0,0,0.5); overflow-y: auto;}
+        #left-sidebar { width: 440px; min-width: 440px; background-color: var(--bg-panel); display: flex; flex-direction: column; border-right: 1px solid var(--border); z-index: 1000; box-shadow: 2px 0 15px rgba(0,0,0,0.5); overflow-y: auto;}
         #center-workspace { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
         #right-sidebar { width: 340px; min-width: 340px; background-color: var(--bg-panel); display: flex; flex-direction: column; border-left: 1px solid var(--border); z-index: 1000; box-shadow: -2px 0 15px rgba(0,0,0,0.5); overflow-y: auto;}
 
@@ -77,6 +77,7 @@
         .btn-primary { background-color: var(--accent); border-color: var(--accent); } .btn-primary:hover { background-color: var(--accent-hover); }
         .btn-success { background-color: #2e7d32; border-color: #2e7d32; }
         .btn-warning { background-color: var(--warning); color: #000; border-color: var(--warning); }
+        .btn-danger { background-color: #d32f2f; border-color: #b71c1c; color: #fff; }
         .btn-purple { background-color: var(--purple); border-color: var(--purple); color: #000;}
         .btn-outline { background-color: transparent; border: 1px solid var(--accent); color: var(--accent); } .btn-outline:hover { background: rgba(0, 122, 204, 0.1); }
         .btn-small { padding: 6px 8px; font-size: 10px; }
@@ -117,12 +118,17 @@
         .btn-icon:hover:not(:disabled) { background: #444; color: #fff; }
         .btn-icon:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        .spreadsheet-container { overflow-x: auto; background: #121212; border: 1px solid var(--border); margin-top: 5px; max-height: 400px; border-radius: 4px;}
+        .spreadsheet-container { overflow-x: auto; background: #121212; border: 1px solid var(--border); margin-top: 5px; max-height: 450px; border-radius: 4px;}
         .tabela-editor { width: 100%; border-collapse: collapse; font-family: 'Fira Code', monospace; font-size: 11px; }
-        .tabela-editor th, .tabela-editor td { border: 1px solid #333; padding: 6px; }
+        .tabela-editor th, .tabela-editor td { border: 1px solid #333; padding: 4px; }
         .tabela-editor th { background-color: #222; color: #aaa; position: sticky; top: 0; z-index: 2; font-family: 'Inter', sans-serif;}
-        .tabela-editor td { background-color: #1a1a1c; text-align: right; }
-        .tabela-editor input { background: transparent; border: none; color: #4fc1ff; width: 100%; font-family: 'Fira Code', monospace; font-size: 11px; text-align: right; outline: none;}
+        .tabela-editor td { background-color: #1a1a1c; text-align: center; }
+        .tabela-editor tr.dragging { opacity: 0.5; background-color: #333; }
+        .tabela-editor input { background: transparent; border: none; color: #4fc1ff; width: 100%; font-family: 'Fira Code', monospace; font-size: 11px; text-align: center; outline: none;}
+        .tabela-editor input:focus { background: #222; color:#fff;}
+        .drag-handle { cursor: grab; font-size: 14px; color: #555; transition: 0.2s; }
+        .drag-handle:hover { color: #fff; }
+        .drag-handle:active { cursor: grabbing; }
 
         .section-divider { width: 100%; text-align: center; border-bottom: 1px solid #444; line-height: 0.1em; margin: 20px 0 15px 0; }
         .section-divider span { background: var(--bg-panel); padding: 0 10px; font-size: 10px; color: #aaa; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
@@ -150,7 +156,7 @@
     <aside id="left-sidebar">
         <div class="header">
             <div class="header-title">
-                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1.5</span></h1>
+                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1.6</span></h1>
             </div>
             <div class="top-toolbar">
                 <button class="btn-tool-top" id="btn-undo" onclick="desfazerAcao()" title="Desfazer Ação (Ctrl+Z)" disabled>↩️</button>
@@ -171,14 +177,14 @@
                 <div class="form-row">
                     <div><label>Formato Base</label>
                         <select id="main-formato">
+                            <option value="decimal" selected>DD (Graus Decimais)</option>
                             <option value="utm">UTM (Metros N/E)</option>
                             <option value="sgl">SGL (Graus, Min, Seg)</option>
-                            <option value="decimal">DD (Graus Decimais)</option>
                         </select>
                     </div>
                     <div><label>Datum</label><select id="main-datum"><option value="SIRGAS2000">SIRGAS 2000</option><option value="WGS84">WGS 84</option><option value="SAD69">SAD 69</option></select></div>
                 </div>
-                <div class="form-row" id="utm-options">
+                <div class="form-row" id="utm-options" style="display:none;">
                     <div><label>Zona UTM</label><input type="number" id="main-zona" value="23"></div>
                     <div><label>Hemisfério</label><select id="main-hemi"><option value="S">Sul (S)</option><option value="N">Norte (N)</option></select></div>
                 </div>
@@ -191,7 +197,7 @@
                     <button class="btn btn-outline btn-small" onclick="document.getElementById('arquivo-csv').click()">📂 LER ARQUIVO</button>
                     <input type="file" id="arquivo-csv" accept=".csv,.txt,.pdf" style="display:none;" onchange="lerArquivoEntrada(event)">
                 </div>
-                <textarea id="main-texto" style="height: 100px;" placeholder="ID; Descrição; Coordenada X (ou Long); Coordenada Y (ou Lat); Cota Z"></textarea>
+                <textarea id="main-texto" style="height: 100px;" placeholder="ID; Coordenada X (Long); Coordenada Y (Lat)"></textarea>
                 
                 <label style="display:flex; align-items:center; gap:5px; margin-top:5px; font-size:10px; color:#aaa; cursor:pointer;">
                     <input type="checkbox" id="chk-multi-poly" style="width:auto;" checked> Separar polígonos por linha em branco
@@ -221,14 +227,24 @@
         </div>
 
         <div id="aba-editor" class="tab-content" style="padding:10px;">
-            <button class="btn btn-success btn-block" style="margin-bottom:10px;" onclick="salvarEdicoes()">✅ Aplicar Edições no Mapa</button>
-            <p style="font-size: 9px; color: #aaa; margin: 0 0 5px 0;">O preenchimento é utilizado para controle e exportação.</p>
+            <p style="font-size: 10px; color: #aaa; margin: 0 0 5px 0;">Segure o ícone <b>☰</b> para arrastar e mudar a ordem dos vértices. As edições atualizam o mapa automaticamente.</p>
             <div class="spreadsheet-container">
                 <table class="tabela-editor">
-                    <thead><tr><th>Vértice</th><th>Coord E(X)</th><th>Coord N(Y)</th><th>Cota(Z)</th><th style="width: 120px;">Confrontante</th></tr></thead>
-                    <tbody id="tabela-editor-body"><tr><td colspan="5" style="text-align:center; padding:20px; color:#666;">Aguardando plotagem...</td></tr></tbody>
+                    <thead>
+                        <tr>
+                            <th style="width: 30px;">Linha</th>
+                            <th style="width: 50px;">Vértice</th>
+                            <th>Coord E(X) / Lon</th>
+                            <th>Coord N(Y) / Lat</th>
+                            <th style="width: 20px;">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-editor-body">
+                        <tr><td colspan="5" style="text-align:center; padding:20px; color:#666;">Aguardando plotagem...</td></tr>
+                    </tbody>
                 </table>
             </div>
+            <button class="btn btn-success btn-block" style="margin-top:10px;" onclick="adicionarNovaLinha()">➕ Novo Ponto (Linha)</button>
         </div>
 
         <div id="aba-exportar" class="tab-content">
@@ -512,22 +528,22 @@
         }
 
         var cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 22, attribution: '© CartoDB' });
+        // MAPA PADRÃO ONR SIG-RI: HÍBRIDO
+        var googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 22, maxNativeZoom: 20 });
         var googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20 });
         var googleTerrain = L.tileLayer('https://mt1.google.com/vt/lyrs=p&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 22, maxNativeZoom: 20 });
-        var googleStreets = L.tileLayer('https://mt1.google.com/vt/lyrs=m&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 22, maxNativeZoom: 20 });
         var openTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenTopoMap' });
-        var esriImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: '© Esri' });
 
-        var map = L.map('map', { preserveDrawingBuffer: true, zoomControl: false, layers: [cartoDark] }).setView([-20.076, -44.225], 14);
+        // Adicionado googleHybrid como padrão
+        var map = L.map('map', { preserveDrawingBuffer: true, zoomControl: false, layers: [googleHybrid] }).setView([-20.076, -44.225], 14);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
         
         var baseMaps = {
+            "🌎 Google Híbrido (Padrão SIG-RI)": googleHybrid,
+            "🛰️ Google Satélite Puro": googleSat,
             "🌙 Tema Escuro (CAD)": cartoDark,
-            "🛰️ Google Satélite": googleSat,
             "⛰️ Google Relevo": googleTerrain,
-            "🗺️ Google Ruas": googleStreets,
-            "⛰️ OpenTopoMap": openTopoMap,
-            "🌍 Esri Satélite": esriImagery
+            "⛰️ OpenTopoMap": openTopoMap
         };
         L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
@@ -620,9 +636,6 @@
                     ptsTronco.push([latlng.lat + (0.4 * Math.sin(a) * mLat), latlng.lng + (0.4 * Math.cos(a) * mLng)]);
                 }
                 L.polygon(ptsTronco, {color: '#3e2723', weight: 2, fillColor: '#5d4037', fillOpacity: 0.8}).addTo(group);
-                
-                L.polyline([[latlng.lat + 0.8*mLat, latlng.lng], [latlng.lat - 0.8*mLat, latlng.lng]], {color:'#000', weight:1}).addTo(group);
-                L.polyline([[latlng.lat, latlng.lng + 0.8*mLng], [latlng.lat, latlng.lng - 0.8*mLng]], {color:'#000', weight:1}).addTo(group);
                 return group;
             }
             if (tipo === 'sewer') {
@@ -633,9 +646,6 @@
                 let rIn = 0.45;
                 let interno = [ [latlng.lat + rIn*mLat, latlng.lng - rIn*mLng], [latlng.lat + rIn*mLat, latlng.lng + rIn*mLng], [latlng.lat - rIn*mLat, latlng.lng + rIn*mLng], [latlng.lat - rIn*mLat, latlng.lng - rIn*mLng] ];
                 L.polygon(interno, {color: '#333', weight: 1, fillOpacity: 0}).addTo(group);
-                
-                L.polyline([[latlng.lat + rIn*mLat, latlng.lng], [latlng.lat - rIn*mLat, latlng.lng]], {color:'#333', weight:1}).addTo(group);
-                L.polyline([[latlng.lat, latlng.lng + rIn*mLng], [latlng.lat, latlng.lng - rIn*mLng]], {color:'#333', weight:1}).addTo(group);
                 return group;
             }
             if (tipo === 'light') {
@@ -649,8 +659,6 @@
                 let rHaste = 0.8;
                 L.polyline([[latlng.lat + rHaste*mLat, latlng.lng], [latlng.lat - rHaste*mLat, latlng.lng]], {color:'#fbc02d', weight:2}).addTo(group);
                 L.polyline([[latlng.lat, latlng.lng + rHaste*mLng], [latlng.lat, latlng.lng - rHaste*mLng]], {color:'#fbc02d', weight:2}).addTo(group);
-                L.polyline([[latlng.lat + 0.6*mLat, latlng.lng + 0.6*mLng], [latlng.lat - 0.6*mLat, latlng.lng - 0.6*mLng]], {color:'#fbc02d', weight:1}).addTo(group);
-                L.polyline([[latlng.lat + 0.6*mLat, latlng.lng - 0.6*mLng], [latlng.lat - 0.6*mLat, latlng.lng + 0.6*mLng]], {color:'#fbc02d', weight:1}).addTo(group);
                 return group;
             }
             return null;
@@ -659,29 +667,17 @@
         var historicoAcoes = []; 
         var acoesDesfeitas = [];
 
-        function atualizarBotoesUndoRedo() {
-            document.getElementById('btn-undo').disabled = historicoAcoes.length === 0;
-            document.getElementById('btn-redo').disabled = acoesDesfeitas.length === 0;
-        }
-
         function desfazerAcao() {
             if (historicoAcoes.length === 0) return mostrarToast("Nada para desfazer.");
             var ultimaAcao = historicoAcoes.pop();
             
             if (ultimaAcao.tipo === 'add') {
                 map.removeLayer(ultimaAcao.layer);
-                if (ultimaAcao.parentLayer && ultimaAcao.parentLayer.hasLayer(ultimaAcao.layer)) {
-                    ultimaAcao.parentLayer.removeLayer(ultimaAcao.layer);
-                }
+                if (ultimaAcao.parentLayer && ultimaAcao.parentLayer.hasLayer(ultimaAcao.layer)) { ultimaAcao.parentLayer.removeLayer(ultimaAcao.layer); }
             } else if (ultimaAcao.tipo === 'remove') {
-                if (ultimaAcao.parentLayer) {
-                    ultimaAcao.parentLayer.addLayer(ultimaAcao.layer);
-                } else {
-                    ultimaAcao.layer.addTo(map);
-                }
+                if (ultimaAcao.parentLayer) { ultimaAcao.parentLayer.addLayer(ultimaAcao.layer); } else { ultimaAcao.layer.addTo(map); }
             }
             acoesDesfeitas.push(ultimaAcao);
-            atualizarBotoesUndoRedo();
             mostrarToast("Ação Desfeita.");
         }
 
@@ -690,43 +686,23 @@
             var acaoRestaurada = acoesDesfeitas.pop();
             
             if (acaoRestaurada.tipo === 'add') {
-                if (acaoRestaurada.parentLayer) {
-                    acaoRestaurada.parentLayer.addLayer(acaoRestaurada.layer);
-                } else {
-                    acaoRestaurada.layer.addTo(map);
-                }
+                if (acaoRestaurada.parentLayer) { acaoRestaurada.parentLayer.addLayer(acaoRestaurada.layer); } else { acaoRestaurada.layer.addTo(map); }
             } else if (acaoRestaurada.tipo === 'remove') {
                 map.removeLayer(acaoRestaurada.layer);
-                if (acaoRestaurada.parentLayer && acaoRestaurada.parentLayer.hasLayer(acaoRestaurada.layer)) {
-                    acaoRestaurada.parentLayer.removeLayer(acaoRestaurada.layer);
-                }
+                if (acaoRestaurada.parentLayer && acaoRestaurada.parentLayer.hasLayer(acaoRestaurada.layer)) { acaoRestaurada.parentLayer.removeLayer(acaoRestaurada.layer); }
             }
             historicoAcoes.push(acaoRestaurada);
-            atualizarBotoesUndoRedo();
             mostrarToast("Ação Refeita.");
         }
 
         document.addEventListener('keydown', function(e) {
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-
-            if (e.ctrlKey && !e.shiftKey && (e.key === 'z' || e.key === 'Z')) {
-                e.preventDefault(); desfazerAcao();
-            } else if (e.ctrlKey && (e.key === 'y' || e.key === 'Y' || (e.shiftKey && (e.key === 'z' || e.key === 'Z')))) {
-                e.preventDefault(); refazerAcao();
-            }
+            if (e.ctrlKey && !e.shiftKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); desfazerAcao(); } 
+            else if (e.ctrlKey && (e.key === 'y' || e.key === 'Y' || (e.shiftKey && (e.key === 'z' || e.key === 'Z')))) { e.preventDefault(); refazerAcao(); }
         });
 
         map.on('pm:create', function(e) {
             var layer = e.layer;
-            
-            if (e.shape === 'Line') {
-                try {
-                    let length = turf.length(layer.toGeoJSON(), {units: 'meters'});
-                    mostrarToast(`Distância Desenhada: ${length.toFixed(2)} metros`);
-                    layer.bindPopup(`Distância: ${length.toFixed(2)}m`).openPopup();
-                } catch(err) {}
-            }
-
             var activeLayerData = getActiveCadLayerData();
             if(!activeLayerData) { alert("Crie uma Layer CAD primeiro."); map.removeLayer(layer); return; }
 
@@ -734,10 +710,7 @@
                 var type = document.getElementById('cad-block-type').value;
                 if(type !== 'default' && type !== 'circle') {
                     var vetorPronto = criarBlocoVetorial(layer.getLatLng(), type, activeLayerData.cor);
-                    if(vetorPronto) {
-                        map.removeLayer(layer);
-                        layer = vetorPronto;
-                    }
+                    if(vetorPronto) { map.removeLayer(layer); layer = vetorPronto; }
                 } else {
                     layer.setIcon(L.circleMarker(layer.getLatLng(), {radius:4, color: activeLayerData.cor, fillColor: '#111', fillOpacity: 1}));
                 }
@@ -748,175 +721,64 @@
             layer.addTo(activeLayerData.leafletLayer);
             historicoAcoes.push({ tipo: 'add', layer: layer, parentLayer: activeLayerData.leafletLayer });
             acoesDesfeitas = []; 
-            atualizarBotoesUndoRedo();
         });
 
         map.on('pm:remove', function(e) {
             var parent = null;
-            gerenciadorCamadas.forEach(c => {
-                if (c.leafletLayer && c.leafletLayer.hasLayer && c.leafletLayer.hasLayer(e.layer)) {
-                    parent = c.leafletLayer;
-                }
-            });
+            gerenciadorCamadas.forEach(c => { if (c.leafletLayer && c.leafletLayer.hasLayer && c.leafletLayer.hasLayer(e.layer)) parent = c.leafletLayer; });
             historicoAcoes.push({ tipo: 'remove', layer: e.layer, parentLayer: parent });
             acoesDesfeitas = []; 
-            atualizarBotoesUndoRedo();
         });
 
         function limparLayerAtiva() {
             var activeLayerData = getActiveCadLayerData();
             if(!activeLayerData) return;
-            if(confirm(`Apagar todos os desenhos da layer: ${activeLayerData.nome}?`)) {
-                activeLayerData.leafletLayer.clearLayers();
-            }
+            if(confirm(`Apagar todos os desenhos da layer: ${activeLayerData.nome}?`)) { activeLayerData.leafletLayer.clearLayers(); }
         }
 
         // =======================================================
         // FERRAMENTAS DE DESENHO E EDIÇÃO
         // =======================================================
 
-        function toolMedirDistancia() {
-            mostrarToast("Régua ativada. Clique no mapa para desenhar o trajeto.");
-            map.pm.enableDraw('Line', { snappable: true, continueDrawing: true, finishOn: 'dblclick' });
-        }
-
-        function toolCortarPoligono() {
-            mostrarToast("Cortar Polígono ativado. Desenhe uma linha atravessando o polígono que deseja cortar.");
-            map.pm.enableDraw('Cut');
-        }
-
-        let medindoAngulo = false;
-        let anguloLineTemp = null;
+        function toolMedirDistancia() { mostrarToast("Régua ativada."); map.pm.enableDraw('Line', { snappable: true, continueDrawing: true, finishOn: 'dblclick' }); }
+        function toolCortarPoligono() { mostrarToast("Cortar Polígono ativado."); map.pm.enableDraw('Cut'); }
+        
+        let medindoAngulo = false; let anguloLineTemp = null;
         function toolMedirAngulo() {
-            if(medindoAngulo) { 
-                map.off('click', handleAnguloClick); 
-                medindoAngulo = false; 
-                if(anguloLineTemp) map.removeLayer(anguloLineTemp);
-                return mostrarToast("Medição cancelada."); 
-            }
-            
-            mostrarToast("Clique em 3 pontos (1. Início, 2. Centro, 3. Fim)");
-            medindoAngulo = true;
-            let pts = [];
-            anguloLineTemp = L.polyline([], {color: '#fbc02d', dashArray: '5,5', weight: 2}).addTo(map);
-
+            if(medindoAngulo) { map.off('click', handleAnguloClick); medindoAngulo = false; if(anguloLineTemp) map.removeLayer(anguloLineTemp); return; }
+            mostrarToast("Clique em 3 pontos"); medindoAngulo = true; let pts = []; anguloLineTemp = L.polyline([], {color: '#fbc02d', dashArray: '5,5', weight: 2}).addTo(map);
             window.handleAnguloClick = function(e) {
-                pts.push(e.latlng);
-                anguloLineTemp.addLatLng(e.latlng);
-                
+                pts.push(e.latlng); anguloLineTemp.addLatLng(e.latlng);
                 if(pts.length === 3) {
-                    let p1 = turf.point([pts[0].lng, pts[0].lat]);
-                    let p2 = turf.point([pts[1].lng, pts[1].lat]);
-                    let p3 = turf.point([pts[2].lng, pts[2].lat]);
-                    
-                    let b1 = turf.bearing(p2, p1);
-                    let b2 = turf.bearing(p2, p3);
-                    
-                    let angulo = Math.abs(b1 - b2);
-                    if(angulo > 180) angulo = 360 - angulo;
-                    
+                    let p1 = turf.point([pts[0].lng, pts[0].lat]); let p2 = turf.point([pts[1].lng, pts[1].lat]); let p3 = turf.point([pts[2].lng, pts[2].lat]);
+                    let angulo = Math.abs(turf.bearing(p2, p1) - turf.bearing(p2, p3)); if(angulo > 180) angulo = 360 - angulo;
                     L.marker(pts[1]).bindTooltip(`Ângulo: ${angulo.toFixed(2)}°`, {permanent: true, direction: 'right', className:'etiqueta-mapa'}).addTo(map);
-                    mostrarToast(`Ângulo medido: ${angulo.toFixed(2)}°`);
-                    
-                    map.off('click', handleAnguloClick);
-                    medindoAngulo = false;
-                    setTimeout(() => { if(anguloLineTemp) map.removeLayer(anguloLineTemp); }, 2500);
+                    map.off('click', handleAnguloClick); medindoAngulo = false; setTimeout(() => { if(anguloLineTemp) map.removeLayer(anguloLineTemp); }, 2500);
                 }
             };
             map.on('click', handleAnguloClick);
         }
 
-        function toolSuavizar() {
-            mostrarToast("BETA: Clique na LINHA que deseja suavizar (Curvas de Bezier)");
-            let clicou = false;
-            map.once('click', function() { setTimeout(()=>{ if(!clicou) mostrarToast("Ação de suavizar expirada."); }, 500); });
-            
-            gerenciadorCamadas.forEach(c => {
-                if(c.tipo === 'cad' || c.tipo === 'rtk_poly' || c.tipo === 'shp') {
-                    c.leafletLayer.eachLayer(l => {
-                        l.once('click', function(e) {
-                            clicou = true;
-                            if(l instanceof L.Polyline && !(l instanceof L.Polygon)) {
-                                try {
-                                    let feat = l.toGeoJSON();
-                                    let smoothed = turf.bezierSpline(feat);
-                                    let newCoords = smoothed.geometry.coordinates.map(pt => [pt[1], pt[0]]);
-                                    l.setLatLngs(newCoords);
-                                    mostrarToast("Linha suavizada com sucesso!");
-                                } catch(err) { mostrarToast("Erro ao suavizar linha."); }
-                            } else {
-                                mostrarToast("Apenas linhas abertas podem ser suavizadas.");
-                            }
-                        });
-                    });
-                }
-            });
-        }
+        function toolSuavizar() { mostrarToast("BETA: Clique na LINHA que deseja suavizar"); let clicou = false; map.once('click', function() { setTimeout(()=>{ if(!clicou) mostrarToast("Expirado"); }, 500); }); gerenciadorCamadas.forEach(c => { if(c.tipo === 'cad' || c.tipo === 'rtk_poly' || c.tipo === 'shp') { c.leafletLayer.eachLayer(l => { l.once('click', function(e) { clicou = true; if(l instanceof L.Polyline && !(l instanceof L.Polygon)) { try { let feat = l.toGeoJSON(); let smoothed = turf.bezierSpline(feat); l.setLatLngs(smoothed.geometry.coordinates.map(pt => [pt[1], pt[0]])); } catch(err) {} } }); }); } }); }
 
-        function toolSnap() {
-            let chk = document.getElementById('cad-snap-toggle');
-            if(chk) {
-                chk.checked = !chk.checked;
-                atualizarSnap();
-                document.getElementById('btn-tool-snap').innerText = chk.checked ? "🧲 Snap: LIGADO" : "🧲 Ativar Snap / Ímã";
-                mostrarToast(chk.checked ? "Snap Ligado" : "Snap Desligado");
-            }
-        }
+        function toolSnap() { let chk = document.getElementById('cad-snap-toggle'); if(chk) { chk.checked = !chk.checked; atualizarSnap(); document.getElementById('btn-tool-snap').innerText = chk.checked ? "🧲 Snap: LIGADO" : "🧲 Ativar Snap / Ímã"; mostrarToast(chk.checked ? "Snap Ligado" : "Snap Desligado"); } }
 
         let apagandoVertice = false;
-        function toolApagarVertice() {
-            apagandoVertice = !apagandoVertice;
-            if(apagandoVertice) {
-                map.pm.enableGlobalEditMode();
-                mostrarToast("MODO DE EDIÇÃO: Clique com o botão DIREITO no vértice para apagar.");
-            } else {
-                map.pm.disableGlobalEditMode();
-                mostrarToast("Modo de edição desativado.");
-            }
-        }
+        function toolApagarVertice() { apagandoVertice = !apagandoVertice; if(apagandoVertice) { map.pm.enableGlobalEditMode(); mostrarToast("MODO DE EDIÇÃO: Clique com botão DIREITO para apagar."); } else { map.pm.disableGlobalEditMode(); } }
 
-        function toolInverterSentido() {
-            mostrarToast("Clique na linha ou polígono para INVERTER a direção das coordenadas");
-            let clicou = false;
-            map.once('click', function() { setTimeout(()=>{ if(!clicou) mostrarToast("Ação expirada."); }, 500); });
-
-            gerenciadorCamadas.forEach(c => {
-                if(c.leafletLayer && c.leafletLayer.eachLayer) {
-                    c.leafletLayer.eachLayer(l => {
-                        l.once('click', function(e) {
-                            clicou = true;
-                            if(l instanceof L.Polyline) {
-                                let latlngs = l.getLatLngs();
-                                if(l instanceof L.Polygon) { latlngs[0].reverse(); } else { latlngs.reverse(); }
-                                l.setLatLngs(latlngs);
-                                mostrarToast("Sentido das coordenadas invertido!");
-                            }
-                        });
-                    });
-                }
-            });
-        }
+        function toolInverterSentido() { mostrarToast("Clique na linha/polígono para INVERTER"); let clicou = false; map.once('click', function() { setTimeout(()=>{ if(!clicou) mostrarToast("Expirado."); }, 500); }); gerenciadorCamadas.forEach(c => { if(c.leafletLayer && c.leafletLayer.eachLayer) { c.leafletLayer.eachLayer(l => { l.once('click', function(e) { clicou = true; if(l instanceof L.Polyline) { let latlngs = l.getLatLngs(); if(l instanceof L.Polygon) { latlngs[0].reverse(); } else { latlngs.reverse(); } l.setLatLngs(latlngs); mostrarToast("Invertido!"); } }); }); } }); }
 
         // =======================================================
-        // NÚCLEO E PROCESSAMENTO DE VÉRTICES
+        // NÚCLEO E PROCESSAMENTO DE VÉRTICES (À PROVA DE FALHAS PARA DD)
         // =======================================================
 
         var memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [], bloco: [] };
         var colunasGlobais = {}; 
         
         function renderizarFiltroColunas() {
-            var container = document.getElementById('filtro-colunas-container');
-            if(!container) return;
-            container.innerHTML = '';
-            var keys = Object.keys(colunasGlobais).sort();
-            if(keys.length === 0) {
-                container.innerHTML = '<p style="font-size: 10px; color: #555; width: 100%; text-align: center; margin: 0;">Nenhuma coluna carregada ainda.</p>';
-                return;
-            }
-            keys.forEach(k => {
-                var checked = colunasGlobais[k] ? 'checked' : '';
-                container.innerHTML += `<label style="display:flex; align-items:center; gap:5px; background:#1a1a1c; padding:6px 10px; border-radius:4px; border:1px solid #333; cursor:pointer; font-size:10px; color:#fff; text-transform:none; white-space:nowrap;"><input type="checkbox" onchange="atualizarColuna('${k}', this.checked)" ${checked}> ${k}</label>`;
-            });
+            var container = document.getElementById('filtro-colunas-container'); if(!container) return; container.innerHTML = ''; var keys = Object.keys(colunasGlobais).sort();
+            if(keys.length === 0) { container.innerHTML = '<p style="font-size: 10px; color: #555; width: 100%; text-align: center; margin: 0;">Nenhuma coluna.</p>'; return; }
+            keys.forEach(k => { var checked = colunasGlobais[k] ? 'checked' : ''; container.innerHTML += `<label style="display:flex; align-items:center; gap:5px; background:#1a1a1c; padding:6px 10px; border-radius:4px; border:1px solid #333; cursor:pointer; font-size:10px; color:#fff; text-transform:none; white-space:nowrap;"><input type="checkbox" onchange="atualizarColuna('${k}', this.checked)" ${checked}> ${k}</label>`; });
         }
 
         function atualizarColuna(k, estado) { colunasGlobais[k] = estado; }
@@ -925,12 +787,7 @@
         var ultimaAreaCalculada = 0; var ultimoPerimetroCalculado = 0;
         var datumsDef = { "WGS84": "+datum=WGS84", "SIRGAS2000": "+ellps=GRS80 +towgs84=0,0,0,0,0,0,0", "SAD69": "+ellps=aust_SA +towgs84=-66.87,4.37,-38.52,0,0,0,0" };
 
-        function abrirAba(id, btn) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            btn.classList.add('active');
-        }
+        function abrirAba(id, btn) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById(id).classList.add('active'); btn.classList.add('active'); }
 
         document.getElementById('main-formato').addEventListener('change', function(e) { document.getElementById('utm-options').style.display = (e.target.value === 'utm') ? 'flex' : 'none'; });
         function parseDMS(str) { var match = str.match(/(\d+)[^\d]+(\d+)[^\d]+([\d.,]+)[^\d]*([NSWE]?)/i); if(!match) return null; var deg = parseFloat(match[1]); var min = parseFloat(match[2]); var sec = parseFloat(match[3].replace(',','.')); var dec = deg + (min/60) + (sec/3600); var dir = match[4] ? match[4].toUpperCase() : ''; if (dir === 'S' || dir === 'W' || dir === 'O') dec = dec * -1; return dec; }
@@ -944,104 +801,39 @@
                     var pdf = await pdfjsLib.getDocument(typedarray).promise; var text = "";
                     for(var i=1; i<=pdf.numPages; i++) { var page = await pdf.getPage(i); var content = await page.getTextContent(); var strings = content.items.map(function(item) { return item.str; }); text += strings.join(" ") + "\n"; }
                     var linhas = text.replace(/([NSWE])/gi, "$1\n").split('\n');
-                    document.getElementById('main-texto').value = linhas.join('\n'); mostrarToast("Texto PDF extraído.");
+                    document.getElementById('main-texto').value = linhas.join('\n'); mostrarToast("PDF Extraído.");
                 };
                 reader.readAsArrayBuffer(file);
             } else { var reader = new FileReader(); reader.onload = ev => document.getElementById('main-texto').value = ev.target.result; reader.readAsText(file); }
-            e.target.value = ''; // Reseta para permitir reenviar o mesmo arquivo
+            e.target.value = '';
         }
 
-        // NOVO: Função exclusiva para ler arquivos direto na aba do Conversor
-        function lerArquivoConversor(e) {
-            var file = e.target.files[0]; 
-            if (!file) return;
-            var reader = new FileReader();
-            reader.onload = function(ev) {
-                document.getElementById('conv-texto-in').value = ev.target.result;
-                mostrarToast("Arquivo " + file.name + " carregado no Conversor!");
-            };
-            reader.readAsText(file);
-            e.target.value = ''; // Reseta
-        }
+        function lerArquivoConversor(e) { var file = e.target.files[0]; if (!file) return; var reader = new FileReader(); reader.onload = function(ev) { document.getElementById('conv-texto-in').value = ev.target.result; mostrarToast("Arquivo carregado!"); }; reader.readAsText(file); e.target.value = ''; }
 
         function obterEpsgEntrada() { var fmtIn = document.getElementById('main-formato').value; var datum = document.getElementById('main-datum').value; var projDatum = datumsDef[datum]; if(fmtIn === 'utm') { var zona = document.getElementById('main-zona').value; var projHemi = (document.getElementById('main-hemi').value === 'S') ? '+south ' : ''; return `+proj=utm +zone=${zona} ${projHemi}${projDatum} +units=m +no_defs`; } return `+proj=longlat ${projDatum} +no_defs`; }
 
-        function calcAzimuteDist(x1, y1, x2, y2) { 
-            var dx = x2 - x1; var dy = y2 - y1; 
-            var dist = Math.sqrt(dx*dx + dy*dy); 
-            var az = Math.atan2(dx, dy) * (180 / Math.PI); 
-            if (az < 0) az += 360; 
-            var d = Math.floor(az); var m = Math.floor((az - d) * 60); var s = (((az - d) * 60) - m) * 60; 
-            return { dist: dist.toFixed(2), azimute: `${d}°${m.toString().padStart(2, '0')}'${Math.floor(s).toString().padStart(2, '0')}"` }; 
-        }
+        function calcAzimuteDist(x1, y1, x2, y2) { var dx = x2 - x1; var dy = y2 - y1; var dist = Math.sqrt(dx*dx + dy*dy); var az = Math.atan2(dx, dy) * (180 / Math.PI); if (az < 0) az += 360; var d = Math.floor(az); var m = Math.floor((az - d) * 60); var s = (((az - d) * 60) - m) * 60; return { dist: dist.toFixed(2), azimute: `${d}°${m.toString().padStart(2, '0')}'${Math.floor(s).toString().padStart(2, '0')}"` }; }
 
         function executarMotorPoligonal() {
-            let startX = parseFloat(document.getElementById('pol-start-x').value);
-            let startY = parseFloat(document.getElementById('pol-start-y').value);
-            let texto = document.getElementById('pol-texto').value;
-            
-            if(isNaN(startX) || isNaN(startY) || !texto.trim()) {
-                return alert("Insira o ponto de partida E/N e os dados do memorial (Azimute; Distância).");
-            }
-
-            let linhas = texto.split('\n');
-            let xAtual = startX;
-            let yAtual = startY;
-            
-            document.getElementById('main-formato').value = 'utm';
-            document.getElementById('utm-options').style.display = 'flex';
-
-            let epsgIn = obterEpsgEntrada();
-            let epsgOut = "+proj=longlat +datum=WGS84 +no_defs";
-            
-            memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [], bloco: [] };
-            let pCount = 1;
-            let bIndex = 0;
-
-            try { 
-                let conv = proj4(epsgIn, epsgOut, [xAtual, yAtual]); 
-                memoria.nomes.push("P" + pCount++);
-                memoria.cotas.push(0);
-                memoria.lon.push(conv[0]); 
-                memoria.lat.push(conv[1]); 
-                memoria.confs.push("Início");
-                memoria.bloco.push(bIndex);
-            } catch(e) { return alert("Erro de projeção no ponto inicial. Verifique fuso/datum."); }
-
+            let startX = parseFloat(document.getElementById('pol-start-x').value); let startY = parseFloat(document.getElementById('pol-start-y').value); let texto = document.getElementById('pol-texto').value;
+            if(isNaN(startX) || isNaN(startY) || !texto.trim()) return alert("Insira ponto de partida e memorial.");
+            let linhas = texto.split('\n'); let xAtual = startX; let yAtual = startY; document.getElementById('main-formato').value = 'utm'; document.getElementById('utm-options').style.display = 'flex';
+            let epsgIn = obterEpsgEntrada(); let epsgOut = "+proj=longlat +datum=WGS84 +no_defs"; memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [], bloco: [] }; let pCount = 1; let bIndex = 0;
+            try { let conv = proj4(epsgIn, epsgOut, [xAtual, yAtual]); memoria.nomes.push("P" + pCount++); memoria.cotas.push(0); memoria.lon.push(conv[0]); memoria.lat.push(conv[1]); memoria.confs.push("Início"); memoria.bloco.push(bIndex); } catch(e) { return alert("Erro no ponto inicial."); }
             linhas.forEach(linha => {
-                let partes = linha.split(';');
-                if(partes.length >= 2) {
-                    let azText = partes[0].trim().replace(',', '.');
-                    let distText = partes[1].trim().replace(',', '.');
-                    
-                    let az = parseFloat(azText);
-                    let dist = parseFloat(distText);
-                    
-                    if(!isNaN(az) && !isNaN(dist)) {
-                        let azRad = az * (Math.PI / 180);
-                        xAtual += dist * Math.sin(azRad);
-                        yAtual += dist * Math.cos(azRad);
-                        
-                        try { 
-                            let conv = proj4(epsgIn, epsgOut, [xAtual, yAtual]); 
-                            memoria.nomes.push("P" + pCount++);
-                            memoria.cotas.push(0);
-                            memoria.lon.push(conv[0]); 
-                            memoria.lat.push(conv[1]); 
-                            memoria.confs.push("");
-                            memoria.bloco.push(bIndex);
-                        } catch(e) {}
+                let partes = linha.split(';'); if(partes.length >= 2) {
+                    let az = parseFloat(partes[0].trim().replace(',', '.')); let dist = parseFloat(partes[1].trim().replace(',', '.'));
+                    if(!isNaN(az) && !isNaN(dist)) { let azRad = az * (Math.PI / 180); xAtual += dist * Math.sin(azRad); yAtual += dist * Math.cos(azRad);
+                        try { let conv = proj4(epsgIn, epsgOut, [xAtual, yAtual]); memoria.nomes.push("P" + pCount++); memoria.cotas.push(0); memoria.lon.push(conv[0]); memoria.lat.push(conv[1]); memoria.confs.push(""); memoria.bloco.push(bIndex); } catch(e) {}
                     }
                 }
             });
-            
-            if(memoria.lon.length > 1) {
-                atualizarEditor(); 
-                atualizarMapa(true);
-                mostrarToast("Poligonal gerada com sucesso a partir de Azimutes!");
-            }
+            if(memoria.lon.length > 1) { atualizarEditor(); atualizarMapa(true); mostrarToast("Poligonal gerada!"); }
         }
 
+        // ==========================================
+        // LEITOR DE COORDENADAS REESCRITO (À PROVA DE FALHAS DD)
+        // ==========================================
         function processarLevantamento() {
             var txt = document.getElementById('main-texto').value; if(!txt.trim()) { alert("Insira dados."); return; }
             var chkMulti = document.getElementById('chk-multi-poly') && document.getElementById('chk-multi-poly').checked;
@@ -1052,13 +844,8 @@
             var blocoAtual = 0;
 
             for (var i = 0; i < linhas.length; i++) {
-                var linhaLimpa = linhas[i].trim().replace(/"/g, ''); 
-                
-                // Quebra de bloco ao achar linha vazia
-                if (linhaLimpa === "") {
-                    if (chkMulti) blocoAtual++;
-                    continue; 
-                }
+                var linhaLimpa = linhas[i].trim().replace(/"/g, '').replace(/;$/, ''); 
+                if (linhaLimpa === "") { if (chkMulti) blocoAtual++; continue; }
                 if (linhaLimpa.startsWith("CO;")) continue; 
                 
                 var x = null, y = null, z = 0, nomeMarco = "P" + (i + 1);
@@ -1068,11 +855,17 @@
                     if (partesDMS && partesDMS.length >= 2) {
                         var c1 = parseDMS(partesDMS[0]); var c2 = parseDMS(partesDMS[1]);
                         if (partesDMS[0].toUpperCase().includes('W') || partesDMS[0].toUpperCase().includes('O')) { x = c1; y = c2; } else if (partesDMS[1].toUpperCase().includes('W') || partesDMS[1].toUpperCase().includes('O')) { x = c2; y = c1; } else { y = c1; x = c2; } 
-                        var partesSplit = linhaLimpa.split(/[\t;]+/); if(partesSplit.length > 0) nomeMarco = partesSplit[0].replace(/[^a-zA-Z0-9-]/g,'');
-                        var res = partesSplit.filter(p => !isNaN(parseFloat(p.replace(',','.'))) && !p.includes('°'));
-                        if(res.length > 0) z = parseFloat(res[0].replace(',', '.'));
+                    }
+                } else if (fmtIn === 'decimal') {
+                    // Busca todos os números flutuantes na linha (com ponto ou vírgula)
+                    let matchNums = linhaLimpa.match(/-?\d+([.,]\d+)?/g);
+                    if (matchNums && matchNums.length >= 2) {
+                        x = parseFloat(matchNums[0].replace(',', '.'));
+                        y = parseFloat(matchNums[1].replace(',', '.'));
+                        if(matchNums.length > 2) z = parseFloat(matchNums[2].replace(',', '.'));
                     }
                 } else {
+                    // UTM e Outros mantêm a lógica de separar por barras
                     var partes = linhaLimpa.split(/[\t;]+/); if (partes.length < 2) partes = linhaLimpa.split(',');
                     var numeros = []; var textos = [];
                     for(var p = 0; p < partes.length; p++) { var val = partes[p].trim(); var numVal = parseFloat(val.replace(',', '.')); if(!isNaN(numVal) && val !== "") numeros.push(numVal); else if(val !== "" && isNaN(numVal)) textos.push(val); }
@@ -1086,36 +879,94 @@
                                 var maxIdx = Math.max(idxN, idxE);
                                 if(maxIdx !== -1 && maxIdx + 1 < numeros.length) { z = numeros[maxIdx + 1]; }
                                 else { var res = numeros.filter(n => n !== pN && n !== pE); z = res.length > 0 ? res[0] : 0; }
-                            } else { 
-                                x = numeros[0]; y = numeros[1]; if(numeros.length > 2) z = numeros[2]; 
-                            }
-                        } else { 
-                            x = numeros[0]; y = numeros[1]; if(numeros.length > 2) z = numeros[2]; 
-                        }
+                            } else { x = numeros[0]; y = numeros[1]; if(numeros.length > 2) z = numeros[2]; }
+                        } else { x = numeros[0]; y = numeros[1]; if(numeros.length > 2) z = numeros[2]; }
                     }
                 }
+
                 if(x === null || y === null || isNaN(x) || isNaN(y)) continue;
 
                 try { 
                     var conv = (fmtIn === 'sgl' || fmtIn === 'decimal') ? [x, y] : proj4(epsgIn, epsgOut, [x, y]); 
-                    memoria.nomes.push(nomeMarco); 
-                    memoria.cotas.push(z); 
-                    memoria.lon.push(conv[0]); 
-                    memoria.lat.push(conv[1]); 
-                    memoria.confs.push(""); 
-                    memoria.bloco.push(blocoAtual); // Salva bloco atual
+                    memoria.nomes.push(nomeMarco); memoria.cotas.push(z); memoria.lon.push(conv[0]); memoria.lat.push(conv[1]); memoria.confs.push(""); memoria.bloco.push(blocoAtual);
                 } catch(e) {}
             }
-            if(memoria.lon.length === 0) { alert("Nenhum dado válido."); return; }
+            if(memoria.lon.length === 0) { alert("Nenhum dado válido processado."); return; }
             atualizarEditor(); atualizarMapa(true);
         }
 
+        // ==========================================
+        // SISTEMA DE TABELA ARRASTÁVEL (DRAG & DROP)
+        // ==========================================
+        let rowArrasteOriginal = null;
+
         function atualizarEditor() {
             var b = document.getElementById('tabela-editor-body'); b.innerHTML = ""; var epsgC = obterEpsgEntrada();
-            memoria.nomes.forEach((n, i) => { var c = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgC, [memoria.lon[i], memoria.lat[i]]); b.innerHTML += `<tr><td><input type="text" id="ed-n-${i}" value="${n}" style="text-align:left; color:#fff; font-family:'Inter', sans-serif;"></td><td>${c[0].toFixed(3)}</td><td>${c[1].toFixed(3)}</td><td><input type="number" step="0.001" id="ed-z-${i}" value="${memoria.cotas[i]}"></td><td><input type="text" id="ed-c-${i}" value="${memoria.confs[i]}" style="text-align:left; color:#fff; font-family:'Inter', sans-serif;" placeholder="Ex: Rua A"></td></tr>`; });
+            if(memoria.lon.length === 0) { b.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#666;">Sem dados</td></tr>'; return; }
+
+            memoria.nomes.forEach((n, i) => { 
+                var c = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgC, [memoria.lon[i], memoria.lat[i]]); 
+                b.innerHTML += `
+                <tr draggable="true" ondragstart="iniciarArraste(event, ${i})" ondragover="permitirArraste(event)" ondrop="soltarArraste(event, ${i})">
+                    <td class="drag-handle" title="Arraste para mover">☰ ${i+1}</td>
+                    <td><input type="text" id="ed-n-${i}" value="${n}" onchange="salvarEdicoes(false)"></td>
+                    <td><input type="number" step="0.000001" id="ed-x-${i}" value="${c[0].toFixed(5)}" onchange="salvarEdicoes(true)"></td>
+                    <td><input type="number" step="0.000001" id="ed-y-${i}" value="${c[1].toFixed(5)}" onchange="salvarEdicoes(true)"></td>
+                    <td><button class="btn btn-small btn-danger" onclick="removerLinha(${i})">🗑️</button></td>
+                </tr>`; 
+            });
         }
-        
-        function salvarEdicoes() { if(memoria.lon.length === 0) return; memoria.nomes.forEach((n, i) => { memoria.nomes[i] = document.getElementById(`ed-n-${i}`).value; memoria.cotas[i] = parseFloat(document.getElementById(`ed-z-${i}`).value) || 0; memoria.confs[i] = document.getElementById(`ed-c-${i}`).value || ""; }); atualizarMapa(false); mostrarToast("Edições Salvas!"); }
+
+        function iniciarArraste(e, index) { rowArrasteOriginal = index; e.dataTransfer.effectAllowed = 'move'; e.target.classList.add('dragging'); }
+        function permitirArraste(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+        function soltarArraste(e, indexDestino) {
+            e.preventDefault(); document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+            if(rowArrasteOriginal === null || rowArrasteOriginal === indexDestino) return;
+            
+            const moverNoArray = (arr, from, to) => { const item = arr.splice(from, 1)[0]; arr.splice(to, 0, item); };
+            moverNoArray(memoria.nomes, rowArrasteOriginal, indexDestino);
+            moverNoArray(memoria.cotas, rowArrasteOriginal, indexDestino);
+            moverNoArray(memoria.lon, rowArrasteOriginal, indexDestino);
+            moverNoArray(memoria.lat, rowArrasteOriginal, indexDestino);
+            moverNoArray(memoria.confs, rowArrasteOriginal, indexDestino);
+            moverNoArray(memoria.bloco, rowArrasteOriginal, indexDestino);
+
+            atualizarEditor(); atualizarMapa(false);
+        }
+
+        function salvarEdicoes(reprojetar = false) { 
+            if(memoria.lon.length === 0) return; 
+            var epsgOut = "+proj=longlat +datum=WGS84 +no_defs"; var epsgIn = obterEpsgEntrada();
+            
+            for(let i=0; i < memoria.lon.length; i++) {
+                memoria.nomes[i] = document.getElementById(`ed-n-${i}`).value; 
+                if(reprojetar) {
+                    let novoX = parseFloat(document.getElementById(`ed-x-${i}`).value);
+                    let novoY = parseFloat(document.getElementById(`ed-y-${i}`).value);
+                    if(!isNaN(novoX) && !isNaN(novoY)) {
+                        let conv = proj4(epsgIn, epsgOut, [novoX, novoY]);
+                        memoria.lon[i] = conv[0]; memoria.lat[i] = conv[1];
+                    }
+                }
+            }
+            atualizarMapa(false); 
+        }
+
+        function removerLinha(index) {
+            if(confirm("Remover vértice " + (index + 1) + "?")) {
+                memoria.nomes.splice(index, 1); memoria.cotas.splice(index, 1); memoria.lon.splice(index, 1);
+                memoria.lat.splice(index, 1); memoria.confs.splice(index, 1); memoria.bloco.splice(index, 1);
+                atualizarEditor(); atualizarMapa(false);
+            }
+        }
+
+        function adicionarNovaLinha() {
+            let lastBlk = memoria.bloco.length > 0 ? memoria.bloco[memoria.bloco.length-1] : 0;
+            memoria.nomes.push("P_Novo"); memoria.cotas.push(0); memoria.lon.push(-44.225); // Coord Default Centro BR
+            memoria.lat.push(-20.076); memoria.confs.push(""); memoria.bloco.push(lastBlk);
+            atualizarEditor(); atualizarMapa(false);
+            mostrarToast("Novo vértice adicionado no final da tabela. Edite as coordenadas!");
+        }
 
         function atualizarMapa(zoom = false) {
             var idsRtk = ['rtk_poly', 'rtk_pt', 'rtk_text'];
@@ -1140,29 +991,25 @@
                 } catch(e) { ptsPPorBloco[blk].push({x:0, y:0}); }
 
                 L.circleMarker(ll, {radius:4, color:'#0098ff', fillColor:'#1e1e1e', fillOpacity:1, weight:2}).addTo(cPt);
-                L.marker(ll, {opacity:0}).bindTooltip(memoria.nomes[i] + " ("+memoria.cotas[i].toFixed(2)+")", {permanent:true, direction:'right', className:'etiqueta-mapa'}).addTo(cTxt);
+                // PADRÃO ONR/SIGEF: Apenas o nome para não poluir
+                L.marker(ll, {opacity:0}).bindTooltip(memoria.nomes[i], {permanent:true, direction:'right', className:'etiqueta-mapa'}).addTo(cTxt);
             }
 
             ultimaAreaCalculada = 0; ultimoPerimetroCalculado = 0;
             
             Object.keys(ptsPorBloco).forEach(blk => {
-                var pts = ptsPorBloco[blk];
-                var ptsP = ptsPPorBloco[blk];
-
-                if(pts.length >= 2) { 
-                    L.polyline(pts, {color:'#0098ff', weight:2, dashArray: '5,5'}).addTo(cPoly); 
-                }
-
+                var pts = ptsPorBloco[blk]; var ptsP = ptsPPorBloco[blk];
+                if(pts.length >= 2) { L.polyline(pts, {color:'#0098ff', weight:2}).addTo(cPoly); }
                 if(pts.length >= 3) {
-                    L.polygon(pts, {color:'#0098ff', weight:0, fillOpacity:0.1}).addTo(cPoly); 
+                    // PADRÃO ONR: Preenchimento azul claro
+                    L.polygon(pts, {color:'#0098ff', weight:2, fillColor:'#0098ff', fillOpacity:0.2}).addTo(cPoly); 
                     var a = 0, p = 0; 
                     for(var j=0; j<ptsP.length; j++) { 
                         var p1 = ptsP[j], p2 = ptsP[(j+1)%ptsP.length]; 
                         a += (p1.x * p2.y) - (p2.x * p1.y); 
                         p += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)); 
                     }
-                    ultimaAreaCalculada += Math.abs(a)/2; 
-                    ultimoPerimetroCalculado += p;
+                    ultimaAreaCalculada += Math.abs(a)/2; ultimoPerimetroCalculado += p;
                 }
             });
 
@@ -1189,13 +1036,8 @@
                 if(coords && coords.length > 0) {
                     var lineStr = f.geometry.type === 'MultiLineString' ? coords[0] : coords;
                     if(lineStr.length > 2) {
-                        var midIndex = Math.floor(lineStr.length / 2);
-                        var pt = lineStr[midIndex];
-                        var cotaZ = f.properties.z;
-                        var icon = L.divIcon({
-                            className: 'cota-curva',
-                            html: `<div class="cota-curva-text" style="color:${colorHex};">${cotaZ}m</div>`
-                        });
+                        var midIndex = Math.floor(lineStr.length / 2); var pt = lineStr[midIndex]; var cotaZ = f.properties.z;
+                        var icon = L.divIcon({ className: 'cota-curva', html: `<div class="cota-curva-text" style="color:${colorHex};">${cotaZ}m</div>` });
                         L.marker([pt[1], pt[0]], {icon: icon}).addTo(layerGroup);
                     }
                 }
@@ -1204,738 +1046,247 @@
 
         function gerarCurvasNivel() {
             if(memoria.lon.length < 3) return mostrarToast("Mínimo de 3 pontos cotados necessários.");
-            var zVals = memoria.cotas;
-            var maxZ = Math.max(...zVals); 
-            var minZ = Math.min(...zVals);
-            if(maxZ === minZ || isNaN(maxZ)) return alert("Todos os pontos têm a mesma cota. Impossível interpolar MDT.");
-            
-            mostrarToast("Calculando malha triangular (MDT) e suavizando curvas...");
-            
+            var zVals = memoria.cotas; var maxZ = Math.max(...zVals); var minZ = Math.min(...zVals);
+            if(maxZ === minZ || isNaN(maxZ)) return alert("Todos os pontos têm a mesma cota.");
+            mostrarToast("Calculando malha triangular (MDT)...");
             setTimeout(() => {
                 try {
-                    let uniquePoints = [];
-                    let seen = new Set();
+                    let uniquePoints = []; let seen = new Set();
                     for(let i=0; i < memoria.lon.length; i++) {
                         let key = memoria.lon[i].toFixed(6) + "_" + memoria.lat[i].toFixed(6);
-                        if(!seen.has(key)) {
-                            seen.add(key);
-                            let noiseLon = (Math.random() - 0.5) * 0.0000001;
-                            let noiseLat = (Math.random() - 0.5) * 0.0000001;
-                            uniquePoints.push(turf.point([memoria.lon[i] + noiseLon, memoria.lat[i] + noiseLat], {z: memoria.cotas[i]}));
-                        }
+                        if(!seen.has(key)) { seen.add(key); let noiseLon = (Math.random() - 0.5) * 0.0000001; let noiseLat = (Math.random() - 0.5) * 0.0000001; uniquePoints.push(turf.point([memoria.lon[i] + noiseLon, memoria.lat[i] + noiseLat], {z: memoria.cotas[i]})); }
                     }
-
-                    var fc = turf.featureCollection(uniquePoints);
-                    var bbox = turf.bbox(fc);
-                    
-                    var polyBbox = turf.bboxPolygon(bbox);
-                    var bboxExpanded = turf.bbox(turf.buffer(polyBbox, 0.05, {units: 'kilometers'})); 
-                    
-                    var distX = turf.distance([bboxExpanded[0], bboxExpanded[1]], [bboxExpanded[2], bboxExpanded[1]], {units: 'meters'});
-                    var maiorEixo = Math.max(distX, 100);
-                    
-                    var gridSize = Math.max(0.5, maiorEixo / 100); 
-                    
+                    var fc = turf.featureCollection(uniquePoints); var bboxExpanded = turf.bbox(turf.buffer(turf.bboxPolygon(turf.bbox(fc)), 0.05, {units: 'kilometers'})); 
+                    var gridSize = Math.max(0.5, Math.max(turf.distance([bboxExpanded[0], bboxExpanded[1]], [bboxExpanded[2], bboxExpanded[1]], {units: 'meters'}), 100) / 100); 
                     var grid = turf.interpolate(fc, gridSize, {gridType: 'points', property: 'z', units: 'meters', weight: 2, boundingBox: bboxExpanded}); 
-                    
-                    var zRange = maxZ - minZ;
-                    var interInterval = 1; 
-                    var masterInterval = 5; 
-
-                    if (zRange < 5) { masterInterval = 1; interInterval = 0.2; } 
-                    else if (zRange > 50) { masterInterval = 10; interInterval = 2; }
-
+                    var zRange = maxZ - minZ; var interInterval = 1; var masterInterval = 5; 
+                    if (zRange < 5) { masterInterval = 1; interInterval = 0.2; } else if (zRange > 50) { masterInterval = 10; interInterval = 2; }
                     var breaksInter = []; var breaksMaster = [];
-                    for(var b = Math.floor(minZ / interInterval) * interInterval; b <= Math.ceil(maxZ); b += interInterval) {
-                        var bArredondado = parseFloat(b.toFixed(2));
-                        if (bArredondado % masterInterval === 0 || Math.abs(bArredondado % masterInterval) < 0.001) { breaksMaster.push(bArredondado); } 
-                        else { breaksInter.push(bArredondado); }
-                    }
-
-                    if(breaksInter.length === 0 && breaksMaster.length === 0) { breaksMaster.push(minZ + (zRange/2)); }
+                    for(var b = Math.floor(minZ / interInterval) * interInterval; b <= Math.ceil(maxZ); b += interInterval) { var bA = parseFloat(b.toFixed(2)); if (bA % masterInterval === 0 || Math.abs(bA % masterInterval) < 0.001) { breaksMaster.push(bA); } else { breaksInter.push(bA); } }
+                    if(breaksInter.length === 0 && breaksMaster.length === 0) breaksMaster.push(minZ + (zRange/2));
                     
-                    const smoothLines = (isolines) => {
-                        isolines.features.forEach((feature, index) => {
-                            if(feature.geometry.coordinates.length > 0 && feature.geometry.coordinates[0].length > 2) {
-                                try {
-                                    isolines.features[index] = turf.bezierSpline(feature, {resolution: 10000, sharpness: 0.5});
-                                } catch(e) {} 
-                            }
-                        });
-                        return isolines;
-                    };
+                    const smoothLines = (isolines) => { isolines.features.forEach((feature, index) => { if(feature.geometry.coordinates.length > 0 && feature.geometry.coordinates[0].length > 2) { try { isolines.features[index] = turf.bezierSpline(feature, {resolution: 10000, sharpness: 0.5}); } catch(e) {} } }); return isolines; };
 
-                    if(breaksInter.length > 0) {
-                        var linesInter = smoothLines(turf.isolines(grid, breaksInter, {zProperty: 'z'}));
-                        var interLayer = processarGeoJSON_Layer(linesInter, "Curvas Secundárias", "#757575", 1);
-                        adicionarCotasNasCurvas(linesInter, "#999999", interLayer);
-                    }
-                    if(breaksMaster.length > 0) {
-                        var linesMaster = smoothLines(turf.isolines(grid, breaksMaster, {zProperty: 'z'}));
-                        var masterLayer = processarGeoJSON_Layer(linesMaster, "Curvas Mestras", "#ff9800", 3);
-                        adicionarCotasNasCurvas(linesMaster, "#ff9800", masterLayer);
-                        map.fitBounds(masterLayer.getBounds(), {padding: [30,30]});
-                    }
-                    mostrarToast("Curvas Mestras e Secundárias geradas e suavizadas!");
-                } catch(e) {
-                    console.error(e);
-                    alert("Aviso: A dispersão dos pontos não formou uma superfície contínua válida.");
-                }
+                    if(breaksInter.length > 0) { var linesInter = smoothLines(turf.isolines(grid, breaksInter, {zProperty: 'z'})); var interLayer = processarGeoJSON_Layer(linesInter, "Curvas Secundárias", "#757575", 1); adicionarCotasNasCurvas(linesInter, "#999999", interLayer); }
+                    if(breaksMaster.length > 0) { var linesMaster = smoothLines(turf.isolines(grid, breaksMaster, {zProperty: 'z'})); var masterLayer = processarGeoJSON_Layer(linesMaster, "Curvas Mestras", "#ff9800", 3); adicionarCotasNasCurvas(linesMaster, "#ff9800", masterLayer); map.fitBounds(masterLayer.getBounds(), {padding: [30,30]}); }
+                    mostrarToast("Curvas geradas!");
+                } catch(e) { alert("Aviso: Dispersão inválida para gerar superfície."); }
             }, 100);
         }
 
         function processarGeoJSON_Layer(geojsonBruto, nomeOriginal, corOpcional, customWeight) {
             const idNovaCamada = 'shp_layer_' + camadaIdCounter++; const defaultColor = corOpcional || getRandomColor();
-            let geojson = reprojectGeoJSON(geojsonBruto);
-            
-            var novaCamada = L.geoJSON(geojson, { style: { color: defaultColor, weight: customWeight || 1, fillOpacity: 0.1 } }).addTo(map);
-            gerenciadorCamadas.push({ id: idNovaCamada, nome: "🏔️ " + nomeOriginal, leafletLayer: novaCamada, visivel: true, tipo: 'shp', cor: defaultColor, rawGeoJSON: geojson });
-            renderizarGestorCamadas();
-            return novaCamada;
+            var novaCamada = L.geoJSON(geojsonBruto, { style: { color: defaultColor, weight: customWeight || 1, fillOpacity: 0.1 } }).addTo(map);
+            gerenciadorCamadas.push({ id: idNovaCamada, nome: "🏔️ " + nomeOriginal, leafletLayer: novaCamada, visivel: true, tipo: 'shp', cor: defaultColor, rawGeoJSON: geojsonBruto });
+            renderizarGestorCamadas(); return novaCamada;
         }
 
         var chartInstance = null;
         function abrirPerfilElevacao() {
             if(memoria.lon.length < 2) return mostrarToast("Mínimo de 2 pontos necessários.");
-            
             document.getElementById('modal-perfil').style.display = 'flex';
-            
-            var distancias = [0];
-            var labels = [memoria.nomes[0]];
-            var dataZ = [memoria.cotas[0]];
-            var distAcumulada = 0;
-            var epsgIn = obterEpsgEntrada();
-            
+            var distancias = [0]; var labels = [memoria.nomes[0]]; var dataZ = [memoria.cotas[0]]; var distAcumulada = 0; var epsgIn = obterEpsgEntrada();
             for(var i = 1; i < memoria.lon.length; i++) {
-                var c1 = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgIn, [memoria.lon[i-1], memoria.lat[i-1]]);
-                var c2 = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgIn, [memoria.lon[i], memoria.lat[i]]);
-                var dist = Math.sqrt(Math.pow(c2[0]-c1[0], 2) + Math.pow(c2[1]-c1[1], 2));
-                distAcumulada += dist;
-                distancias.push(distAcumulada.toFixed(2));
-                labels.push(memoria.nomes[i]);
-                dataZ.push(memoria.cotas[i]);
+                var c1 = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgIn, [memoria.lon[i-1], memoria.lat[i-1]]); var c2 = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgIn, [memoria.lon[i], memoria.lat[i]]);
+                distAcumulada += Math.sqrt(Math.pow(c2[0]-c1[0], 2) + Math.pow(c2[1]-c1[1], 2)); distancias.push(distAcumulada.toFixed(2)); labels.push(memoria.nomes[i]); dataZ.push(memoria.cotas[i]);
             }
-            
-            var ctx = document.getElementById('chartPerfil').getContext('2d');
-            if(chartInstance) chartInstance.destroy();
-            
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: distancias,
-                    datasets: [{
-                        label: 'Altitude (Metros)',
-                        data: dataZ,
-                        borderColor: '#c586c0',
-                        backgroundColor: 'rgba(197, 134, 192, 0.2)',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#fff',
-                        pointRadius: 4,
-                        fill: true,
-                        tension: 0.2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { labels: { color: '#fff' } },
-                        tooltip: { callbacks: { title: function(context) { return "Vértice: " + labels[context[0].dataIndex]; } } }
-                    },
-                    scales: {
-                        x: { title: { display: true, text: 'Distância Acumulada (m)', color: '#aaa' }, ticks: {color: '#888'} },
-                        y: { title: { display: true, text: 'Cota Z (m)', color: '#aaa' }, ticks: {color: '#888'} }
-                    }
-                }
-            });
+            var ctx = document.getElementById('chartPerfil').getContext('2d'); if(chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, { type: 'line', data: { labels: distancias, datasets: [{ label: 'Altitude (m)', data: dataZ, borderColor: '#c586c0', backgroundColor: 'rgba(197, 134, 192, 0.2)', borderWidth: 2, pointBackgroundColor: '#fff', pointRadius: 4, fill: true, tension: 0.2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } }, tooltip: { callbacks: { title: function(context) { return "Vértice: " + labels[context[0].dataIndex]; } } } }, scales: { x: { title: { display: true, text: 'Distância Acumulada (m)', color: '#aaa' }, ticks: {color: '#888'} }, y: { title: { display: true, text: 'Cota Z (m)', color: '#aaa' }, ticks: {color: '#888'} } } } });
         }
 
         function calcularFechamento() {
-            if(memoria.lon.length < 3) return mostrarToast("Mínimo de 3 pontos para formar uma poligonal.");
-
-            var epsgIn = obterEpsgEntrada();
-            var trs = "";
-
+            if(memoria.lon.length < 3) return mostrarToast("Mínimo de 3 pontos.");
+            var epsgIn = obterEpsgEntrada(); var trs = "";
             for(var i = 0; i < memoria.lon.length; i++) {
-                var pProx = (i + 1) % memoria.lon.length;
-                var c1 = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgIn, [memoria.lon[i], memoria.lat[i]]);
-                var c2 = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgIn, [memoria.lon[pProx], memoria.lat[pProx]]);
-
+                var pProx = (i + 1) % memoria.lon.length; var c1 = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgIn, [memoria.lon[i], memoria.lat[i]]); var c2 = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgIn, [memoria.lon[pProx], memoria.lat[pProx]]);
                 var calc = calcAzimuteDist(c1[0], c1[1], c2[0], c2[1]);
-
-                trs += `<tr>
-                    <td>${memoria.nomes[i]}</td>
-                    <td>${memoria.nomes[pProx]}</td>
-                    <td>${calc.azimute}</td>
-                    <td>${calc.dist}</td>
-                    <td>${c1[0].toFixed(3)}</td>
-                    <td>${c1[1].toFixed(3)}</td>
-                    <td>${memoria.cotas[i].toFixed(2)}</td>
-                </tr>`;
+                trs += `<tr><td>${memoria.nomes[i]}</td><td>${memoria.nomes[pProx]}</td><td>${calc.azimute}</td><td>${calc.dist}</td><td>${c1[0].toFixed(3)}</td><td>${c1[1].toFixed(3)}</td><td>${memoria.cotas[i].toFixed(2)}</td></tr>`;
             }
-
-            var html = `
-                <div style="display:flex; justify-content:space-between; margin-bottom:15px; background:#111; padding:10px; border:1px solid #333; border-radius:4px;">
-                    <div><span style="color:#aaa; font-size:10px;">SISTEMA:</span> <br><b style="font-size:12px;">${document.getElementById('main-datum').value}</b></div>
-                    <div><span style="color:#aaa; font-size:10px;">ÁREA TOPOGRÁFICA:</span> <br><b style="color:var(--warning); font-size:14px;">${ultimaAreaCalculada.toFixed(3)} m²</b></div>
-                    <div><span style="color:#aaa; font-size:10px;">PERÍMETRO:</span> <br><b style="font-size:12px;">${ultimoPerimetroCalculado.toFixed(3)} m</b></div>
-                </div>
-                <div style="max-height: 400px; overflow-y: auto;">
-                    <table class="popup-table" style="width:100%;">
-                        <thead style="position: sticky; top: 0; z-index: 1;"><tr>
-                            <th>PONTO INICIAL</th>
-                            <th>PONTO VANTE</th>
-                            <th>AZIMUTE PLANO</th>
-                            <th>DISTÂNCIA (m)</th>
-                            <th>COORDENADA E (X)</th>
-                            <th>COORDENADA N (Y)</th>
-                            <th>COTA (Z)</th>
-                        </tr></thead>
-                        <tbody>${trs}</tbody>
-                    </table>
-                </div>
-            `;
-
-            document.getElementById('relatorio-content-area').innerHTML = html;
-            document.getElementById('modal-relatorio').style.display = 'flex';
+            var html = `<div style="display:flex; justify-content:space-between; margin-bottom:15px; background:#111; padding:10px; border:1px solid #333; border-radius:4px;"><div><span style="color:#aaa; font-size:10px;">SISTEMA:</span> <br><b style="font-size:12px;">${document.getElementById('main-datum').value}</b></div><div><span style="color:#aaa; font-size:10px;">ÁREA TOPOGRÁFICA:</span> <br><b style="color:var(--warning); font-size:14px;">${ultimaAreaCalculada.toFixed(3)} m²</b></div><div><span style="color:#aaa; font-size:10px;">PERÍMETRO:</span> <br><b style="font-size:12px;">${ultimoPerimetroCalculado.toFixed(3)} m</b></div></div><div style="max-height: 400px; overflow-y: auto;"><table class="popup-table" style="width:100%;"><thead style="position: sticky; top: 0; z-index: 1;"><tr><th>PONTO INICIAL</th><th>PONTO VANTE</th><th>AZIMUTE PLANO</th><th>DISTÂNCIA (m)</th><th>COORDENADA E (X)</th><th>COORDENADA N (Y)</th><th>COTA (Z)</th></tr></thead><tbody>${trs}</tbody></table></div>`;
+            document.getElementById('relatorio-content-area').innerHTML = html; document.getElementById('modal-relatorio').style.display = 'flex';
         }
 
         var map3dInstance = null;
         function abrirVisualizador3D() {
             document.getElementById('modal-mapa3d').style.display = 'flex';
-            
             var centerLng = -44.225; var centerLat = -20.076;
-            if(memoria.lon.length > 0) {
-                var sumLng = 0, sumLat = 0;
-                for(var i=0; i<memoria.lon.length; i++){ sumLng += memoria.lon[i]; sumLat += memoria.lat[i]; }
-                centerLng = sumLng / memoria.lon.length; centerLat = sumLat / memoria.lat.length;
-            }
+            if(memoria.lon.length > 0) { var sumLng = 0, sumLat = 0; for(var i=0; i<memoria.lon.length; i++){ sumLng += memoria.lon[i]; sumLat += memoria.lat[i]; } centerLng = sumLng / memoria.lon.length; centerLat = sumLat / memoria.lat.length; }
 
             if(!map3dInstance) {
                 map3dInstance = new maplibregl.Map({
-                    container: 'map3d',
-                    style: {
-                        "version": 8,
-                        "sources": {
-                            "satellite": {
-                                "type": "raster",
-                                "tiles": ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
-                                "tileSize": 256,
-                                "attribution": "© Esri World Imagery"
-                            },
-                            "terrainSource": {
-                                "type": "raster-dem",
-                                "tiles": ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
-                                "encoding": "terrarium",
-                                "tileSize": 256,
-                                "maxzoom": 14
-                            }
-                        },
-                        "layers": [{ "id": "satellite-layer", "type": "raster", "source": "satellite", "minzoom": 0, "maxzoom": 22 }],
-                        "terrain": { "source": "terrainSource", "exaggeration": 1.5 }
-                    },
-                    center: [centerLng, centerLat],
-                    zoom: 15, pitch: 60, bearing: 0
+                    container: 'map3d', style: { "version": 8, "sources": { "satellite": { "type": "raster", "tiles": ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"], "tileSize": 256 }, "terrainSource": { "type": "raster-dem", "tiles": ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"], "encoding": "terrarium", "maxzoom": 14 } }, "layers": [{ "id": "satellite-layer", "type": "raster", "source": "satellite", "minzoom": 0, "maxzoom": 22 }], "terrain": { "source": "terrainSource", "exaggeration": 1.5 } },
+                    center: [centerLng, centerLat], zoom: 15, pitch: 60, bearing: 0
                 });
-
-                map3dInstance.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
-                map3dInstance.on('load', function() { map3dInstance.resize(); atualizarDesenho3D(); });
-            } else {
-                map3dInstance.flyTo({ center: [centerLng, centerLat], zoom: 15, pitch: 60 });
-                setTimeout(() => { map3dInstance.resize(); atualizarDesenho3D(); }, 300);
-            }
+                map3dInstance.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right'); map3dInstance.on('load', function() { map3dInstance.resize(); atualizarDesenho3D(); });
+            } else { map3dInstance.flyTo({ center: [centerLng, centerLat], zoom: 15, pitch: 60 }); setTimeout(() => { map3dInstance.resize(); atualizarDesenho3D(); }, 300); }
         }
 
         function fecharVisualizador3D() { document.getElementById('modal-mapa3d').style.display = 'none'; }
 
         function atualizarDesenho3D() {
-            if(!map3dInstance || !map3dInstance.isStyleLoaded()) return;
-
-            var features = [];
-            if(memoria.lon.length > 2) {
-                var ring = [];
-                for(var i=0; i<memoria.lon.length; i++) { ring.push([memoria.lon[i], memoria.lat[i]]); }
-                ring.push([memoria.lon[0], memoria.lat[0]]); 
-                features.push({ "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [ring] } });
-            }
-
+            if(!map3dInstance || !map3dInstance.isStyleLoaded()) return; var features = [];
+            if(memoria.lon.length > 2) { var ring = []; for(var i=0; i<memoria.lon.length; i++) { ring.push([memoria.lon[i], memoria.lat[i]]); } ring.push([memoria.lon[0], memoria.lat[0]]); features.push({ "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [ring] } }); }
             var geojson = { "type": "FeatureCollection", "features": features };
-
-            if(map3dInstance.getSource('rtk-polygon')) {
-                map3dInstance.getSource('rtk-polygon').setData(geojson);
-            } else {
-                map3dInstance.addSource('rtk-polygon', { 'type': 'geojson', 'data': geojson });
-                map3dInstance.addLayer({ 'id': 'rtk-fill', 'type': 'fill', 'source': 'rtk-polygon', 'paint': { 'fill-color': '#0098ff', 'fill-opacity': 0.3 } });
-                map3dInstance.addLayer({ 'id': 'rtk-line', 'type': 'line', 'source': 'rtk-polygon', 'paint': { 'line-color': '#0098ff', 'line-width': 3 } });
-            }
+            if(map3dInstance.getSource('rtk-polygon')) { map3dInstance.getSource('rtk-polygon').setData(geojson); } 
+            else { map3dInstance.addSource('rtk-polygon', { 'type': 'geojson', 'data': geojson }); map3dInstance.addLayer({ 'id': 'rtk-fill', 'type': 'fill', 'source': 'rtk-polygon', 'paint': { 'fill-color': '#0098ff', 'fill-opacity': 0.3 } }); map3dInstance.addLayer({ 'id': 'rtk-line', 'type': 'line', 'source': 'rtk-polygon', 'paint': { 'line-color': '#0098ff', 'line-width': 3 } }); }
         }
 
         // ====================================================================
-        // BASES EXTERNAS, XREF & EXPORTAÇÕES
+        // BASES EXTERNAS E GESTOR DE CAMADAS
         // ====================================================================
 
         function processarGeoJSON_NoMapa(geojsonBruto, nomeOriginal, corOpcional, focarMapa, customWeight) {
             const idNovaCamada = 'shp_layer_' + camadaIdCounter++; const defaultColor = corOpcional || getRandomColor();
-            let geojson = reprojectGeoJSON(geojsonBruto);
-            
-            if(geojson.features) {
-                geojson.features.forEach(f => {
-                    if(f.properties) { Object.keys(f.properties).forEach(k => { if(colunasGlobais[k] === undefined) colunasGlobais[k] = true; }); }
-                });
-            }
-            renderizarFiltroColunas(); 
-
-            var novaCamada = L.geoJSON(geojson, { style: { color: defaultColor, weight: customWeight || 1, fillOpacity: 0.1 }, onEachFeature: function(feature, layer) { layer.bindPopup(function() { return construirPopupCompleto(feature.properties); }); } }).addTo(map);
+            if(geojsonBruto.features) { geojsonBruto.features.forEach(f => { if(f.properties) { Object.keys(f.properties).forEach(k => { if(colunasGlobais[k] === undefined) colunasGlobais[k] = true; }); } }); } renderizarFiltroColunas(); 
+            var novaCamada = L.geoJSON(geojsonBruto, { style: { color: defaultColor, weight: customWeight || 1, fillOpacity: 0.1 }, onEachFeature: function(feature, layer) { layer.bindPopup(function() { return construirPopupCompleto(feature.properties); }); } }).addTo(map);
             if (focarMapa) { map.fitBounds(novaCamada.getBounds()); }
-            gerenciadorCamadas.push({ id: idNovaCamada, nome: "☁️ " + nomeOriginal, leafletLayer: novaCamada, visivel: true, tipo: 'shp', cor: defaultColor, rawGeoJSON: geojson });
-            renderizarGestorCamadas(); document.getElementById('loading-shp').style.display = 'none'; 
+            gerenciadorCamadas.push({ id: idNovaCamada, nome: "☁️ " + nomeOriginal, leafletLayer: novaCamada, visivel: true, tipo: 'shp', cor: defaultColor, rawGeoJSON: geojsonBruto }); renderizarGestorCamadas(); document.getElementById('loading-shp').style.display = 'none'; 
         }
 
-        function reprojectGeoJSON(geojson) { return geojson; } 
-
-        function construirPopupCompleto(props) {
-            if(!props) return "Sem dados";
-            let html = "<table class='popup-table'><tbody>";
-            for(let key in props) { html += `<tr><th>${key}</th><td>${props[key]}</td></tr>`; }
-            html += "</tbody></table>";
-            return html;
-        }
+        function construirPopupCompleto(props) { if(!props) return "Sem dados"; let html = "<table class='popup-table'><tbody>"; for(let key in props) { html += `<tr><th>${key}</th><td>${props[key]}</td></tr>`; } html += "</tbody></table>"; return html; }
 
         async function baixarBaseSelecionada() {
-            var select = document.getElementById('select-bases-nuvem');
-            var url = select.value;
-            var nomeBase = select.options[select.selectedIndex].text;
-
-            if (!url) { return mostrarToast("Por favor, selecione uma base."); }
-
-            document.getElementById('loading-shp').style.display = 'block';
-            mostrarToast("Transferindo dados do servidor... Aguarde.");
-
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error("Erro de rede ao baixar a base.");
-                const buffer = await response.arrayBuffer();
-                let geojson = await shp(buffer); 
-                processarGeoJSON_NoMapa(geojson, nomeBase, null, true);
-                mostrarToast(nomeBase + " carregada com sucesso!");
-            } catch (err) {
-                console.error("Erro na transferência/processamento:", err);
-                alert("Não foi possível carregar a base.");
-                document.getElementById('loading-shp').style.display = 'none';
-            }
+            var select = document.getElementById('select-bases-nuvem'); var url = select.value; var nomeBase = select.options[select.selectedIndex].text; if (!url) return;
+            document.getElementById('loading-shp').style.display = 'block'; mostrarToast("Transferindo...");
+            try { const response = await fetch(url); const buffer = await response.arrayBuffer(); let geojson = await shp(buffer); processarGeoJSON_NoMapa(geojson, nomeBase, null, true); mostrarToast("Carregada!"); } 
+            catch (err) { alert("Erro ao carregar"); document.getElementById('loading-shp').style.display = 'none'; }
         }
 
         async function importarShapefile(event) {
             const file = event.target.files[0]; if (!file) return; document.getElementById('loading-shp').style.display = 'block'; const reader = new FileReader(); var fileNameStr = file.name.toLowerCase();
-            if (fileNameStr.endsWith('.shp')) { reader.onload = async (e) => { try { const geojsonArray = shp.parseShp(e.target.result); let features = geojsonArray.map(geom => ({ type: "Feature", properties: {}, geometry: geom })); processarGeoJSON_NoMapa({ type: "FeatureCollection", features: features }, file.name, null, true); mostrarToast("SHP Importado");} catch (err) { alert("Erro shp"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsArrayBuffer(file); } 
-            else if (fileNameStr.endsWith('.zip')) { reader.onload = async (e) => { try { let geojson = await shp(e.target.result); processarGeoJSON_NoMapa(geojson, file.name, null, true); mostrarToast("ZIP Importado");} catch (err) { alert("Erro zip"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsArrayBuffer(file); } 
-            else if (fileNameStr.endsWith('.kmz')) { reader.onload = async (e) => { try { var zip = await JSZip.loadAsync(e.target.result); var kmlFileName = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml')); var kmlText = await zip.files[kmlFileName].async("text"); var kmlDom = new DOMParser().parseFromString(kmlText, 'text/xml'); processarGeoJSON_NoMapa(toGeoJSON.kml(kmlDom), file.name, null, true); mostrarToast("KMZ Importado");} catch (err) { alert("Erro kmz"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsArrayBuffer(file); } 
-            else if (fileNameStr.endsWith('.kml')) { reader.onload = (e) => { try { var kmlDom = new DOMParser().parseFromString(e.target.result, 'text/xml'); processarGeoJSON_NoMapa(toGeoJSON.kml(kmlDom), file.name, null, true); mostrarToast("KML Importado");} catch (err) { alert("Erro kml"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsText(file); } 
-            else { reader.onload = (e) => { try { processarGeoJSON_NoMapa(JSON.parse(e.target.result), file.name, null, true); mostrarToast("JSON Importado");} catch(err) { alert("Inválido"); document.getElementById('loading-shp').style.display='none'; } }; reader.readAsText(file); }
+            if (fileNameStr.endsWith('.shp')) { reader.onload = async (e) => { try { const geojsonArray = shp.parseShp(e.target.result); let features = geojsonArray.map(geom => ({ type: "Feature", properties: {}, geometry: geom })); processarGeoJSON_NoMapa({ type: "FeatureCollection", features: features }, file.name, null, true); mostrarToast("SHP Importado");} catch (err) { document.getElementById('loading-shp').style.display='none'; } }; reader.readAsArrayBuffer(file); } 
+            else if (fileNameStr.endsWith('.zip')) { reader.onload = async (e) => { try { let geojson = await shp(e.target.result); processarGeoJSON_NoMapa(geojson, file.name, null, true); mostrarToast("ZIP Importado");} catch (err) { document.getElementById('loading-shp').style.display='none'; } }; reader.readAsArrayBuffer(file); } 
+            else if (fileNameStr.endsWith('.kmz')) { reader.onload = async (e) => { try { var zip = await JSZip.loadAsync(e.target.result); var kmlFileName = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml')); var kmlText = await zip.files[kmlFileName].async("text"); var kmlDom = new DOMParser().parseFromString(kmlText, 'text/xml'); processarGeoJSON_NoMapa(toGeoJSON.kml(kmlDom), file.name, null, true); mostrarToast("KMZ Importado");} catch (err) { document.getElementById('loading-shp').style.display='none'; } }; reader.readAsArrayBuffer(file); } 
+            else if (fileNameStr.endsWith('.kml')) { reader.onload = (e) => { try { var kmlDom = new DOMParser().parseFromString(e.target.result, 'text/xml'); processarGeoJSON_NoMapa(toGeoJSON.kml(kmlDom), file.name, null, true); mostrarToast("KML Importado");} catch (err) { document.getElementById('loading-shp').style.display='none'; } }; reader.readAsText(file); } 
+            else { reader.onload = (e) => { try { processarGeoJSON_NoMapa(JSON.parse(e.target.result), file.name, null, true); mostrarToast("JSON Importado");} catch(err) { document.getElementById('loading-shp').style.display='none'; } }; reader.readAsText(file); }
         }
 
         function renderizarGestorCamadas() {
             var c = document.getElementById('camadas-dinamicas'); c.innerHTML = '';
-            
             gerenciadorCamadas.forEach((cam) => {
-                var isCorEditavel = (cam.tipo === 'shp' || cam.tipo === 'rtk_poly' || cam.tipo === 'rtk_pt' || cam.tipo === 'cad');
-                var colorPicker = isCorEditavel ? `<input type="color" class="color-picker" value="${cam.cor}" onchange="alterarCorCamada('${cam.id}', this.value)">` : '';
-                
-                c.innerHTML += `
-                    <div class="layer-item">
-                        <div class="layer-item-header">
-                            <div class="layer-title" title="${cam.nome}">${colorPicker}<span style="color:${cam.visivel ? '#fff' : '#666'};">${cam.nome}</span></div>
-                            <div style="display:flex; gap:4px;">
-                                <button class="btn-icon" onclick="toggleC('${cam.id}')">${cam.visivel ? '👁️' : '🙈'}</button>
-                                <button class="btn-icon" onclick="zoomCamada('${cam.id}')" ${!cam.visivel ? 'disabled' : ''}>🔍</button>
-                                <button class="btn-icon" onclick="removerCamada('${cam.id}')">🗑️</button>
-                            </div>
-                        </div>
-                    </div>`;
-            });
-            atualizarOrdemZIndexMap();
+                var colorPicker = (cam.tipo === 'shp' || cam.tipo === 'rtk_poly' || cam.tipo === 'rtk_pt' || cam.tipo === 'cad') ? `<input type="color" class="color-picker" value="${cam.cor}" onchange="alterarCorCamada('${cam.id}', this.value)">` : '';
+                c.innerHTML += `<div class="layer-item"><div class="layer-item-header"><div class="layer-title">${colorPicker}<span style="color:${cam.visivel ? '#fff' : '#666'};">${cam.nome}</span></div><div style="display:flex; gap:4px;"><button class="btn-icon" onclick="toggleC('${cam.id}')">${cam.visivel ? '👁️' : '🙈'}</button><button class="btn-icon" onclick="zoomCamada('${cam.id}')" ${!cam.visivel ? 'disabled' : ''}>🔍</button><button class="btn-icon" onclick="removerCamada('${cam.id}')">🗑️</button></div></div></div>`;
+            }); atualizarOrdemZIndexMap();
         }
         
-        function alterarCorCamada(id, cor) { 
-            var c = gerenciadorCamadas.find(x => x.id === id); 
-            if(c) { 
-                c.cor = cor; 
-                if (c.tipo === 'shp' || c.tipo === 'rtk_poly') { c.leafletLayer.setStyle({ color: cor, fillColor: cor }); } 
-                else if (c.tipo === 'rtk_pt') { c.leafletLayer.setStyle({ color: cor }); } 
-                else if (c.tipo === 'cad') {
-                    c.leafletLayer.eachLayer(l => {
-                        if(!(l instanceof L.FeatureGroup)) {
-                            if(l.setStyle) l.setStyle({color: cor, fillColor: cor});
-                            if(l.setIcon && l instanceof L.CircleMarker) l.setStyle({color: cor});
-                        }
-                    });
-                    atualizarLayerAtivaCAD(); 
-                }
-            } 
-        }
+        function alterarCorCamada(id, cor) { var c = gerenciadorCamadas.find(x => x.id === id); if(c) { c.cor = cor; if (c.tipo === 'shp' || c.tipo === 'rtk_poly') { c.leafletLayer.setStyle({ color: cor, fillColor: cor }); } else if (c.tipo === 'rtk_pt') { c.leafletLayer.setStyle({ color: cor }); } else if (c.tipo === 'cad') { c.leafletLayer.eachLayer(l => { if(!(l instanceof L.FeatureGroup)) { if(l.setStyle) l.setStyle({color: cor, fillColor: cor}); if(l.setIcon && l instanceof L.CircleMarker) l.setStyle({color: cor}); } }); atualizarLayerAtivaCAD(); } } }
         function toggleC(id) { var c = gerenciadorCamadas.find(x => x.id === id); if(c){ c.visivel = !c.visivel; if(c.visivel) map.addLayer(c.leafletLayer); else map.removeLayer(c.leafletLayer); renderizarGestorCamadas(); } }
         function zoomCamada(id) { var c = gerenciadorCamadas.find(x => x.id === id); if(c && c.visivel && c.leafletLayer.getBounds) map.fitBounds(c.leafletLayer.getBounds(), {padding:[50,50]}); }
-        function removerCamada(id) { 
-            var i = gerenciadorCamadas.findIndex(x => x.id === id); 
-            if(i !== -1){ 
-                map.removeLayer(gerenciadorCamadas[i].leafletLayer); 
-                var removida = gerenciadorCamadas.splice(i, 1)[0]; 
-                renderizarGestorCamadas(); 
-                if(removida.tipo === 'cad') { atualizarDropdownCAD(); if(gerenciadorCamadas.filter(c => c.tipo === 'cad').length === 0) inicializarSistemaCAD(); }
-            } 
-        }
+        function removerCamada(id) { var i = gerenciadorCamadas.findIndex(x => x.id === id); if(i !== -1){ map.removeLayer(gerenciadorCamadas[i].leafletLayer); var removida = gerenciadorCamadas.splice(i, 1)[0]; renderizarGestorCamadas(); if(removida.tipo === 'cad') { atualizarDropdownCAD(); if(gerenciadorCamadas.filter(c => c.tipo === 'cad').length === 0) inicializarSistemaCAD(); } } }
         function atualizarOrdemZIndexMap() { var camadasReversas = gerenciadorCamadas.slice().reverse(); camadasReversas.forEach(camada => { if(camada.visivel && camada.leafletLayer.bringToFront) camada.leafletLayer.bringToFront(); }); }
+
+        // ====================================================================
+        // EXPORTAÇÕES (CSV, DXF, KMZ, GEOJSON)
+        // ====================================================================
 
         function obterCoordenadasExportacao() { var fmtOut = document.getElementById('out-formato').value; var epsgU = "+proj=longlat +datum=WGS84 +no_defs"; var epsgD = (fmtOut === 'utm') ? obterEpsgEntrada() : epsgU; var pts = []; for(var i=0; i<memoria.lon.length; i++) { var c = proj4(epsgU, epsgD, [memoria.lon[i], memoria.lat[i]]); pts.push({ x: c[0], y: c[1], z: memoria.cotas[i], nome: memoria.nomes[i] }); } return pts; }
         
         function obterRecorteFeatures() { 
             var featuresRecortadas = []; var chk = document.getElementById('chk-recorte'); var bboxPoly = null;
             if(chk && chk.checked) { var bounds = map.getBounds(); bboxPoly = turf.bboxPolygon([bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()]); }
-            gerenciadorCamadas.forEach(c => { 
-                if(c.tipo === 'shp' && c.visivel && c.rawGeoJSON) { 
-                    var items = c.rawGeoJSON.features ? c.rawGeoJSON.features : (c.rawGeoJSON.type === 'Feature' ? [c.rawGeoJSON] : []); 
-                    items.forEach(feat => { 
-                        if(bboxPoly) { try { if(turf.booleanIntersects(feat, bboxPoly)) featuresRecortadas.push({f: feat, color: c.cor, lName: c.nome}); } catch(e) { featuresRecortadas.push({f: feat, color: c.cor, lName: c.nome}); } } 
-                        else { featuresRecortadas.push({f: feat, color: c.cor, lName: c.nome}); }
-                    }); 
-                } 
-            }); 
-            return featuresRecortadas; 
+            gerenciadorCamadas.forEach(c => { if(c.tipo === 'shp' && c.visivel && c.rawGeoJSON) { var items = c.rawGeoJSON.features ? c.rawGeoJSON.features : (c.rawGeoJSON.type === 'Feature' ? [c.rawGeoJSON] : []); items.forEach(feat => { if(bboxPoly) { try { if(turf.booleanIntersects(feat, bboxPoly)) featuresRecortadas.push({f: feat, color: c.cor, lName: c.nome}); } catch(e) { featuresRecortadas.push({f: feat, color: c.cor, lName: c.nome}); } } else { featuresRecortadas.push({f: feat, color: c.cor, lName: c.nome}); } }); } }); return featuresRecortadas; 
         }
 
         function extractRings(coords, type) { if(type === 'LineString') return [coords]; if(type === 'Polygon') return coords; if(type === 'MultiLineString') return coords; if(type === 'MultiPolygon') { let rings = []; coords.forEach(poly => poly.forEach(ring => rings.push(ring))); return rings; } return []; }
         function baixarArquivo(n, c, t) { var b = new Blob([c], {type: t}); var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = n; a.click(); }
-        function hexToACI(hex) {
-            if (!hex) return 7; hex = hex.replace('#', ''); if (hex.length === 3) hex = hex.split('').map(c => c+c).join('');
-            var r = parseInt(hex.substring(0,2), 16); var g = parseInt(hex.substring(2,4), 16); var b = parseInt(hex.substring(4,6), 16);
-            if (r>150 && g<100 && b<100) return 1; if (r>150 && g>150 && b<100) return 2; if (r<100 && g>150 && b<100) return 3; 
-            if (r<100 && g>150 && b>150) return 4; if (r<100 && g<100 && b>150) return 5; if (r>150 && g<100 && b>150) return 6; 
-            if (r<100 && g<100 && b<100) return 8; return 7; 
-        }
+        function hexToACI(hex) { if (!hex) return 7; hex = hex.replace('#', ''); if (hex.length === 3) hex = hex.split('').map(c => c+c).join(''); var r = parseInt(hex.substring(0,2), 16); var g = parseInt(hex.substring(2,4), 16); var b = parseInt(hex.substring(4,6), 16); if (r>150 && g<100 && b<100) return 1; if (r>150 && g>150 && b<100) return 2; if (r<100 && g>150 && b<100) return 3; if (r<100 && g>150 && b>150) return 4; if (r<100 && g<100 && b>150) return 5; if (r>150 && g<100 && b>150) return 6; if (r<100 && g<100 && b<100) return 8; return 7; }
         function nFormat(val) { let n = Number(val); if (isNaN(n) || !isFinite(n)) return "0.0000"; return n.toFixed(4); }
 
         function exportDxfEntity(layer, epsgU, epsgD, lName, hexColor) {
             let dxfStr = ""; let cInt = hexToACI(hexColor);
-            if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
-                var ptProj = proj4(epsgU, epsgD, [layer.getLatLng().lng, layer.getLatLng().lat]);
-                dxfStr += `0\nPOINT\n8\n${lName}\n62\n${cInt}\n10\n${nFormat(ptProj[0])}\n20\n${nFormat(ptProj[1])}\n30\n0.0000\n`;
-            } else if (layer instanceof L.Circle) {
-                var center = proj4(epsgU, epsgD, [layer.getLatLng().lng, layer.getLatLng().lat]);
-                dxfStr += `0\nCIRCLE\n8\n${lName}\n62\n${cInt}\n10\n${nFormat(center[0])}\n20\n${nFormat(center[1])}\n30\n0.0000\n40\n${nFormat(layer.getRadius())}\n`;
-            } else if (layer instanceof L.Polygon || layer instanceof L.Polyline) {
-                var latlngs = (layer instanceof L.Polygon) ? layer.getLatLngs()[0] : layer.getLatLngs(); var fechado = (layer instanceof L.Polygon) ? 1 : 0;
-                dxfStr += `0\nPOLYLINE\n8\n${lName}\n62\n${cInt}\n66\n1\n70\n${fechado}\n10\n0.0\n20\n0.0\n30\n0.0\n`;
-                latlngs.forEach(ll => { var ptProj = proj4(epsgU, epsgD, [ll.lng, ll.lat]); dxfStr += `0\nVERTEX\n8\n${lName}\n10\n${nFormat(ptProj[0])}\n20\n${nFormat(ptProj[1])}\n30\n0.0000\n`; });
-                dxfStr += "0\nSEQEND\n";
-            } else if (layer instanceof L.LayerGroup || layer instanceof L.FeatureGroup) {
-                layer.eachLayer(subLayer => { dxfStr += exportDxfEntity(subLayer, epsgU, epsgD, lName, hexColor); });
-            }
+            if (layer instanceof L.Marker || layer instanceof L.CircleMarker) { var ptProj = proj4(epsgU, epsgD, [layer.getLatLng().lng, layer.getLatLng().lat]); dxfStr += `0\nPOINT\n8\n${lName}\n62\n${cInt}\n10\n${nFormat(ptProj[0])}\n20\n${nFormat(ptProj[1])}\n30\n0.0000\n`; } 
+            else if (layer instanceof L.Circle) { var center = proj4(epsgU, epsgD, [layer.getLatLng().lng, layer.getLatLng().lat]); dxfStr += `0\nCIRCLE\n8\n${lName}\n62\n${cInt}\n10\n${nFormat(center[0])}\n20\n${nFormat(center[1])}\n30\n0.0000\n40\n${nFormat(layer.getRadius())}\n`; } 
+            else if (layer instanceof L.Polygon || layer instanceof L.Polyline) { var latlngs = (layer instanceof L.Polygon) ? layer.getLatLngs()[0] : layer.getLatLngs(); var fechado = (layer instanceof L.Polygon) ? 1 : 0; dxfStr += `0\nPOLYLINE\n8\n${lName}\n62\n${cInt}\n66\n1\n70\n${fechado}\n10\n0.0\n20\n0.0\n30\n0.0\n`; latlngs.forEach(ll => { var ptProj = proj4(epsgU, epsgD, [ll.lng, ll.lat]); dxfStr += `0\nVERTEX\n8\n${lName}\n10\n${nFormat(ptProj[0])}\n20\n${nFormat(ptProj[1])}\n30\n0.0000\n`; }); dxfStr += "0\nSEQEND\n"; } 
+            else if (layer instanceof L.LayerGroup || layer instanceof L.FeatureGroup) { layer.eachLayer(subLayer => { dxfStr += exportDxfEntity(subLayer, epsgU, epsgD, lName, hexColor); }); }
             return dxfStr;
         }
 
-        function extractGeoJsonEntities(layer, properties, featuresArr) {
-            if (layer instanceof L.LayerGroup || layer instanceof L.FeatureGroup) { layer.eachLayer(sub => extractGeoJsonEntities(sub, properties, featuresArr)); } 
-            else { try { var f; if(layer instanceof L.Circle) { var pt = [layer.getLatLng().lng, layer.getLatLng().lat]; f = turf.circle(pt, layer.getRadius(), {units: 'meters'}); } else { f = layer.toGeoJSON(); } f.properties = properties || {}; featuresArr.push(f); } catch(e) {} }
-        }
-
         function baixarCSV() {
-            var isRtkPtVis = gerenciadorCamadas.find(c => c.id === 'rtk_pt')?.visivel !== false; var hasRtk = memoria.lon.length > 0 && isRtkPtVis; 
-            var hasLayers = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel); var hasCAD = gerenciadorCamadas.some(c => c.tipo === 'cad' && c.visivel);
-            if (!hasRtk && !hasLayers && !hasCAD) { alert("Nenhum dado visível para exportar."); return; }
-            
-            var extras = []; for (var k in colunasGlobais) { if (colunasGlobais[k]) extras.push(k); }
-            var headers = ["Origem", "Nome_ID", "Coord_X", "Coord_Y", "Cota_Z", "Layer_CAD"].concat(extras); var csvContent = "\uFEFF" + headers.join(";") + "\n";
-            var fmtOut = document.getElementById('out-formato').value; var epsgU = "+proj=longlat +datum=WGS84 +no_defs"; var epsgD = (fmtOut === 'utm') ? obterEpsgEntrada() : epsgU;
-            var casasDec = parseInt(document.getElementById('export-decimals').value) || 3;
+            var hasRtk = memoria.lon.length > 0 && gerenciadorCamadas.find(c => c.id === 'rtk_pt')?.visivel !== false; var hasLayers = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel); var hasCAD = gerenciadorCamadas.some(c => c.tipo === 'cad' && c.visivel);
+            if (!hasRtk && !hasLayers && !hasCAD) return alert("Nada visível para exportar.");
+            var extras = []; for (var k in colunasGlobais) { if (colunasGlobais[k]) extras.push(k); } var csvContent = "\uFEFFOrigem;Nome_ID;Coord_X;Coord_Y;Cota_Z;Layer_CAD;" + extras.join(";") + "\n";
+            var fmtOut = document.getElementById('out-formato').value; var epsgU = "+proj=longlat +datum=WGS84 +no_defs"; var epsgD = (fmtOut === 'utm') ? obterEpsgEntrada() : epsgU; var casasDec = parseInt(document.getElementById('export-decimals').value) || 3;
 
-            if (hasRtk) { 
-                for(var i=0; i<memoria.lon.length; i++) { 
-                    var c = proj4(epsgU, epsgD, [memoria.lon[i], memoria.lat[i]]); var row = ["Base_Vértices", memoria.nomes[i], c[0].toFixed(casasDec).replace('.',','), c[1].toFixed(casasDec).replace('.',','), memoria.cotas[i], ""];
-                    for(var e=0; e<extras.length; e++) row.push(""); csvContent += row.join(";") + "\n"; 
-                } 
-            }
-            if(hasCAD) {
-                gerenciadorCamadas.filter(c => c.tipo === 'cad' && c.visivel).forEach(camadaCAD => {
-                    var safeName = camadaCAD.nome.replace("✏️ ", "");
-                    camadaCAD.leafletLayer.eachLayer(l => {
-                        var cCenter; if(l.getLatLng) cCenter = proj4(epsgU, epsgD, [l.getLatLng().lng, l.getLatLng().lat]); else if(l.getBounds) { var center = l.getBounds().getCenter(); cCenter = proj4(epsgU, epsgD, [center.lng, center.lat]); }
-                        if(cCenter) { var row = ["Desenho_CAD", "Objeto", cCenter[0].toFixed(casasDec).replace('.',','), cCenter[1].toFixed(casasDec).replace('.',','), "0", safeName]; for(var e=0; e<extras.length; e++) row.push(""); csvContent += row.join(";") + "\n"; }
-                    });
-                });
-            }
-            if (hasLayers) { 
-                var featuresClip = obterRecorteFeatures(); 
-                featuresClip.forEach(item => { 
-                    var feat = item.f;
-                    try { 
-                        var centro = turf.centroid(feat).geometry.coordinates; var c = proj4(epsgU, epsgD, [centro[0], centro[1]]); 
-                        var row = ["Shapefile", "Centroide", c[0].toFixed(casasDec).replace('.',','), c[1].toFixed(casasDec).replace('.',','), "0", item.lName.replace("☁️ ", "")];
-                        extras.forEach(k => { var val = feat.properties ? feat.properties[k] : ""; row.push(val !== undefined && val !== null ? String(val).replace(/;/g, ',').replace(/\n/g, ' ') : ""); });
-                        csvContent += row.join(";") + "\n"; 
-                    } catch(e) {} 
-                }); 
-            }
-            baixarArquivo("LuiGIS_Tabela_Exportada.csv", csvContent, "text/csv;charset=utf-8;"); mostrarToast("CSV Exportado!");
+            if (hasRtk) { for(var i=0; i<memoria.lon.length; i++) { var c = proj4(epsgU, epsgD, [memoria.lon[i], memoria.lat[i]]); var row = ["Base_Vértices", memoria.nomes[i], c[0].toFixed(casasDec).replace('.',','), c[1].toFixed(casasDec).replace('.',','), memoria.cotas[i], ""]; for(var e=0; e<extras.length; e++) row.push(""); csvContent += row.join(";") + "\n"; } }
+            if(hasCAD) { gerenciadorCamadas.filter(c => c.tipo === 'cad' && c.visivel).forEach(cCAD => { var sName = cCAD.nome.replace("✏️ ", ""); cCAD.leafletLayer.eachLayer(l => { var cCenter; if(l.getLatLng) cCenter = proj4(epsgU, epsgD, [l.getLatLng().lng, l.getLatLng().lat]); else if(l.getBounds) { var center = l.getBounds().getCenter(); cCenter = proj4(epsgU, epsgD, [center.lng, center.lat]); } if(cCenter) { var row = ["Desenho_CAD", "Objeto", cCenter[0].toFixed(casasDec).replace('.',','), cCenter[1].toFixed(casasDec).replace('.',','), "0", sName]; for(var e=0; e<extras.length; e++) row.push(""); csvContent += row.join(";") + "\n"; } }); }); }
+            if (hasLayers) { var featuresClip = obterRecorteFeatures(); featuresClip.forEach(item => { try { var centro = turf.centroid(item.f).geometry.coordinates; var c = proj4(epsgU, epsgD, [centro[0], centro[1]]); var row = ["Shapefile", "Centroide", c[0].toFixed(casasDec).replace('.',','), c[1].toFixed(casasDec).replace('.',','), "0", item.lName.replace("☁️ ", "")]; extras.forEach(k => { var val = item.f.properties ? item.f.properties[k] : ""; row.push(val !== undefined && val !== null ? String(val).replace(/;/g, ',').replace(/\n/g, ' ') : ""); }); csvContent += row.join(";") + "\n"; } catch(e) {} }); }
+            baixarArquivo("LuiGIS_Tabela.csv", csvContent, "text/csv;charset=utf-8;"); mostrarToast("CSV Exportado!");
         }
 
         function baixarDXF() {
-            var isRtkPtVis = gerenciadorCamadas.find(c => c.id === 'rtk_pt')?.visivel !== false; var isRtkPolyVis = gerenciadorCamadas.find(c => c.id === 'rtk_poly')?.visivel !== false;
-            var hasRtkPt = memoria.lon.length > 0 && isRtkPtVis; var hasRtkPoly = memoria.lon.length > 0 && isRtkPolyVis; 
-            var hasLayers = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel); var hasCAD = gerenciadorCamadas.some(c => c.tipo === 'cad' && c.visivel);
-
-            if (!hasRtkPt && !hasRtkPoly && !hasLayers && !hasCAD) { alert("Nenhum dado visível para exportar."); return; }
-
-            var fmtOut = document.getElementById('out-formato').value; var epsgU = "+proj=longlat +datum=WGS84 +no_defs"; var epsgD = (fmtOut === 'utm') ? obterEpsgEntrada() : epsgU;
-            var dxf = "0\nSECTION\n2\nENTITIES\n"; var pts = obterCoordenadasExportacao(); var colorRTK = 4; 
+            var hasRtkPt = memoria.lon.length > 0 && gerenciadorCamadas.find(c => c.id === 'rtk_pt')?.visivel !== false; var hasRtkPoly = memoria.lon.length > 0 && gerenciadorCamadas.find(c => c.id === 'rtk_poly')?.visivel !== false; var hasLayers = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel); var hasCAD = gerenciadorCamadas.some(c => c.tipo === 'cad' && c.visivel);
+            if (!hasRtkPt && !hasRtkPoly && !hasLayers && !hasCAD) return alert("Nada visível para exportar.");
+            var fmtOut = document.getElementById('out-formato').value; var epsgU = "+proj=longlat +datum=WGS84 +no_defs"; var epsgD = (fmtOut === 'utm') ? obterEpsgEntrada() : epsgU; var dxf = "0\nSECTION\n2\nENTITIES\n"; var pts = obterCoordenadasExportacao(); var colorRTK = 4; 
             
             if (pts.length > 0 && fmtOut === 'utm') {
-                let minE = Infinity, maxE = -Infinity, minN = Infinity, maxN = -Infinity;
-                pts.forEach(p => { 
-                    if(p.x < minE) minE = p.x; if(p.x > maxE) maxE = p.x; 
-                    if(p.y < minN) minN = p.y; if(p.y > maxN) maxN = p.y; 
-                });
-
-                let gridStep = 50;
-                let startE = Math.floor(minE / gridStep) * gridStep - gridStep;
-                let endE = Math.ceil(maxE / gridStep) * gridStep + gridStep;
-                let startN = Math.floor(minN / gridStep) * gridStep - gridStep;
-                let endN = Math.ceil(maxN / gridStep) * gridStep + gridStep;
-                
-                let crossSize = 2.0; 
-                
-                for (let x = startE; x <= endE; x += gridStep) {
-                    for (let y = startN; y <= endN; y += gridStep) {
-                        dxf += `0\nLINE\n8\nMALHA_COORDENADAS\n62\n8\n10\n${nFormat(x - crossSize)}\n20\n${nFormat(y)}\n30\n0.0\n11\n${nFormat(x + crossSize)}\n21\n${nFormat(y)}\n31\n0.0\n`;
-                        dxf += `0\nLINE\n8\nMALHA_COORDENADAS\n62\n8\n10\n${nFormat(x)}\n20\n${nFormat(y - crossSize)}\n30\n0.0\n11\n${nFormat(x)}\n21\n${nFormat(y + crossSize)}\n31\n0.0\n`;
-                        
-                        dxf += `0\nTEXT\n8\nMALHA_TEXTOS\n62\n8\n10\n${nFormat(x + 1)}\n20\n${nFormat(y + 1)}\n30\n0.0\n40\n1.5\n1\nE: ${x}\n`;
-                        dxf += `0\nTEXT\n8\nMALHA_TEXTOS\n62\n8\n10\n${nFormat(x + 1)}\n20\n${nFormat(y - 2)}\n30\n0.0\n40\n1.5\n1\nN: ${y}\n`;
-                    }
-                }
+                let minE = Infinity, maxE = -Infinity, minN = Infinity, maxN = -Infinity; pts.forEach(p => { if(p.x < minE) minE = p.x; if(p.x > maxE) maxE = p.x; if(p.y < minN) minN = p.y; if(p.y > maxN) maxN = p.y; });
+                let gridStep = 50; let startE = Math.floor(minE / gridStep) * gridStep - gridStep; let endE = Math.ceil(maxE / gridStep) * gridStep + gridStep; let startN = Math.floor(minN / gridStep) * gridStep - gridStep; let endN = Math.ceil(maxN / gridStep) * gridStep + gridStep;
+                for (let x = startE; x <= endE; x += gridStep) { for (let y = startN; y <= endN; y += gridStep) { dxf += `0\nLINE\n8\nMALHA\n62\n8\n10\n${nFormat(x - 2)}\n20\n${nFormat(y)}\n30\n0.0\n11\n${nFormat(x + 2)}\n21\n${nFormat(y)}\n31\n0.0\n`; dxf += `0\nLINE\n8\nMALHA\n62\n8\n10\n${nFormat(x)}\n20\n${nFormat(y - 2)}\n30\n0.0\n11\n${nFormat(x)}\n21\n${nFormat(y + 2)}\n31\n0.0\n`; dxf += `0\nTEXT\n8\nMALHA_TXT\n62\n8\n10\n${nFormat(x + 1)}\n20\n${nFormat(y + 1)}\n30\n0.0\n40\n1.5\n1\nE: ${x}\n`; dxf += `0\nTEXT\n8\nMALHA_TXT\n62\n8\n10\n${nFormat(x + 1)}\n20\n${nFormat(y - 2)}\n30\n0.0\n40\n1.5\n1\nN: ${y}\n`; } }
             }
 
-            if (hasRtkPoly) {
-                dxf += `0\nPOLYLINE\n8\nLEVANTAMENTO_RTK\n62\n${colorRTK}\n66\n1\n70\n1\n10\n0.0\n20\n0.0\n30\n0.0\n`; 
-                for(var i=0; i<pts.length; i++) { dxf += `0\nVERTEX\n8\nLEVANTAMENTO_RTK\n10\n${nFormat(pts[i].x)}\n20\n${nFormat(pts[i].y)}\n30\n${nFormat(pts[i].z)}\n`; }
-                dxf += "0\nSEQEND\n";
-            }
-            if (hasRtkPt) {
-                for(var j=0; j<pts.length; j++) { 
-                    let safeNome = String(pts[j].nome || "P").replace(/[\n\r]/g, ' ').trim(); 
-                    dxf += `0\nPOINT\n8\nPONTOS_RTK\n62\n${colorRTK}\n10\n${nFormat(pts[j].x)}\n20\n${nFormat(pts[j].y)}\n30\n${nFormat(pts[j].z)}\n`; 
-                    var rtkX = nFormat(pts[j].x); var rtkY = nFormat(Number(pts[j].y) + 1.5); 
-                    dxf += `0\nTEXT\n8\nTEXTOS_RTK\n62\n${colorRTK}\n10\n${rtkX}\n20\n${rtkY}\n30\n${nFormat(pts[j].z)}\n40\n1.5\n1\n${safeNome}\n`; 
-                }
-            }
-            if (hasCAD) { 
-                gerenciadorCamadas.filter(c => c.tipo === 'cad' && c.visivel).forEach(camadaCAD => {
-                    let dxfLayerName = camadaCAD.nome.replace("✏️ ", "").replace(/[^a-zA-Z0-9_-]/g, '_').toUpperCase(); if(dxfLayerName === "") dxfLayerName = "LAYER_CAD";
-                    camadaCAD.leafletLayer.eachLayer(layer => { dxf += exportDxfEntity(layer, epsgU, epsgD, dxfLayerName, camadaCAD.cor); }); 
-                });
-            }
-            if (hasLayers) { 
-                var featuresClip = obterRecorteFeatures(); 
-                featuresClip.forEach(item => { 
-                    var feat = item.f; var lName = item.lName.replace("☁️ ", "").replace(/[^a-zA-Z0-9_-]/g, '_').toUpperCase(); if(lName === "") lName = "SHAPEFILE"; var cInt = hexToACI(item.color);
-                    var rings = extractRings(feat.geometry.coordinates, feat.geometry.type); var fechado = feat.geometry.type.includes('Polygon') ? 1 : 0;
-                    rings.forEach(ring => { 
-                        dxf += `0\nPOLYLINE\n8\n${lName}\n62\n${cInt}\n66\n1\n70\n${fechado}\n10\n0.0\n20\n0.0\n30\n0.0\n`; 
-                        ring.forEach(coord => { var ptProj = proj4(epsgU, epsgD, [coord[0], coord[1]]); dxf += `0\nVERTEX\n8\n${lName}\n10\n${nFormat(ptProj[0])}\n20\n${nFormat(ptProj[1])}\n30\n0.0000\n`; }); 
-                        dxf += "0\nSEQEND\n"; 
-                    }); 
-                    try {
-                        var centro = turf.centroid(feat).geometry.coordinates; var ptProj = proj4(epsgU, epsgD, [centro[0], centro[1]]); var textosAtivos = [];
-                        for (var k in colunasGlobais) { if (colunasGlobais[k] === true && feat.properties[k] !== undefined && feat.properties[k] !== null) { textosAtivos.push(String(feat.properties[k]).replace(/[\n\r]/g, ' ').trim()); } }
-                        if(textosAtivos.length > 0) {
-                            var espacamentoY = 2.0; var startY = ptProj[1] + ((textosAtivos.length - 1) * espacamentoY / 2);
-                            textosAtivos.forEach((txt, idx) => { if(txt === "") return; var y = startY - (idx * espacamentoY); dxf += `0\nTEXT\n8\n${lName}_TEXTOS\n62\n${cInt}\n10\n${nFormat(ptProj[0])}\n20\n${nFormat(y)}\n30\n0.0000\n40\n1.5\n1\n${txt}\n`; });
-                        }
-                    } catch(e) {}
-                }); 
-            }
-            dxf += "0\nENDSEC\n0\nEOF\n"; baixarArquivo("LuiGIS_Projeto.dxf", dxf, "application/dxf"); mostrarToast("DXF Criado e Exportado!");
+            if (hasRtkPoly) { dxf += `0\nPOLYLINE\n8\nLEVANTAMENTO\n62\n${colorRTK}\n66\n1\n70\n1\n10\n0.0\n20\n0.0\n30\n0.0\n`; for(var i=0; i<pts.length; i++) dxf += `0\nVERTEX\n8\nLEVANTAMENTO\n10\n${nFormat(pts[i].x)}\n20\n${nFormat(pts[i].y)}\n30\n${nFormat(pts[i].z)}\n`; dxf += "0\nSEQEND\n"; }
+            if (hasRtkPt) { for(var j=0; j<pts.length; j++) { let sNome = String(pts[j].nome || "P").replace(/[\n\r]/g, ' ').trim(); dxf += `0\nPOINT\n8\nPONTOS\n62\n${colorRTK}\n10\n${nFormat(pts[j].x)}\n20\n${nFormat(pts[j].y)}\n30\n${nFormat(pts[j].z)}\n`; dxf += `0\nTEXT\n8\nTEXTOS\n62\n${colorRTK}\n10\n${nFormat(pts[j].x)}\n20\n${nFormat(Number(pts[j].y) + 1.5)}\n30\n${nFormat(pts[j].z)}\n40\n1.5\n1\n${sNome}\n`; } }
+            if (hasCAD) { gerenciadorCamadas.filter(c => c.tipo === 'cad' && c.visivel).forEach(cCAD => { let dxfL = cCAD.nome.replace("✏️ ", "").replace(/[^a-zA-Z0-9_-]/g, '_').toUpperCase() || "LAYER_CAD"; cCAD.leafletLayer.eachLayer(layer => { dxf += exportDxfEntity(layer, epsgU, epsgD, dxfL, cCAD.cor); }); }); }
+            if (hasLayers) { var featuresClip = obterRecorteFeatures(); featuresClip.forEach(item => { var feat = item.f; var lName = item.lName.replace("☁️ ", "").replace(/[^a-zA-Z0-9_-]/g, '_').toUpperCase() || "SHAPE"; var cInt = hexToACI(item.color); var rings = extractRings(feat.geometry.coordinates, feat.geometry.type); var fechado = feat.geometry.type.includes('Polygon') ? 1 : 0; rings.forEach(ring => { dxf += `0\nPOLYLINE\n8\n${lName}\n62\n${cInt}\n66\n1\n70\n${fechado}\n10\n0.0\n20\n0.0\n30\n0.0\n`; ring.forEach(coord => { var ptProj = proj4(epsgU, epsgD, [coord[0], coord[1]]); dxf += `0\nVERTEX\n8\n${lName}\n10\n${nFormat(ptProj[0])}\n20\n${nFormat(ptProj[1])}\n30\n0.0000\n`; }); dxf += "0\nSEQEND\n"; }); try { var centro = turf.centroid(feat).geometry.coordinates; var ptProj = proj4(epsgU, epsgD, [centro[0], centro[1]]); var txts = []; for (var k in colunasGlobais) { if (colunasGlobais[k] === true && feat.properties[k] !== undefined && feat.properties[k] !== null) txts.push(String(feat.properties[k]).replace(/[\n\r]/g, ' ').trim()); } if(txts.length > 0) { var sY = ptProj[1] + ((txts.length - 1) * 2.0 / 2); txts.forEach((txt, idx) => { if(txt === "") return; dxf += `0\nTEXT\n8\n${lName}_TXT\n62\n${cInt}\n10\n${nFormat(ptProj[0])}\n20\n${nFormat(sY - (idx * 2.0))}\n30\n0.0000\n40\n1.5\n1\n${txt}\n`; }); } } catch(e) {} }); }
+            dxf += "0\nENDSEC\n0\nEOF\n"; baixarArquivo("LuiGIS_Projeto.dxf", dxf, "application/dxf"); mostrarToast("DXF Exportado!");
         }
 
         async function baixarKMZ() {
-            var kml = `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>LuiGIS Export</name>\n`;
+            var kml = `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>LuiGIS</name>\n`;
             var isRtkPtVis = gerenciadorCamadas.find(c => c.id === 'rtk_pt')?.visivel !== false; var isRtkPolyVis = gerenciadorCamadas.find(c => c.id === 'rtk_poly')?.visivel !== false;
-
-            if(memoria.lon.length > 0 && isRtkPtVis) {
-                kml += `<Folder><name>Vértices RTK</name>\n`;
-                for(var i=0; i<memoria.lon.length; i++) { kml += `<Placemark><name>${memoria.nomes[i]}</name><Point><coordinates>${memoria.lon[i]},${memoria.lat[i]},${memoria.cotas[i]||0}</coordinates></Point></Placemark>\n`; }
-                kml += `</Folder>\n`;
-            }
-            if(memoria.lon.length > 2 && isRtkPolyVis) {
-                var coordsStr = ""; for(var i=0; i<memoria.lon.length; i++) { coordsStr += `${memoria.lon[i]},${memoria.lat[i]},${memoria.cotas[i]||0} `; }
-                coordsStr += `${memoria.lon[0]},${memoria.lat[0]},${memoria.cotas[0]||0}`;
-                kml += `<Placemark><name>Perímetro do Levantamento</name><Style><LineStyle><color>ff0098ff</color><width>2</width></LineStyle><PolyStyle><color>330098ff</color></PolyStyle></Style><Polygon><outerBoundaryIs><LinearRing><coordinates>${coordsStr}</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>\n`;
-            }
-
-            var epsgU = "+proj=longlat +datum=WGS84 +no_defs";
-            gerenciadorCamadas.filter(c => c.visivel && (c.tipo === 'cad' || c.tipo === 'shp')).forEach(cam => {
-                var safeName = cam.nome.replace(/[^a-zA-Z0-9\s_]/g, '').trim(); kml += `<Folder><name>${safeName}</name>\n`;
-                
-                if(cam.tipo === 'cad') {
-                    cam.leafletLayer.eachLayer(l => {
-                        if(l instanceof L.Marker || l instanceof L.CircleMarker) { var ll = l.getLatLng(); kml += `<Placemark><name>Ponto CAD</name><Point><coordinates>${ll.lng},${ll.lat},0</coordinates></Point></Placemark>\n`; } 
-                        else if(l instanceof L.Circle) { var pt = [l.getLatLng().lng, l.getLatLng().lat]; var circ = turf.circle(pt, l.getRadius(), {units: 'meters'}); var coords = circ.geometry.coordinates[0]; var cStr = coords.map(c => `${c[0]},${c[1]},0`).join(" "); kml += `<Placemark><name>Círculo CAD</name><Polygon><outerBoundaryIs><LinearRing><coordinates>${cStr}</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>\n`; } 
-                        else if(l instanceof L.Polygon || l instanceof L.Polyline) {
-                            var latlngs = l instanceof L.Polygon ? l.getLatLngs()[0] : l.getLatLngs(); var cStr = latlngs.map(ll => `${ll.lng},${ll.lat},0`).join(" ");
-                            if(l instanceof L.Polygon) cStr += ` ${latlngs[0].lng},${latlngs[0].lat},0`;
-                            var tag = l instanceof L.Polygon ? "Polygon" : "LineString"; var inner = l instanceof L.Polygon ? `<outerBoundaryIs><LinearRing><coordinates>${cStr}</coordinates></LinearRing></outerBoundaryIs>` : `<coordinates>${cStr}</coordinates>`;
-                            kml += `<Placemark><name>Geometria CAD</name><${tag}>${inner}</${tag}></Placemark>\n`;
-                        }
-                    });
-                } else if(cam.tipo === 'shp' && cam.rawGeoJSON) {
-                    var items = cam.rawGeoJSON.features ? cam.rawGeoJSON.features : (cam.rawGeoJSON.type === 'Feature' ? [cam.rawGeoJSON] : []);
-                    items.forEach((feat) => {
-                        try {
-                            if(feat.geometry.type === "Point") { kml += `<Placemark><name>${feat.properties.Nome||'Ponto'}</name><Point><coordinates>${feat.geometry.coordinates[0]},${feat.geometry.coordinates[1]},0</coordinates></Point></Placemark>\n`; } 
-                            else if(feat.geometry.type === "LineString") { var cStr = feat.geometry.coordinates.map(c => `${c[0]},${c[1]},0`).join(" "); kml += `<Placemark><name>Linha</name><LineString><coordinates>${cStr}</coordinates></LineString></Placemark>\n`; } 
-                            else if(feat.geometry.type === "Polygon") { var cStr = feat.geometry.coordinates[0].map(c => `${c[0]},${c[1]},0`).join(" "); kml += `<Placemark><name>Polígono</name><Polygon><outerBoundaryIs><LinearRing><coordinates>${cStr}</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>\n`; }
-                        } catch(e) {}
-                    });
-                }
-                kml += `</Folder>\n`;
-            });
-            kml += `</Document>\n</kml>`;
-            
-            var zip = new JSZip(); zip.file("doc.kml", kml); var content = await zip.generateAsync({type:"blob"});
-            var a = document.createElement('a'); a.href = URL.createObjectURL(content); a.download = "LuiGIS_Export.kmz"; a.click(); mostrarToast("KMZ Exportado!");
+            if(memoria.lon.length > 0 && isRtkPtVis) { kml += `<Folder><name>Vértices</name>\n`; for(var i=0; i<memoria.lon.length; i++) { kml += `<Placemark><name>${memoria.nomes[i]}</name><Point><coordinates>${memoria.lon[i]},${memoria.lat[i]},${memoria.cotas[i]||0}</coordinates></Point></Placemark>\n`; } kml += `</Folder>\n`; }
+            if(memoria.lon.length > 2 && isRtkPolyVis) { var coordsStr = ""; for(var i=0; i<memoria.lon.length; i++) { coordsStr += `${memoria.lon[i]},${memoria.lat[i]},${memoria.cotas[i]||0} `; } coordsStr += `${memoria.lon[0]},${memoria.lat[0]},${memoria.cotas[0]||0}`; kml += `<Placemark><name>Perímetro</name><Style><LineStyle><color>ff0098ff</color><width>2</width></LineStyle><PolyStyle><color>330098ff</color></PolyStyle></Style><Polygon><outerBoundaryIs><LinearRing><coordinates>${coordsStr}</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>\n`; }
+            gerenciadorCamadas.filter(c => c.visivel && (c.tipo === 'cad' || c.tipo === 'shp')).forEach(cam => { var safeName = cam.nome.replace(/[^a-zA-Z0-9\s_]/g, '').trim(); kml += `<Folder><name>${safeName}</name>\n`; if(cam.tipo === 'cad') { cam.leafletLayer.eachLayer(l => { if(l instanceof L.Marker || l instanceof L.CircleMarker) { var ll = l.getLatLng(); kml += `<Placemark><Point><coordinates>${ll.lng},${ll.lat},0</coordinates></Point></Placemark>\n`; } else if(l instanceof L.Polygon || l instanceof L.Polyline) { var latlngs = l instanceof L.Polygon ? l.getLatLngs()[0] : l.getLatLngs(); var cStr = latlngs.map(ll => `${ll.lng},${ll.lat},0`).join(" "); if(l instanceof L.Polygon) cStr += ` ${latlngs[0].lng},${latlngs[0].lat},0`; var tag = l instanceof L.Polygon ? "Polygon" : "LineString"; var inner = l instanceof L.Polygon ? `<outerBoundaryIs><LinearRing><coordinates>${cStr}</coordinates></LinearRing></outerBoundaryIs>` : `<coordinates>${cStr}</coordinates>`; kml += `<Placemark><${tag}>${inner}</${tag}></Placemark>\n`; } }); } else if(cam.tipo === 'shp' && cam.rawGeoJSON) { var items = cam.rawGeoJSON.features ? cam.rawGeoJSON.features : (cam.rawGeoJSON.type === 'Feature' ? [cam.rawGeoJSON] : []); items.forEach((feat) => { try { if(feat.geometry.type === "Point") { kml += `<Placemark><name>${feat.properties.Nome||'P'}</name><Point><coordinates>${feat.geometry.coordinates[0]},${feat.geometry.coordinates[1]},0</coordinates></Point></Placemark>\n`; } else if(feat.geometry.type === "LineString") { var cStr = feat.geometry.coordinates.map(c => `${c[0]},${c[1]},0`).join(" "); kml += `<Placemark><LineString><coordinates>${cStr}</coordinates></LineString></Placemark>\n`; } else if(feat.geometry.type === "Polygon") { var cStr = feat.geometry.coordinates[0].map(c => `${c[0]},${c[1]},0`).join(" "); kml += `<Placemark><Polygon><outerBoundaryIs><LinearRing><coordinates>${cStr}</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>\n`; } } catch(e) {} }); } kml += `</Folder>\n`; }); kml += `</Document>\n</kml>`;
+            var zip = new JSZip(); zip.file("doc.kml", kml); var content = await zip.generateAsync({type:"blob"}); var a = document.createElement('a'); a.href = URL.createObjectURL(content); a.download = "LuiGIS_Export.kmz"; a.click(); mostrarToast("KMZ Exportado!");
         }
 
         function baixarGeoJSON() {
-            var isRtkPtVis = gerenciadorCamadas.find(c => c.id === 'rtk_pt')?.visivel !== false; var isRtkPolyVis = gerenciadorCamadas.find(c => c.id === 'rtk_poly')?.visivel !== false;
-            var hasRtkPt = memoria.lon.length > 0 && isRtkPtVis; var hasRtkPoly = memoria.lon.length > 0 && isRtkPolyVis; 
-            var hasLayers = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel); var hasCAD = gerenciadorCamadas.some(c => c.tipo === 'cad' && c.visivel);
-
-            if (!hasRtkPt && !hasRtkPoly && !hasLayers && !hasCAD) { alert("Nenhum dado visível para exportar."); return; }
-            var coords = [], features = [];
-            
-            if (hasRtkPt || hasRtkPoly) { 
-                for(var i=0; i<memoria.lon.length; i++) { 
-                    var pt = [memoria.lon[i], memoria.lat[i], memoria.cotas[i]]; coords.push(pt); 
-                    if(hasRtkPt) features.push({ type: "Feature", geometry: { type: "Point", coordinates: pt }, properties: { Nome: memoria.nomes[i], Origem: "RTK" } }); 
-                } 
-                if(coords.length > 2 && hasRtkPoly) { coords.push(coords[0]); features.push({ type: "Feature", geometry: { type: "Polygon", coordinates: [coords] }, properties: { Origem: "RTK_Perimetro" } }); } 
-            }
-            if (hasCAD) { gerenciadorCamadas.filter(c => c.tipo === 'cad' && c.visivel).forEach(camadaCAD => { var safeName = camadaCAD.nome.replace("✏️ ", ""); camadaCAD.leafletLayer.eachLayer(layer => { extractGeoJsonEntities(layer, {Origem: "CAD", Layer: safeName}, features); }); }); }
-            if (hasLayers) { 
-                var featuresClip = obterRecorteFeatures(); 
-                featuresClip.forEach(item => { 
-                    var newF = JSON.parse(JSON.stringify(item.f)); var propFiltrada = { Origem: "Shapefile", Layer: item.lName.replace("☁️ ", "") };
-                    if(newF.properties) { for(var k in newF.properties) { if(colunasGlobais[k]) propFiltrada[k] = newF.properties[k]; } }
-                    newF.properties = propFiltrada; features.push(newF); 
-                }); 
-            }
-            baixarArquivo("LuiGIS_Web.geojson", JSON.stringify({ type: "FeatureCollection", features: features }, null, 2), "application/json"); mostrarToast("GeoJSON Exportado!");
+            var hasRtkPt = memoria.lon.length > 0 && gerenciadorCamadas.find(c => c.id === 'rtk_pt')?.visivel !== false; var hasRtkPoly = memoria.lon.length > 0 && gerenciadorCamadas.find(c => c.id === 'rtk_poly')?.visivel !== false; var hasLayers = gerenciadorCamadas.some(c => c.tipo === 'shp' && c.visivel); var hasCAD = gerenciadorCamadas.some(c => c.tipo === 'cad' && c.visivel);
+            if (!hasRtkPt && !hasRtkPoly && !hasLayers && !hasCAD) return alert("Nada visível."); var coords = [], features = [];
+            if (hasRtkPt || hasRtkPoly) { for(var i=0; i<memoria.lon.length; i++) { var pt = [memoria.lon[i], memoria.lat[i], memoria.cotas[i]]; coords.push(pt); if(hasRtkPt) features.push({ type: "Feature", geometry: { type: "Point", coordinates: pt }, properties: { Nome: memoria.nomes[i], Origem: "RTK" } }); } if(coords.length > 2 && hasRtkPoly) { coords.push(coords[0]); features.push({ type: "Feature", geometry: { type: "Polygon", coordinates: [coords] }, properties: { Origem: "RTK_Perimetro" } }); } }
+            if (hasCAD) { gerenciadorCamadas.filter(c => c.tipo === 'cad' && c.visivel).forEach(cCAD => { var sName = cCAD.nome.replace("✏️ ", ""); cCAD.leafletLayer.eachLayer(layer => { extractGeoJsonEntities(layer, {Origem: "CAD", Layer: sName}, features); }); }); }
+            if (hasLayers) { var featuresClip = obterRecorteFeatures(); featuresClip.forEach(item => { var newF = JSON.parse(JSON.stringify(item.f)); var pFiltrada = { Origem: "Shapefile", Layer: item.lName.replace("☁️ ", "") }; if(newF.properties) { for(var k in newF.properties) { if(colunasGlobais[k]) pFiltrada[k] = newF.properties[k]; } } newF.properties = pFiltrada; features.push(newF); }); }
+            baixarArquivo("LuiGIS.geojson", JSON.stringify({ type: "FeatureCollection", features: features }, null, 2), "application/json"); mostrarToast("GeoJSON Exportado!");
         }
 
+        function extractGeoJsonEntities(layer, properties, featuresArr) { if (layer instanceof L.LayerGroup || layer instanceof L.FeatureGroup) { layer.eachLayer(sub => extractGeoJsonEntities(sub, properties, featuresArr)); } else { try { var f; if(layer instanceof L.Circle) { f = turf.circle([layer.getLatLng().lng, layer.getLatLng().lat], layer.getRadius(), {units: 'meters'}); } else { f = layer.toGeoJSON(); } f.properties = properties || {}; featuresArr.push(f); } catch(e) {} } }
+
         // ====================================================================
-        // FUNÇÕES DO CONVERSOR (NOVO)
+        // CONVERSOR SIG-RI
         // ====================================================================
-        
-        function toggleConvParams(side) {
-            var fmt = document.getElementById('conv-fmt-' + side).value;
-            var optDiv = document.getElementById('conv-utm-' + side + '-options');
-            if(optDiv) {
-                optDiv.style.display = (fmt === 'utm') ? 'flex' : 'none';
-            }
-        }
+
+        function toggleConvParams(side) { var fmt = document.getElementById('conv-fmt-' + side).value; var optDiv = document.getElementById('conv-utm-' + side + '-options'); if(optDiv) optDiv.style.display = (fmt === 'utm') ? 'flex' : 'none'; }
 
         function executarConversorGeral() {
-            var fmtIn = document.getElementById('conv-fmt-in').value;
-            var datumIn = document.getElementById('conv-datum-in').value;
-            var fmtOut = document.getElementById('conv-fmt-out').value;
-            var datumOut = document.getElementById('conv-datum-out').value;
-            var casasDec = parseInt(document.getElementById('conv-decimais').value) || 15;
-            var txtIn = document.getElementById('conv-texto-in').value;
+            var fmtIn = document.getElementById('conv-fmt-in').value; var datumIn = document.getElementById('conv-datum-in').value; var fmtOut = document.getElementById('conv-fmt-out').value; var datumOut = document.getElementById('conv-datum-out').value; var casasDec = parseInt(document.getElementById('conv-decimais').value) || 15; var txtIn = document.getElementById('conv-texto-in').value;
+            if(!txtIn.trim()) return alert("Insira coordenadas.");
 
-            if(!txtIn.trim()) return alert("Insira coordenadas na caixa de entrada para converter.");
-
-            var getProjStr = (fmt, datum, prefix) => {
-                var projDatum = datumsDef[datum];
-                if(fmt === 'utm') {
-                    var zona = document.getElementById(`conv-zona-${prefix}`).value || 23;
-                    var hemi = document.getElementById(`conv-hemi-${prefix}`).value === 'S' ? '+south ' : '';
-                    return `+proj=utm +zone=${zona} ${hemi}${projDatum} +units=m +no_defs`;
-                }
-                return `+proj=longlat ${projDatum} +no_defs`;
-            };
-
-            var epsgIn = getProjStr(fmtIn, datumIn, 'in');
-            var epsgOut = getProjStr(fmtOut, datumOut, 'out');
-
-            // Separa o texto em blocos (polígonos separados por linha em branco)
-            var blocos = txtIn.split(/\n\s*\n/);
-            var outLinesAll = [];
-
+            var getProjStr = (fmt, datum, prefix) => { var pD = datumsDef[datum]; if(fmt === 'utm') { var z = document.getElementById(`conv-zona-${prefix}`).value || 23; var h = document.getElementById(`conv-hemi-${prefix}`).value === 'S' ? '+south ' : ''; return `+proj=utm +zone=${z} ${h}${pD} +units=m +no_defs`; } return `+proj=longlat ${pD} +no_defs`; };
+            var epsgIn = getProjStr(fmtIn, datumIn, 'in'); var epsgOut = getProjStr(fmtOut, datumOut, 'out');
+            
+            var blocos = txtIn.split(/\n\s*\n/); var outLinesAll = [];
             blocos.forEach(bloco => {
-                var linhas = bloco.split('\n');
-                var outBloco = [];
-
+                var linhas = bloco.split('\n'); var outBloco = [];
                 linhas.forEach(linha => {
-                    var l = linha.trim();
-                    if(!l) return; // Ignora linhas vazias
-
-                    var outX = null, outY = null;
-
-                    // Tratamento de conversão
+                    var l = linha.trim(); if(!l) return; var outX = null, outY = null;
                     if (fmtIn === 'sgl') {
-                        var partesDMS = l.match(/(\d+[^\d]+\d+[^\d]+[\d.,]+[^\d]*[NSWE]?)/gi);
-                        if (partesDMS && partesDMS.length >= 2) {
-                            var c1 = parseDMS(partesDMS[0]); var c2 = parseDMS(partesDMS[1]);
-                            var x, y;
-                            if (partesDMS[0].toUpperCase().includes('W') || partesDMS[0].toUpperCase().includes('O')) { x = c1; y = c2; } 
-                            else if (partesDMS[1].toUpperCase().includes('W') || partesDMS[1].toUpperCase().includes('O')) { x = c2; y = c1; } 
-                            else { y = c1; x = c2; } 
-
-                            try {
-                                var res = proj4(epsgIn, epsgOut, [x, y]);
-                                outX = res[0].toFixed(casasDec);
-                                outY = res[1].toFixed(casasDec);
-                            } catch(e) {}
+                        var pDMS = l.match(/(\d+[^\d]+\d+[^\d]+[\d.,]+[^\d]*[NSWE]?)/gi);
+                        if (pDMS && pDMS.length >= 2) { var c1 = parseDMS(pDMS[0]); var c2 = parseDMS(pDMS[1]); var x, y; if (pDMS[0].toUpperCase().includes('W') || pDMS[0].toUpperCase().includes('O')) { x = c1; y = c2; } else if (pDMS[1].toUpperCase().includes('W') || pDMS[1].toUpperCase().includes('O')) { x = c2; y = c1; } else { y = c1; x = c2; } try { var res = proj4(epsgIn, epsgOut, [x, y]); outX = res[0].toFixed(casasDec); outY = res[1].toFixed(casasDec); } catch(e) {} }
+                    } else if (fmtIn === 'decimal') {
+                        let matchNums = l.match(/-?\d+([.,]\d+)?/g);
+                        if(matchNums && matchNums.length >= 2) {
+                            try { var res = proj4(epsgIn, epsgOut, [parseFloat(matchNums[0].replace(',', '.')), parseFloat(matchNums[1].replace(',', '.'))]); outX = res[0].toFixed(casasDec); outY = res[1].toFixed(casasDec); } catch(e) {}
                         }
                     } else {
-                        var partes = l.split(/[\t;,]+/);
-                        var nums = [];
-                        partes.forEach(p => {
-                            var n = parseFloat(p.trim().replace(',', '.'));
-                            if(!isNaN(n)) nums.push(n);
-                        });
-
-                        if(nums.length >= 2) {
-                            try {
-                                var res = proj4(epsgIn, epsgOut, [nums[0], nums[1]]);
-                                outX = res[0].toFixed(casasDec);
-                                outY = res[1].toFixed(casasDec);
-                            } catch(e) {}
-                        }
+                        var partes = l.split(/[\t;,]+/); var nums = []; partes.forEach(p => { var n = parseFloat(p.trim().replace(',', '.')); if(!isNaN(n)) nums.push(n); });
+                        if(nums.length >= 2) { try { var res = proj4(epsgIn, epsgOut, [nums[0], nums[1]]); outX = res[0].toFixed(casasDec); outY = res[1].toFixed(casasDec); } catch(e) {} }
                     }
-
-                    // PADRÃO EXATO SIG-RI: "Longitude, Latitude" (sem o ; aqui)
-                    if (outX !== null && outY !== null) {
-                        outBloco.push(`${outX}, ${outY}`);
-                    }
+                    if (outX !== null && outY !== null) { outBloco.push(`${outX}, ${outY}`); }
                 });
-
-                // Fechamento automático
-                if (outBloco.length >= 3) {
-                    var primeiraCoord = outBloco[0];
-                    var ultimaCoord = outBloco[outBloco.length - 1];
-                    if (primeiraCoord !== ultimaCoord) {
-                        outBloco.push(primeiraCoord);
-                    }
-                }
-
-                // Junta as coordenadas do polígono com Ponto e Vírgula (;)
-                if (outBloco.length > 0) {
-                    outLinesAll.push(outBloco.join(';\n'));
-                }
+                if (outBloco.length >= 3 && outBloco[0] !== outBloco[outBloco.length - 1]) outBloco.push(outBloco[0]);
+                if (outBloco.length > 0) outLinesAll.push(outBloco.join(';\n'));
             });
-
-            document.getElementById('conv-texto-out').value = outLinesAll.join('\n\n');
-            mostrarToast("Formatado para o padrão SIG-RI!");
+            document.getElementById('conv-texto-out').value = outLinesAll.join('\n\n'); mostrarToast("Convertido para SIG-RI!");
         }
 
         function checkToolButtons() { atualizarBotoesUndoRedo(); }
