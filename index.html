@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS | BETA 1.5 - Professional Edition</title>
+    <title>LuiGIS | BETA 1.5.1 - Professional Edition</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1827,75 +1827,75 @@
         }
 
         function executarConversorGeral() {
-            var fmtIn = document.getElementById('conv-fmt-in').value;
-            var datumIn = document.getElementById('conv-datum-in').value;
-            var fmtOut = document.getElementById('conv-fmt-out').value;
-            var datumOut = document.getElementById('conv-datum-out').value;
-            var casasDec = parseInt(document.getElementById('conv-decimais').value) || 15;
-            var txtIn = document.getElementById('conv-texto-in').value;
+    var fmtIn = document.getElementById('conv-fmt-in').value;
+    var datumIn = document.getElementById('conv-datum-in').value;
+    var fmtOut = document.getElementById('conv-fmt-out').value;
+    var datumOut = document.getElementById('conv-datum-out').value;
+    var casasDec = parseInt(document.getElementById('conv-decimais').value) || 15;
+    var txtIn = document.getElementById('conv-texto-in').value;
 
-            if(!txtIn.trim()) return alert("Insira coordenadas na caixa de entrada para converter.");
+    if(!txtIn.trim()) return alert("Insira coordenadas na caixa de entrada para converter.");
 
-            var getProjStr = (fmt, datum, prefix) => {
-                var projDatum = datumsDef[datum];
-                if(fmt === 'utm') {
-                    var zona = document.getElementById(`conv-zona-${prefix}`).value || 23;
-                    var hemi = document.getElementById(`conv-hemi-${prefix}`).value === 'S' ? '+south ' : '';
-                    return `+proj=utm +zone=${zona} ${hemi}${projDatum} +units=m +no_defs`;
-                }
-                return `+proj=longlat ${projDatum} +no_defs`;
-            };
+    var getProjStr = (fmt, datum, prefix) => {
+        var projDatum = datumsDef[datum];
+        if(fmt === 'utm') {
+            var zona = document.getElementById(`conv-zona-${prefix}`).value || 23;
+            var hemi = document.getElementById(`conv-hemi-${prefix}`).value === 'S' ? '+south ' : '';
+            return `+proj=utm +zone=${zona} ${hemi}${projDatum} +units=m +no_defs`;
+        }
+        return `+proj=longlat ${projDatum} +no_defs`;
+    };
 
-            var epsgIn = getProjStr(fmtIn, datumIn, 'in');
-            var epsgOut = getProjStr(fmtOut, datumOut, 'out');
+    var epsgIn = getProjStr(fmtIn, datumIn, 'in');
+    var epsgOut = getProjStr(fmtOut, datumOut, 'out');
 
-            var linhas = txtIn.split('\n');
-            var outLines = [];
+    var linhas = txtIn.split('\n');
+    var outLines = [];
 
-            linhas.forEach(linha => {
-                var l = linha.trim();
-                if(!l) { outLines.push(""); return; }
+    linhas.forEach(linha => {
+        var l = linha.trim();
+        if(!l) { outLines.push(""); return; }
 
-                if (fmtIn === 'sgl') {
-                    // Conversão de Grau, Minuto, Segundo
-                    var partesDMS = l.match(/(\d+[^\d]+\d+[^\d]+[\d.,]+[^\d]*[NSWE]?)/gi);
-                    if (partesDMS && partesDMS.length >= 2) {
-                        var c1 = parseDMS(partesDMS[0]); var c2 = parseDMS(partesDMS[1]);
-                        var x, y;
-                        if (partesDMS[0].toUpperCase().includes('W') || partesDMS[0].toUpperCase().includes('O')) { x = c1; y = c2; } 
-                        else if (partesDMS[1].toUpperCase().includes('W') || partesDMS[1].toUpperCase().includes('O')) { x = c2; y = c1; } 
-                        else { y = c1; x = c2; } // Assume Lat(y), Lon(x) genérico se não tiver letra
+        if (fmtIn === 'sgl') {
+            var partesDMS = l.match(/(\d+[^\d]+\d+[^\d]+[\d.,]+[^\d]*[NSWE]?)/gi);
+            if (partesDMS && partesDMS.length >= 2) {
+                var c1 = parseDMS(partesDMS[0]); var c2 = parseDMS(partesDMS[1]);
+                var x, y;
+                if (partesDMS[0].toUpperCase().includes('W') || partesDMS[0].toUpperCase().includes('O')) { x = c1; y = c2; } 
+                else if (partesDMS[1].toUpperCase().includes('W') || partesDMS[1].toUpperCase().includes('O')) { x = c2; y = c1; } 
+                else { y = c1; x = c2; } 
 
-                        try {
-                            var res = proj4(epsgIn, epsgOut, [x, y]);
-                            outLines.push(`${res[0].toFixed(casasDec)} , ${res[1].toFixed(casasDec)}`);
-                        } catch(e) { outLines.push("ERRO (Projeção): " + l); }
-                    } else {
-                        outLines.push(l); // Mantém o texto se não achar
-                    }
-                } else {
-                    // Conversão UTM ou Decimal normal
-                    var partes = l.split(/[\t;,]+/);
-                    var nums = [];
-                    partes.forEach(p => {
-                        var n = parseFloat(p.trim().replace(',', '.'));
-                        if(!isNaN(n)) nums.push(n);
-                    });
-
-                    if(nums.length >= 2) {
-                        try {
-                            var res = proj4(epsgIn, epsgOut, [nums[0], nums[1]]);
-                            outLines.push(`${res[0].toFixed(casasDec)} , ${res[1].toFixed(casasDec)}`);
-                        } catch(e) { outLines.push("ERRO (Projeção): " + l); }
-                    } else {
-                        outLines.push(l);
-                    }
-                }
+                try {
+                    var res = proj4(epsgIn, epsgOut, [x, y]);
+                    // Trocado para ; sem espaços e com vírgula nos decimais
+                    outLines.push(`${res[0].toFixed(casasDec).replace('.', ',')};${res[1].toFixed(casasDec).replace('.', ',')}`);
+                } catch(e) { outLines.push("ERRO (Projeção): " + l); }
+            } else {
+                outLines.push(l); 
+            }
+        } else {
+            var partes = l.split(/[\t;,]+/);
+            var nums = [];
+            partes.forEach(p => {
+                var n = parseFloat(p.trim().replace(',', '.'));
+                if(!isNaN(n)) nums.push(n);
             });
 
-            document.getElementById('conv-texto-out').value = outLines.join('\n');
-            mostrarToast("Conversão concluída!");
+            if(nums.length >= 2) {
+                try {
+                    var res = proj4(epsgIn, epsgOut, [nums[0], nums[1]]);
+                    // Trocado para ; sem espaços e com vírgula nos decimais
+                    outLines.push(`${res[0].toFixed(casasDec).replace('.', ',')};${res[1].toFixed(casasDec).replace('.', ',')}`);
+                } catch(e) { outLines.push("ERRO (Projeção): " + l); }
+            } else {
+                outLines.push(l);
+            }
         }
+    });
+
+    document.getElementById('conv-texto-out').value = outLines.join('\n');
+    mostrarToast("Conversão concluída!");
+}
 
         function checkToolButtons() { atualizarBotoesUndoRedo(); }
         setInterval(checkToolButtons, 1000); 
