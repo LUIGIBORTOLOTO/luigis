@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS | BETA 1.5.1 - Professional Edition</title>
+    <title>LuiGIS | BETA 1.5.2 - Professional Edition</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1826,7 +1826,7 @@
             }
         }
 
-        function executarConversorGeral() {
+function executarConversorGeral() {
     var fmtIn = document.getElementById('conv-fmt-in').value;
     var datumIn = document.getElementById('conv-datum-in').value;
     var fmtOut = document.getElementById('conv-fmt-out').value;
@@ -1849,52 +1849,82 @@
     var epsgIn = getProjStr(fmtIn, datumIn, 'in');
     var epsgOut = getProjStr(fmtOut, datumOut, 'out');
 
-    var linhas = txtIn.split('\n');
-    var outLines = [];
+    // 1. Separa o texto em blocos (polígonos separados por linha em branco)
+    var blocos = txtIn.split(/\n\s*\n/);
+    var outLinesAll = [];
 
-    linhas.forEach(linha => {
-        var l = linha.trim();
-        if(!l) { outLines.push(""); return; }
+    blocos.forEach(bloco => {
+        var linhas = bloco.split('\n');
+        var outBloco = [];
 
-        if (fmtIn === 'sgl') {
-            var partesDMS = l.match(/(\d+[^\d]+\d+[^\d]+[\d.,]+[^\d]*[NSWE]?)/gi);
-            if (partesDMS && partesDMS.length >= 2) {
-                var c1 = parseDMS(partesDMS[0]); var c2 = parseDMS(partesDMS[1]);
-                var x, y;
-                if (partesDMS[0].toUpperCase().includes('W') || partesDMS[0].toUpperCase().includes('O')) { x = c1; y = c2; } 
-                else if (partesDMS[1].toUpperCase().includes('W') || partesDMS[1].toUpperCase().includes('O')) { x = c2; y = c1; } 
-                else { y = c1; x = c2; } 
+        linhas.forEach(linha => {
+            var l = linha.trim();
+            if(!l) return; // Ignora linhas vazias no meio do processamento
 
-                try {
-                    var res = proj4(epsgIn, epsgOut, [x, y]);
-                    // Trocado para ; sem espaços e com vírgula nos decimais
-                    outLines.push(`${res[0].toFixed(casasDec).replace('.', ',')};${res[1].toFixed(casasDec).replace('.', ',')}`);
-                } catch(e) { outLines.push("ERRO (Projeção): " + l); }
+            var outX = null, outY = null;
+
+            if (fmtIn === 'sgl') {
+                var partesDMS = l.match(/(\d+[^\d]+\d+[^\d]+[\d.,]+[^\d]*[NSWE]?)/gi);
+                if (partesDMS && partesDMS.length >= 2) {
+                    var c1 = parseDMS(partesDMS[0]); var c2 = parseDMS(partesDMS[1]);
+                    var x, y;
+                    if (partesDMS[0].toUpperCase().includes('W') || partesDMS[0].toUpperCase().includes('O')) { x = c1; y = c2; } 
+                    else if (partesDMS[1].toUpperCase().includes('W') || partesDMS[1].toUpperCase().includes('O')) { x = c2; y = c1; } 
+                    else { y = c1; x = c2; } 
+
+                    try {
+                        var res = proj4(epsgIn, epsgOut, [x, y]);
+                        outX = res[0].toFixed(casasDec).replace('.', ',');
+                        outY = res[1].toFixed(casasDec).replace('.', ',');
+                    } catch(e) { outBloco.push("ERRO (Projeção): " + l); }
+                }
             } else {
-                outLines.push(l); 
-            }
-        } else {
-            var partes = l.split(/[\t;,]+/);
-            var nums = [];
-            partes.forEach(p => {
-                var n = parseFloat(p.trim().replace(',', '.'));
-                if(!isNaN(n)) nums.push(n);
-            });
+                var partes = l.split(/[\t;,]+/);
+                var nums = [];
+                partes.forEach(p => {
+                    var n = parseFloat(p.trim().replace(',', '.'));
+                    if(!isNaN(n)) nums.push(n);
+                });
 
-            if(nums.length >= 2) {
-                try {
-                    var res = proj4(epsgIn, epsgOut, [nums[0], nums[1]]);
-                    // Trocado para ; sem espaços e com vírgula nos decimais
-                    outLines.push(`${res[0].toFixed(casasDec).replace('.', ',')};${res[1].toFixed(casasDec).replace('.', ',')}`);
-                } catch(e) { outLines.push("ERRO (Projeção): " + l); }
-            } else {
-                outLines.push(l);
+                if(nums.length >= 2) {
+                    try {
+                        var res = proj4(epsgIn, epsgOut, [nums[0], nums[1]]);
+                        outX = res[0].toFixed(casasDec).replace('.', ',');
+                        outY = res[1].toFixed(casasDec).replace('.', ',');
+                    } catch(e) { outBloco.push("ERRO (Projeção): " + l); }
+                }
             }
+
+            // 2. Aplica o padrão RI Digital: (Espaço, Espaço e Ponto e Vírgula no final)
+            if (outX !== null && outY !== null) {
+                // NOTA: Se o RI implicar com a vírgula no meio por confundir com as casas decimais,
+                // basta trocar o " , " abaixo por " ; ".
+                outBloco.push(`${outX} , ${outY} ;`);
+            } else if (l) {
+                outBloco.push(l); // Mantém o texto se não conseguiu converter
+            }
+        });
+
+        // 3. Autopeenchimento (Fechamento do Polígono)
+        if (outBloco.length >= 3) {
+            var primeiraCoord = outBloco[0];
+            var ultimaCoord = outBloco[outBloco.length - 1];
+            
+            // Se a última não for idêntica à primeira, adiciona a primeira no final
+            if (primeiraCoord !== ultimaCoord) {
+                outBloco.push(primeiraCoord);
+            }
+        }
+
+        // Junta o bloco pronto
+        if (outBloco.length > 0) {
+            outLinesAll.push(outBloco.join('\n'));
         }
     });
 
-    document.getElementById('conv-texto-out').value = outLines.join('\n');
-    mostrarToast("Conversão concluída!");
+    // Devolve todos os polígonos formatados e fechados, separados por uma linha em branco
+    document.getElementById('conv-texto-out').value = outLinesAll.join('\n\n');
+    mostrarToast("Conversão e fechamento de polígonos concluídos!");
 }
 
         function checkToolButtons() { atualizarBotoesUndoRedo(); }
