@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS | BETA 1.4 - Professional Edition</title>
+    <title>LuiGIS | BETA 1.5 - Professional Edition</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -150,7 +150,7 @@
     <aside id="left-sidebar">
         <div class="header">
             <div class="header-title">
-                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1.4</span></h1>
+                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1.5</span></h1>
             </div>
             <div class="top-toolbar">
                 <button class="btn-tool-top" id="btn-undo" onclick="desfazerAcao()" title="Desfazer Ação (Ctrl+Z)" disabled>↩️</button>
@@ -162,6 +162,7 @@
             <button class="tab-btn active" onclick="abrirAba('aba-entrada', this)">1. Vértices</button>
             <button class="tab-btn" onclick="abrirAba('aba-editor', this)">2. Tabela</button>
             <button class="tab-btn" onclick="abrirAba('aba-exportar', this)" style="color:var(--warning);">3. Exportar</button>
+            <button class="tab-btn" onclick="abrirAba('aba-conversor', this)" style="color:#4caf50;">4. Conversor</button>
         </div>
 
         <div id="aba-entrada" class="tab-content active">
@@ -191,6 +192,11 @@
                     <input type="file" id="arquivo-csv" accept=".csv,.txt,.pdf" style="display:none;" onchange="lerArquivoEntrada(event)">
                 </div>
                 <textarea id="main-texto" style="height: 100px;" placeholder="ID; Descrição; Coordenada X (ou Long); Coordenada Y (ou Lat); Cota Z"></textarea>
+                
+                <label style="display:flex; align-items:center; gap:5px; margin-top:5px; font-size:10px; color:#aaa; cursor:pointer;">
+                    <input type="checkbox" id="chk-multi-poly" style="width:auto;" checked> Separar polígonos por linha em branco
+                </label>
+
                 <button class="btn btn-primary btn-block" style="margin-top:5px;" onclick="processarLevantamento()">📍 PLOTAR & LIGAR PONTOS</button>
             </div>
 
@@ -243,6 +249,7 @@
                             <option value="3" selected>3 (0.000)</option>
                             <option value="4">4 (0.0000)</option>
                             <option value="5">5 (0.00000)</option>
+                            <option value="15">15 (Máximo)</option>
                         </select>
                     </div>
                 </div>
@@ -270,6 +277,76 @@
                 <button class="btn btn-block" style="background-color:#0277bd; border-color:#0277bd;" onclick="baixarKMZ()">🌎 Exportar Google Earth (.KMZ)</button>
                 <button class="btn btn-success btn-block" onclick="baixarCSV()">📊 Exportar Tabela (.CSV)</button>
                 <button class="btn btn-purple btn-block" onclick="baixarGeoJSON()">🌍 Exportar GIS (.GeoJSON)</button>
+            </div>
+        </div>
+
+        <div id="aba-conversor" class="tab-content">
+            <div class="card" style="border-color: #4caf50;">
+                <div class="card-title" style="color: #4caf50;">Configuração de Entrada</div>
+                <div class="form-row">
+                    <div><label>Formato de Entrada</label>
+                        <select id="conv-fmt-in" onchange="toggleConvParams('in')">
+                            <option value="utm">UTM (Metros N/E)</option>
+                            <option value="decimal">Graus Decimais (DD)</option>
+                            <option value="sgl">Graus, Min, Seg (DMS)</option>
+                        </select>
+                    </div>
+                    <div><label>Datum</label>
+                        <select id="conv-datum-in">
+                            <option value="SIRGAS2000">SIRGAS 2000</option>
+                            <option value="WGS84">WGS 84</option>
+                            <option value="SAD69">SAD 69</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row" id="conv-utm-in-options">
+                    <div><label>Zona UTM</label><input type="number" id="conv-zona-in" value="23"></div>
+                    <div><label>Hemisfério</label>
+                        <select id="conv-hemi-in">
+                            <option value="S">Sul (S)</option>
+                            <option value="N">Norte (N)</option>
+                        </select>
+                    </div>
+                </div>
+                <label style="margin-top:5px;">Coordenadas de Entrada (uma por linha)</label>
+                <textarea id="conv-texto-in" style="height: 120px;" placeholder="Ex:\n566199.436 , 7790687.840\n566230.409 , 7790665.110"></textarea>
+                <div style="display:flex; gap:10px; margin-top:5px;">
+                    <button class="btn btn-success btn-block" onclick="executarConversorGeral()">🔄 Converter</button>
+                    <button class="btn btn-outline" style="border-color:#f44336; color:#f44336;" onclick="document.getElementById('conv-texto-in').value=''; document.getElementById('conv-texto-out').value='';">Limpar</button>
+                </div>
+            </div>
+
+            <div class="card" style="border-color: var(--accent);">
+                <div class="card-title" style="color: var(--accent);">Configuração de Saída</div>
+                <div class="form-row">
+                    <div><label>Formato de Saída</label>
+                        <select id="conv-fmt-out" onchange="toggleConvParams('out')">
+                            <option value="decimal" selected>Graus Decimais (DD)</option>
+                            <option value="utm">UTM (Metros N/E)</option>
+                        </select>
+                    </div>
+                    <div><label>Datum</label>
+                        <select id="conv-datum-out">
+                            <option value="SIRGAS2000">SIRGAS 2000</option>
+                            <option value="WGS84">WGS 84</option>
+                            <option value="SAD69">SAD 69</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row" id="conv-utm-out-options" style="display:none;">
+                    <div><label>Zona UTM Saída</label><input type="number" id="conv-zona-out" value="23"></div>
+                    <div><label>Hemisfério</label>
+                        <select id="conv-hemi-out">
+                            <option value="S">Sul (S)</option>
+                            <option value="N">Norte (N)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row" style="margin-top:4px;">
+                    <div style="flex:0.5;"><label>Casas Decimais</label><input type="number" id="conv-decimais" value="15"></div>
+                </div>
+                <label style="margin-top:5px;">Resultado (Copiável)</label>
+                <textarea id="conv-texto-out" style="height: 120px;" readonly></textarea>
             </div>
         </div>
     </aside>
@@ -818,7 +895,7 @@
         // NÚCLEO E PROCESSAMENTO DE VÉRTICES
         // =======================================================
 
-        var memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [] };
+        var memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [], bloco: [] };
         var colunasGlobais = {}; 
         
         function renderizarFiltroColunas() {
@@ -878,7 +955,6 @@
             return { dist: dist.toFixed(2), azimute: `${d}°${m.toString().padStart(2, '0')}'${Math.floor(s).toString().padStart(2, '0')}"` }; 
         }
 
-        // NOVO: Função para processar Poligonal via Azimute e Distância (Memorial)
         function executarMotorPoligonal() {
             let startX = parseFloat(document.getElementById('pol-start-x').value);
             let startY = parseFloat(document.getElementById('pol-start-y').value);
@@ -892,17 +968,16 @@
             let xAtual = startX;
             let yAtual = startY;
             
-            // Força configuração UTM baseada no datum atual
             document.getElementById('main-formato').value = 'utm';
             document.getElementById('utm-options').style.display = 'flex';
 
             let epsgIn = obterEpsgEntrada();
             let epsgOut = "+proj=longlat +datum=WGS84 +no_defs";
             
-            memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [] };
+            memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [], bloco: [] };
             let pCount = 1;
+            let bIndex = 0;
 
-            // Insere o ponto de partida
             try { 
                 let conv = proj4(epsgIn, epsgOut, [xAtual, yAtual]); 
                 memoria.nomes.push("P" + pCount++);
@@ -910,9 +985,9 @@
                 memoria.lon.push(conv[0]); 
                 memoria.lat.push(conv[1]); 
                 memoria.confs.push("Início");
+                memoria.bloco.push(bIndex);
             } catch(e) { return alert("Erro de projeção no ponto inicial. Verifique fuso/datum."); }
 
-            // Loop no azimute/distância
             linhas.forEach(linha => {
                 let partes = linha.split(';');
                 if(partes.length >= 2) {
@@ -923,7 +998,6 @@
                     let dist = parseFloat(distText);
                     
                     if(!isNaN(az) && !isNaN(dist)) {
-                        // Converte para radianos considerando Azimute (0 é Norte, 90 é Leste)
                         let azRad = az * (Math.PI / 180);
                         xAtual += dist * Math.sin(azRad);
                         yAtual += dist * Math.cos(azRad);
@@ -935,6 +1009,7 @@
                             memoria.lon.push(conv[0]); 
                             memoria.lat.push(conv[1]); 
                             memoria.confs.push("");
+                            memoria.bloco.push(bIndex);
                         } catch(e) {}
                     }
                 }
@@ -947,14 +1022,28 @@
             }
         }
 
+        // =========================================
+        // ATUALIZAÇÃO: DESENHAR MÚLTIPLOS POLÍGONOS
+        // =========================================
         function processarLevantamento() {
             var txt = document.getElementById('main-texto').value; if(!txt.trim()) { alert("Insira dados."); return; }
+            var chkMulti = document.getElementById('chk-multi-poly') && document.getElementById('chk-multi-poly').checked;
             var fmtIn = document.getElementById('main-formato').value; var epsgIn = obterEpsgEntrada(); var epsgOut = "+proj=longlat +datum=WGS84 +no_defs";
-            memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [] }; var linhas = txt.split('\n');
-            var coordSet = new Set(); 
+            
+            memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [], bloco: [] }; 
+            var linhas = txt.split('\n');
+            var blocoAtual = 0;
 
             for (var i = 0; i < linhas.length; i++) {
-                var linhaLimpa = linhas[i].trim().replace(/"/g, ''); if (linhaLimpa === "" || linhaLimpa.startsWith("CO;")) continue; 
+                var linhaLimpa = linhas[i].trim().replace(/"/g, ''); 
+                
+                // Quebra de bloco ao achar linha vazia
+                if (linhaLimpa === "") {
+                    if (chkMulti) blocoAtual++;
+                    continue; 
+                }
+                if (linhaLimpa.startsWith("CO;")) continue; 
+                
                 var x = null, y = null, z = 0, nomeMarco = "P" + (i + 1);
 
                 if (fmtIn === 'sgl') {
@@ -989,12 +1078,16 @@
                     }
                 }
                 if(x === null || y === null || isNaN(x) || isNaN(y)) continue;
-                
-                var coordKey = x.toFixed(3) + "_" + y.toFixed(3); 
-                if(coordSet.has(coordKey)) { continue; }
-                coordSet.add(coordKey);
 
-                try { var conv = (fmtIn === 'sgl' || fmtIn === 'decimal') ? [x, y] : proj4(epsgIn, epsgOut, [x, y]); memoria.nomes.push(nomeMarco); memoria.cotas.push(z); memoria.lon.push(conv[0]); memoria.lat.push(conv[1]); memoria.confs.push(""); } catch(e) {}
+                try { 
+                    var conv = (fmtIn === 'sgl' || fmtIn === 'decimal') ? [x, y] : proj4(epsgIn, epsgOut, [x, y]); 
+                    memoria.nomes.push(nomeMarco); 
+                    memoria.cotas.push(z); 
+                    memoria.lon.push(conv[0]); 
+                    memoria.lat.push(conv[1]); 
+                    memoria.confs.push(""); 
+                    memoria.bloco.push(blocoAtual); // Salva bloco atual
+                } catch(e) {}
             }
             if(memoria.lon.length === 0) { alert("Nenhum dado válido."); return; }
             atualizarEditor(); atualizarMapa(true);
@@ -1004,37 +1097,65 @@
             var b = document.getElementById('tabela-editor-body'); b.innerHTML = ""; var epsgC = obterEpsgEntrada();
             memoria.nomes.forEach((n, i) => { var c = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgC, [memoria.lon[i], memoria.lat[i]]); b.innerHTML += `<tr><td><input type="text" id="ed-n-${i}" value="${n}" style="text-align:left; color:#fff; font-family:'Inter', sans-serif;"></td><td>${c[0].toFixed(3)}</td><td>${c[1].toFixed(3)}</td><td><input type="number" step="0.001" id="ed-z-${i}" value="${memoria.cotas[i]}"></td><td><input type="text" id="ed-c-${i}" value="${memoria.confs[i]}" style="text-align:left; color:#fff; font-family:'Inter', sans-serif;" placeholder="Ex: Rua A"></td></tr>`; });
         }
+        
         function salvarEdicoes() { if(memoria.lon.length === 0) return; memoria.nomes.forEach((n, i) => { memoria.nomes[i] = document.getElementById(`ed-n-${i}`).value; memoria.cotas[i] = parseFloat(document.getElementById(`ed-z-${i}`).value) || 0; memoria.confs[i] = document.getElementById(`ed-c-${i}`).value || ""; }); atualizarMapa(false); mostrarToast("Edições Salvas!"); }
 
         function atualizarMapa(zoom = false) {
             var idsRtk = ['rtk_poly', 'rtk_pt', 'rtk_text'];
             idsRtk.forEach(id => { var index = gerenciadorCamadas.findIndex(c => c.id === id); if(index !== -1) { map.removeLayer(gerenciadorCamadas[index].leafletLayer); gerenciadorCamadas.splice(index, 1); } });
 
-            var cPoly = L.featureGroup(), cPt = L.featureGroup(), cTxt = L.featureGroup(); var pts = [], ptsP = []; var epsgC = obterEpsgEntrada(); 
+            var cPoly = L.featureGroup(), cPt = L.featureGroup(), cTxt = L.featureGroup(); 
+            var epsgC = obterEpsgEntrada(); 
+            
+            var ptsPorBloco = {};
+            var ptsPPorBloco = {};
+
             for(var i=0; i<memoria.lon.length; i++) {
-                var ll = [memoria.lat[i], memoria.lon[i]]; pts.push(ll);
-                try { var cr = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgC, [memoria.lon[i], memoria.lat[i]]); ptsP.push({x: cr[0], y: cr[1]}); } catch(e) { ptsP.push({x:0, y:0}); }
+                var blk = memoria.bloco ? memoria.bloco[i] : 0;
+                if(!ptsPorBloco[blk]) { ptsPorBloco[blk] = []; ptsPPorBloco[blk] = []; }
+
+                var ll = [memoria.lat[i], memoria.lon[i]];
+                ptsPorBloco[blk].push(ll);
+
+                try { 
+                    var cr = proj4("+proj=longlat +datum=WGS84 +no_defs", epsgC, [memoria.lon[i], memoria.lat[i]]); 
+                    ptsPPorBloco[blk].push({x: cr[0], y: cr[1]}); 
+                } catch(e) { ptsPPorBloco[blk].push({x:0, y:0}); }
+
                 L.circleMarker(ll, {radius:4, color:'#0098ff', fillColor:'#1e1e1e', fillOpacity:1, weight:2}).addTo(cPt);
                 L.marker(ll, {opacity:0}).bindTooltip(memoria.nomes[i] + " ("+memoria.cotas[i].toFixed(2)+")", {permanent:true, direction:'right', className:'etiqueta-mapa'}).addTo(cTxt);
             }
 
             ultimaAreaCalculada = 0; ultimoPerimetroCalculado = 0;
             
-            if(pts.length >= 2) { L.polyline(pts, {color:'#0098ff', weight:2, dashArray: '5,5'}).addTo(cPoly); }
+            Object.keys(ptsPorBloco).forEach(blk => {
+                var pts = ptsPorBloco[blk];
+                var ptsP = ptsPPorBloco[blk];
 
-            if(pts.length >= 3) {
-                L.polygon(pts, {color:'#0098ff', weight:0, fillOpacity:0.1}).addTo(cPoly); 
-                var a = 0, p = 0; for(var j=0; j<ptsP.length; j++) { var p1 = ptsP[j], p2 = ptsP[(j+1)%ptsP.length]; a += (p1.x * p2.y) - (p2.x * p1.y); p += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)); }
-                ultimaAreaCalculada = Math.abs(a)/2; ultimoPerimetroCalculado = p;
-                
-                document.getElementById('lbl-area').innerHTML = ultimaAreaCalculada.toFixed(2) + " m²";
-                document.getElementById('lbl-perimetro').innerHTML = ultimoPerimetroCalculado.toFixed(2) + " m";
-            }
+                if(pts.length >= 2) { 
+                    L.polyline(pts, {color:'#0098ff', weight:2, dashArray: '5,5'}).addTo(cPoly); 
+                }
+
+                if(pts.length >= 3) {
+                    L.polygon(pts, {color:'#0098ff', weight:0, fillOpacity:0.1}).addTo(cPoly); 
+                    var a = 0, p = 0; 
+                    for(var j=0; j<ptsP.length; j++) { 
+                        var p1 = ptsP[j], p2 = ptsP[(j+1)%ptsP.length]; 
+                        a += (p1.x * p2.y) - (p2.x * p1.y); 
+                        p += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)); 
+                    }
+                    ultimaAreaCalculada += Math.abs(a)/2; 
+                    ultimoPerimetroCalculado += p;
+                }
+            });
+
+            document.getElementById('lbl-area').innerHTML = ultimaAreaCalculada.toFixed(2) + " m²";
+            document.getElementById('lbl-perimetro').innerHTML = ultimoPerimetroCalculado.toFixed(2) + " m";
 
             cPoly.addTo(map); cPt.addTo(map); cTxt.addTo(map);
-            if(zoom && pts.length > 0) map.fitBounds(cPt.getBounds(), {padding:[50,50]});
+            if(zoom && memoria.lon.length > 0) map.fitBounds(cPt.getBounds(), {padding:[50,50]});
 
-            gerenciadorCamadas.unshift({ id: 'rtk_poly', nome: '📍 Linha/Polígono Base', leafletLayer: cPoly, visivel: true, tipo: 'rtk_poly', cor: '#0098ff' });
+            gerenciadorCamadas.unshift({ id: 'rtk_poly', nome: '📍 Linhas/Polígonos Base', leafletLayer: cPoly, visivel: true, tipo: 'rtk_poly', cor: '#0098ff' });
             gerenciadorCamadas.unshift({ id: 'rtk_pt', nome: '📍 Vértices RTK', leafletLayer: cPt, visivel: true, tipo: 'rtk_pt', cor: '#0098ff' });
             gerenciadorCamadas.unshift({ id: 'rtk_text', nome: '📍 Textos & Cotas', leafletLayer: cTxt, visivel: true, tipo: 'rtk_text' });
             renderizarGestorCamadas();
@@ -1075,7 +1196,6 @@
             
             setTimeout(() => {
                 try {
-                    // 1. FILTRO ANTI-BUG: Remover pontos duplicados e adicionar micro-ruído para evitar divisão por zero no Turf
                     let uniquePoints = [];
                     let seen = new Set();
                     for(let i=0; i < memoria.lon.length; i++) {
@@ -1117,7 +1237,6 @@
 
                     if(breaksInter.length === 0 && breaksMaster.length === 0) { breaksMaster.push(minZ + (zRange/2)); }
                     
-                    // Função auxiliar para suavizar as curvas (Bezier Spline)
                     const smoothLines = (isolines) => {
                         isolines.features.forEach((feature, index) => {
                             if(feature.geometry.coordinates.length > 0 && feature.geometry.coordinates[0].length > 2) {
@@ -1370,10 +1489,7 @@
             var url = select.value;
             var nomeBase = select.options[select.selectedIndex].text;
 
-            if (!url) {
-                mostrarToast("Por favor, selecione uma base da lista.");
-                return;
-            }
+            if (!url) { return mostrarToast("Por favor, selecione uma base."); }
 
             document.getElementById('loading-shp').style.display = 'block';
             mostrarToast("Transferindo dados do servidor... Aguarde.");
@@ -1381,16 +1497,13 @@
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error("Erro de rede ao baixar a base.");
-                
                 const buffer = await response.arrayBuffer();
                 let geojson = await shp(buffer); 
-                
                 processarGeoJSON_NoMapa(geojson, nomeBase, null, true);
                 mostrarToast(nomeBase + " carregada com sucesso!");
-                
             } catch (err) {
                 console.error("Erro na transferência/processamento:", err);
-                alert("Não foi possível carregar a base. O arquivo pode estar muito pesado para o seu navegador no momento.");
+                alert("Não foi possível carregar a base.");
                 document.getElementById('loading-shp').style.display = 'none';
             }
         }
@@ -1558,7 +1671,6 @@
             var fmtOut = document.getElementById('out-formato').value; var epsgU = "+proj=longlat +datum=WGS84 +no_defs"; var epsgD = (fmtOut === 'utm') ? obterEpsgEntrada() : epsgU;
             var dxf = "0\nSECTION\n2\nENTITIES\n"; var pts = obterCoordenadasExportacao(); var colorRTK = 4; 
             
-            // --- NOVO: GERAÇÃO DA MALHA DE QUADRANTES (GRID) ---
             if (pts.length > 0 && fmtOut === 'utm') {
                 let minE = Infinity, maxE = -Infinity, minN = Infinity, maxN = -Infinity;
                 pts.forEach(p => { 
@@ -1584,7 +1696,6 @@
                     }
                 }
             }
-            // --------------------------------------------------
 
             if (hasRtkPoly) {
                 dxf += `0\nPOLYLINE\n8\nLEVANTAMENTO_RTK\n62\n${colorRTK}\n66\n1\n70\n1\n10\n0.0\n20\n0.0\n30\n0.0\n`; 
@@ -1701,6 +1812,89 @@
                 }); 
             }
             baixarArquivo("LuiGIS_Web.geojson", JSON.stringify({ type: "FeatureCollection", features: features }, null, 2), "application/json"); mostrarToast("GeoJSON Exportado!");
+        }
+
+        // ====================================================================
+        // FUNÇÕES DO CONVERSOR (NOVO)
+        // ====================================================================
+        
+        function toggleConvParams(side) {
+            var fmt = document.getElementById('conv-fmt-' + side).value;
+            var optDiv = document.getElementById('conv-utm-' + side + '-options');
+            if(optDiv) {
+                optDiv.style.display = (fmt === 'utm') ? 'flex' : 'none';
+            }
+        }
+
+        function executarConversorGeral() {
+            var fmtIn = document.getElementById('conv-fmt-in').value;
+            var datumIn = document.getElementById('conv-datum-in').value;
+            var fmtOut = document.getElementById('conv-fmt-out').value;
+            var datumOut = document.getElementById('conv-datum-out').value;
+            var casasDec = parseInt(document.getElementById('conv-decimais').value) || 15;
+            var txtIn = document.getElementById('conv-texto-in').value;
+
+            if(!txtIn.trim()) return alert("Insira coordenadas na caixa de entrada para converter.");
+
+            var getProjStr = (fmt, datum, prefix) => {
+                var projDatum = datumsDef[datum];
+                if(fmt === 'utm') {
+                    var zona = document.getElementById(`conv-zona-${prefix}`).value || 23;
+                    var hemi = document.getElementById(`conv-hemi-${prefix}`).value === 'S' ? '+south ' : '';
+                    return `+proj=utm +zone=${zona} ${hemi}${projDatum} +units=m +no_defs`;
+                }
+                return `+proj=longlat ${projDatum} +no_defs`;
+            };
+
+            var epsgIn = getProjStr(fmtIn, datumIn, 'in');
+            var epsgOut = getProjStr(fmtOut, datumOut, 'out');
+
+            var linhas = txtIn.split('\n');
+            var outLines = [];
+
+            linhas.forEach(linha => {
+                var l = linha.trim();
+                if(!l) { outLines.push(""); return; }
+
+                if (fmtIn === 'sgl') {
+                    // Conversão de Grau, Minuto, Segundo
+                    var partesDMS = l.match(/(\d+[^\d]+\d+[^\d]+[\d.,]+[^\d]*[NSWE]?)/gi);
+                    if (partesDMS && partesDMS.length >= 2) {
+                        var c1 = parseDMS(partesDMS[0]); var c2 = parseDMS(partesDMS[1]);
+                        var x, y;
+                        if (partesDMS[0].toUpperCase().includes('W') || partesDMS[0].toUpperCase().includes('O')) { x = c1; y = c2; } 
+                        else if (partesDMS[1].toUpperCase().includes('W') || partesDMS[1].toUpperCase().includes('O')) { x = c2; y = c1; } 
+                        else { y = c1; x = c2; } // Assume Lat(y), Lon(x) genérico se não tiver letra
+
+                        try {
+                            var res = proj4(epsgIn, epsgOut, [x, y]);
+                            outLines.push(`${res[0].toFixed(casasDec)} , ${res[1].toFixed(casasDec)}`);
+                        } catch(e) { outLines.push("ERRO (Projeção): " + l); }
+                    } else {
+                        outLines.push(l); // Mantém o texto se não achar
+                    }
+                } else {
+                    // Conversão UTM ou Decimal normal
+                    var partes = l.split(/[\t;,]+/);
+                    var nums = [];
+                    partes.forEach(p => {
+                        var n = parseFloat(p.trim().replace(',', '.'));
+                        if(!isNaN(n)) nums.push(n);
+                    });
+
+                    if(nums.length >= 2) {
+                        try {
+                            var res = proj4(epsgIn, epsgOut, [nums[0], nums[1]]);
+                            outLines.push(`${res[0].toFixed(casasDec)} , ${res[1].toFixed(casasDec)}`);
+                        } catch(e) { outLines.push("ERRO (Projeção): " + l); }
+                    } else {
+                        outLines.push(l);
+                    }
+                }
+            });
+
+            document.getElementById('conv-texto-out').value = outLines.join('\n');
+            mostrarToast("Conversão concluída!");
         }
 
         function checkToolButtons() { atualizarBotoesUndoRedo(); }
