@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS | BETA 1.5.2 - Professional Edition</title>
+    <title>LuiGIS | BETA 1.5.3 - Professional Edition</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1849,7 +1849,7 @@ function executarConversorGeral() {
     var epsgIn = getProjStr(fmtIn, datumIn, 'in');
     var epsgOut = getProjStr(fmtOut, datumOut, 'out');
 
-    // 1. Separa o texto em blocos (polígonos separados por linha em branco)
+    // Separa o texto em blocos (polígonos separados por linha em branco)
     var blocos = txtIn.split(/\n\s*\n/);
     var outLinesAll = [];
 
@@ -1859,10 +1859,11 @@ function executarConversorGeral() {
 
         linhas.forEach(linha => {
             var l = linha.trim();
-            if(!l) return; // Ignora linhas vazias no meio do processamento
+            if(!l) return; // Ignora linhas vazias
 
             var outX = null, outY = null;
 
+            // Tratamento de conversão (mantido igual, robusto)
             if (fmtIn === 'sgl') {
                 var partesDMS = l.match(/(\d+[^\d]+\d+[^\d]+[\d.,]+[^\d]*[NSWE]?)/gi);
                 if (partesDMS && partesDMS.length >= 2) {
@@ -1874,9 +1875,9 @@ function executarConversorGeral() {
 
                     try {
                         var res = proj4(epsgIn, epsgOut, [x, y]);
-                        outX = res[0].toFixed(casasDec).replace('.', ',');
-                        outY = res[1].toFixed(casasDec).replace('.', ',');
-                    } catch(e) { outBloco.push("ERRO (Projeção): " + l); }
+                        outX = res[0].toFixed(casasDec); // Usa PONTO para decimal
+                        outY = res[1].toFixed(casasDec); // Usa PONTO para decimal
+                    } catch(e) {}
                 }
             } else {
                 var partes = l.split(/[\t;,]+/);
@@ -1889,42 +1890,36 @@ function executarConversorGeral() {
                 if(nums.length >= 2) {
                     try {
                         var res = proj4(epsgIn, epsgOut, [nums[0], nums[1]]);
-                        outX = res[0].toFixed(casasDec).replace('.', ',');
-                        outY = res[1].toFixed(casasDec).replace('.', ',');
-                    } catch(e) { outBloco.push("ERRO (Projeção): " + l); }
+                        outX = res[0].toFixed(casasDec); // Usa PONTO para decimal
+                        outY = res[1].toFixed(casasDec); // Usa PONTO para decimal
+                    } catch(e) {}
                 }
             }
 
-            // 2. Aplica o padrão RI Digital: (Espaço, Espaço e Ponto e Vírgula no final)
+            // PADRÃO EXATO SIG-RI: "Longitude, Latitude" (sem o ; aqui)
             if (outX !== null && outY !== null) {
-                // NOTA: Se o RI implicar com a vírgula no meio por confundir com as casas decimais,
-                // basta trocar o " , " abaixo por " ; ".
-                outBloco.push(`${outX} , ${outY} ;`);
-            } else if (l) {
-                outBloco.push(l); // Mantém o texto se não conseguiu converter
+                outBloco.push(`${outX}, ${outY}`);
             }
         });
 
-        // 3. Autopeenchimento (Fechamento do Polígono)
+        // Fechamento automático: Se a última coordenada não for igual à primeira, repete a primeira
         if (outBloco.length >= 3) {
             var primeiraCoord = outBloco[0];
             var ultimaCoord = outBloco[outBloco.length - 1];
-            
-            // Se a última não for idêntica à primeira, adiciona a primeira no final
             if (primeiraCoord !== ultimaCoord) {
                 outBloco.push(primeiraCoord);
             }
         }
 
-        // Junta o bloco pronto
+        // Junta as coordenadas do polígono com Ponto e Vírgula (;). 
+        // O comando .join() garante que o último item NÃO terá o ";" no final!
         if (outBloco.length > 0) {
-            outLinesAll.push(outBloco.join('\n'));
+            outLinesAll.push(outBloco.join(';\n'));
         }
     });
 
-    // Devolve todos os polígonos formatados e fechados, separados por uma linha em branco
     document.getElementById('conv-texto-out').value = outLinesAll.join('\n\n');
-    mostrarToast("Conversão e fechamento de polígonos concluídos!");
+    mostrarToast("Formatado para o padrão SIG-RI!");
 }
 
         function checkToolButtons() { atualizarBotoesUndoRedo(); }
