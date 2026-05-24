@@ -20,6 +20,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
@@ -191,11 +193,11 @@
             </div>
             
             <div class="card">
-                <div class="card-title">Processador (CSV, TXT, PDF SIGEF)</div>
+                <div class="card-title">Processador (CSV, TXT, PDF, GPX)</div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                     <label style="margin:0; font-size:9px;">Cole os dados ou carregue o arquivo</label>
                     <button class="btn btn-outline btn-small" onclick="document.getElementById('arquivo-csv').click()">📂 LER ARQUIVO</button>
-                    <input type="file" id="arquivo-csv" accept=".csv,.txt,.pdf" style="display:none;" onchange="lerArquivoEntrada(event)">
+                    <input type="file" id="arquivo-csv" accept=".csv,.txt,.pdf,.gpx" style="display:none;" onchange="lerArquivoEntrada(event)">
                 </div>
                 <textarea id="main-texto" style="height: 100px;" placeholder="ID; Coordenada X (Long); Coordenada Y (Lat)"></textarea>
                 
@@ -291,6 +293,7 @@
             <div style="display:flex; flex-direction:column; gap:10px; margin-top:5px;">
                 <button class="btn btn-warning btn-block" onclick="baixarDXF()">📐 Exportar AutoCAD (.DXF)</button>
                 <button class="btn btn-block" style="background-color:#0277bd; border-color:#0277bd;" onclick="baixarKMZ()">🌎 Exportar Google Earth (.KMZ)</button>
+                <button class="btn btn-block" style="background-color:#107c41; border-color:#107c41; color:#fff;" onclick="baixarPlanilhaTopograficaXLSX()">📊 Exportar Planilha (.XLSX)</button>
                 <button class="btn btn-success btn-block" onclick="baixarCSV()">📊 Exportar Tabela (.CSV)</button>
                 <button class="btn btn-purple btn-block" onclick="baixarGeoJSON()">🌍 Exportar GIS (.GeoJSON)</button>
             </div>
@@ -528,13 +531,11 @@
         }
 
         var cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 22, attribution: '© CartoDB' });
-        // MAPA PADRÃO ONR SIG-RI: HÍBRIDO
         var googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 22, maxNativeZoom: 20 });
         var googleSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 24, maxNativeZoom: 20 });
         var googleTerrain = L.tileLayer('https://mt1.google.com/vt/lyrs=p&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 22, maxNativeZoom: 20 });
         var openTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenTopoMap' });
 
-        // Adicionado googleHybrid como padrão
         var map = L.map('map', { preserveDrawingBuffer: true, zoomControl: false, layers: [googleHybrid] }).setView([-20.076, -44.225], 14);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
         
@@ -792,9 +793,14 @@
         document.getElementById('main-formato').addEventListener('change', function(e) { document.getElementById('utm-options').style.display = (e.target.value === 'utm') ? 'flex' : 'none'; });
         function parseDMS(str) { var match = str.match(/(\d+)[^\d]+(\d+)[^\d]+([\d.,]+)[^\d]*([NSWE]?)/i); if(!match) return null; var deg = parseFloat(match[1]); var min = parseFloat(match[2]); var sec = parseFloat(match[3].replace(',','.')); var dec = deg + (min/60) + (sec/3600); var dir = match[4] ? match[4].toUpperCase() : ''; if (dir === 'S' || dir === 'W' || dir === 'O') dec = dec * -1; return dec; }
 
+        // =====================================================================
+        // ATUALIZAÇÃO: Extrator de Arquivos (Integrado GPX, PDF, CSV, TXT)
+        // =====================================================================
         async function lerArquivoEntrada(e) {
             var file = e.target.files[0]; if (!file) return;
-            if (file.name.toLowerCase().endsWith('.pdf')) {
+            var fileNameStr = file.name.toLowerCase();
+
+            if (fileNameStr.endsWith('.pdf')) {
                 var reader = new FileReader();
                 reader.onload = async function() {
                     var typedarray = new Uint8Array(this.result);
@@ -804,8 +810,59 @@
                     document.getElementById('main-texto').value = linhas.join('\n'); mostrarToast("PDF Extraído.");
                 };
                 reader.readAsArrayBuffer(file);
-            } else { var reader = new FileReader(); reader.onload = ev => document.getElementById('main-texto').value = ev.target.result; reader.readAsText(file); }
+            } else if (fileNameStr.endsWith('.gpx')) {
+                var reader = new FileReader();
+                reader.onload = function(ev) {
+                    processarGPX(ev.target.result);
+                };
+                reader.readAsText(file);
+            } else { 
+                var reader = new FileReader(); 
+                reader.onload = ev => document.getElementById('main-texto').value = ev.target.result; 
+                reader.readAsText(file); 
+            }
             e.target.value = '';
+        }
+
+        // =====================================================================
+        // NOVO: Leitor e Extrator de Waypoints/Tracks do GPX
+        // =====================================================================
+        function processarGPX(gpxText) {
+            var parser = new DOMParser();
+            var xmlDoc = parser.parseFromString(gpxText, "text/xml");
+            
+            var pts = Array.from(xmlDoc.getElementsByTagName("trkpt")).concat(Array.from(xmlDoc.getElementsByTagName("wpt")));
+            
+            if (pts.length === 0) {
+                mostrarToast("Nenhum ponto válido encontrado no GPX.");
+                return;
+            }
+
+            memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [], bloco: [] };
+            
+            for (var i = 0; i < pts.length; i++) {
+                var pt = pts[i];
+                var lat = parseFloat(pt.getAttribute("lat"));
+                var lon = parseFloat(pt.getAttribute("lon"));
+                
+                var eleNode = pt.getElementsByTagName("ele")[0];
+                var z = eleNode ? parseFloat(eleNode.textContent) : 0;
+                
+                var nameNode = pt.getElementsByTagName("name")[0];
+                var nome = nameNode ? nameNode.textContent : "P_" + (i + 1);
+
+                memoria.nomes.push(nome);
+                memoria.cotas.push(z);
+                memoria.lon.push(lon);
+                memoria.lat.push(lat);
+                memoria.confs.push("");
+                memoria.bloco.push(0);
+            }
+            
+            document.getElementById('main-formato').value = 'decimal';
+            atualizarEditor(); 
+            atualizarMapa(true);
+            mostrarToast("GPX Importado com sucesso!");
         }
 
         function lerArquivoConversor(e) { var file = e.target.files[0]; if (!file) return; var reader = new FileReader(); reader.onload = function(ev) { document.getElementById('conv-texto-in').value = ev.target.result; mostrarToast("Arquivo carregado!"); }; reader.readAsText(file); e.target.value = ''; }
@@ -857,7 +914,6 @@
                         if (partesDMS[0].toUpperCase().includes('W') || partesDMS[0].toUpperCase().includes('O')) { x = c1; y = c2; } else if (partesDMS[1].toUpperCase().includes('W') || partesDMS[1].toUpperCase().includes('O')) { x = c2; y = c1; } else { y = c1; x = c2; } 
                     }
                 } else if (fmtIn === 'decimal') {
-                    // Busca todos os números flutuantes na linha (com ponto ou vírgula)
                     let matchNums = linhaLimpa.match(/-?\d+([.,]\d+)?/g);
                     if (matchNums && matchNums.length >= 2) {
                         x = parseFloat(matchNums[0].replace(',', '.'));
@@ -865,7 +921,6 @@
                         if(matchNums.length > 2) z = parseFloat(matchNums[2].replace(',', '.'));
                     }
                 } else {
-                    // UTM e Outros mantêm a lógica de separar por barras
                     var partes = linhaLimpa.split(/[\t;]+/); if (partes.length < 2) partes = linhaLimpa.split(',');
                     var numeros = []; var textos = [];
                     for(var p = 0; p < partes.length; p++) { var val = partes[p].trim(); var numVal = parseFloat(val.replace(',', '.')); if(!isNaN(numVal) && val !== "") numeros.push(numVal); else if(val !== "" && isNaN(numVal)) textos.push(val); }
@@ -1176,7 +1231,7 @@
         function atualizarOrdemZIndexMap() { var camadasReversas = gerenciadorCamadas.slice().reverse(); camadasReversas.forEach(camada => { if(camada.visivel && camada.leafletLayer.bringToFront) camada.leafletLayer.bringToFront(); }); }
 
         // ====================================================================
-        // EXPORTAÇÕES (CSV, DXF, KMZ, GEOJSON)
+        // EXPORTAÇÕES (CSV, DXF, KMZ, GEOJSON E PLANILHA XLSX)
         // ====================================================================
 
         function obterCoordenadasExportacao() { var fmtOut = document.getElementById('out-formato').value; var epsgU = "+proj=longlat +datum=WGS84 +no_defs"; var epsgD = (fmtOut === 'utm') ? obterEpsgEntrada() : epsgU; var pts = []; for(var i=0; i<memoria.lon.length; i++) { var c = proj4(epsgU, epsgD, [memoria.lon[i], memoria.lat[i]]); pts.push({ x: c[0], y: c[1], z: memoria.cotas[i], nome: memoria.nomes[i] }); } return pts; }
@@ -1191,6 +1246,87 @@
         function baixarArquivo(n, c, t) { var b = new Blob([c], {type: t}); var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = n; a.click(); }
         function hexToACI(hex) { if (!hex) return 7; hex = hex.replace('#', ''); if (hex.length === 3) hex = hex.split('').map(c => c+c).join(''); var r = parseInt(hex.substring(0,2), 16); var g = parseInt(hex.substring(2,4), 16); var b = parseInt(hex.substring(4,6), 16); if (r>150 && g<100 && b<100) return 1; if (r>150 && g>150 && b<100) return 2; if (r<100 && g>150 && b<100) return 3; if (r<100 && g>150 && b>150) return 4; if (r<100 && g<100 && b>150) return 5; if (r>150 && g<100 && b>150) return 6; if (r<100 && g<100 && b<100) return 8; return 7; }
         function nFormat(val) { let n = Number(val); if (isNaN(n) || !isFinite(n)) return "0.0000"; return n.toFixed(4); }
+
+        // =====================================================================
+        // NOVO: Gerador Nativo de XLSX Estruturado em Abas
+        // =====================================================================
+        function baixarPlanilhaTopograficaXLSX() {
+            if(memoria.lon.length < 2) return mostrarToast("Necessário ao menos 2 pontos para exportar a planilha.");
+
+            var wb = XLSX.utils.book_new();
+            var datum = document.getElementById('main-datum').value;
+            
+            // --- ABA 1: RESUMO DO LEVANTAMENTO ---
+            var wsResumoData = [
+                ["MEMORIAL DESCRITIVO & RESUMO", "", ""],
+                ["", "", ""],
+                ["", "", ""],
+                ["Proprietário", ""], 
+                ["Responsável Técnico", "Luigi Alves Bortoloto (Técnico em Edificações)"],
+                ["Localização", "Igarapé, Minas Gerais"],
+                ["Quantidade de Vértices", memoria.lon.length],
+                ["Perímetro Total (m)", ultimoPerimetroCalculado ? ultimoPerimetroCalculado.toFixed(2).replace('.', ',') : "0,00"],
+                ["Área Topográfica (m²)", ultimaAreaCalculada ? ultimaAreaCalculada.toFixed(2).replace('.', ',') : "0,00"]
+            ];
+            var wsResumo = XLSX.utils.aoa_to_sheet(wsResumoData);
+            XLSX.utils.book_append_sheet(wb, wsResumo, "Resumo do Levantamento");
+
+            // --- ABA 2: DADOS DO PERÍMETRO ---
+            var wsDadosData = [
+                ["TABELA COMPLETA DE AZIMUTES, DISTÂNCIAS E COORDENADAS", "", "", "", "", ""],
+                ["", "", "", "", "", ""],
+                ["", "", "", "", "", ""],
+                [`Sistema de Projeção: UTM / ${datum}`, "", "", "", "", ""],
+                ["Vértice Inicial (De)", "Vértice Final (Para)", "Azimute (UTM)", "Distância (m)", "Coordenada E (m)", "Coordenada N (m)"]
+            ];
+
+            // Forçando UTM para exportar coordenadas com distâncias exatas conforme a sua base
+            var epsgU = "+proj=longlat +datum=WGS84 +no_defs";
+            var zona = document.getElementById('main-zona').value || 23;
+            var hemi = document.getElementById('main-hemi').value === 'S' ? '+south ' : '';
+            var pD = datumsDef[datum];
+            var epsgUTM = `+proj=utm +zone=${zona} ${hemi}${pD} +units=m +no_defs`;
+
+            var coordsUTM = [];
+            for(var i = 0; i < memoria.lon.length; i++) {
+                try {
+                    var c = proj4(epsgU, epsgUTM, [memoria.lon[i], memoria.lat[i]]);
+                    coordsUTM.push({ e: c[0], n: c[1], nome: memoria.nomes[i] });
+                } catch(e) {
+                    coordsUTM.push({ e: 0, n: 0, nome: memoria.nomes[i] });
+                }
+            }
+
+            if(coordsUTM.length > 0) {
+                // Origem da Tabela
+                wsDadosData.push(["-", coordsUTM[0].nome, "------", "", coordsUTM[0].e.toFixed(2).replace('.', ','), coordsUTM[0].n.toFixed(2).replace('.', ',')]);
+                
+                // Iterando azimutes e distâncias
+                for(var i = 0; i < coordsUTM.length; i++) {
+                    var pProx = (i + 1) % coordsUTM.length;
+                    
+                    if(i === coordsUTM.length - 1 && coordsUTM[i].nome === coordsUTM[pProx].nome) break; 
+
+                    var calc = calcAzimuteDist(coordsUTM[i].e, coordsUTM[i].n, coordsUTM[pProx].e, coordsUTM[pProx].n);
+                    
+                    wsDadosData.push([
+                        coordsUTM[i].nome,
+                        coordsUTM[pProx].nome,
+                        calc.azimute,
+                        parseFloat(calc.dist).toFixed(2).replace('.', ','),
+                        coordsUTM[pProx].e.toFixed(2).replace('.', ','),
+                        coordsUTM[pProx].n.toFixed(2).replace('.', ',')
+                    ]);
+                }
+            }
+
+            var wsDados = XLSX.utils.aoa_to_sheet(wsDadosData);
+            XLSX.utils.book_append_sheet(wb, wsDados, "Dados do Perímetro");
+
+            // Aciona o download do Excel Nativo
+            XLSX.writeFile(wb, "tabela_topografica_completa.xlsx");
+            mostrarToast("Planilha XLSX exportada com sucesso!");
+        }
 
         function exportDxfEntity(layer, epsgU, epsgD, lName, hexColor) {
             let dxfStr = ""; let cInt = hexToACI(hexColor);
