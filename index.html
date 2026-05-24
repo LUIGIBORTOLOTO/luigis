@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS | BETA 1.8 - Professional Edition</title>
+    <title>LuiGIS | BETA 1.9 - Professional Edition</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -158,7 +158,7 @@
     <aside id="left-sidebar">
         <div class="header">
             <div class="header-title">
-                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1.8</span></h1>
+                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1.9</span></h1>
             </div>
             <div class="top-toolbar">
                 <button class="btn-tool-top" id="btn-undo" onclick="desfazerAcao()" title="Desfazer Ação (Ctrl+Z)" disabled>↩️</button>
@@ -626,7 +626,7 @@
                 let ptsCopa = [];
                 for(let i=0; i<=36; i++) {
                     let a = i * 10 * Math.PI / 180;
-                    let rOffset = (i % 2 === 0) ? 2.5 : 1.8; 
+                    let rOffset = (i % 2 === 0) ? 2.5 : 1.9; 
                     ptsCopa.push([latlng.lat + (rOffset * Math.sin(a) * mLat), latlng.lng + (rOffset * Math.cos(a) * mLng)]);
                 }
                 L.polygon(ptsCopa, {color: '#2e7d32', weight: 1.5, fillColor: '#4caf50', fillOpacity: 0.3}).addTo(group);
@@ -1256,30 +1256,37 @@
             var wb = XLSX.utils.book_new();
             var datum = document.getElementById('main-datum').value;
             
-            // --- ABA 1: RESUMO DO LEVANTAMENTO ---
-            // Linhas 2 e 3 vazias conforme o modelo extraído
+            // =======================================================
+            // ABA 1: RESUMO DO LEVANTAMENTO
+            // =======================================================
             var wsResumoData = [
-                ["MEMORIAL DESCRITIVO & RESUMO"],
-                [],
-                [],
-                ["Proprietário", ""], 
-                ["Responsável Técnico", "Luigi Alves Bortoloto (Técnico em Edificações)"],
-                ["Localização", "Igarapé, Minas Gerais"],
-                ["Quantidade de Vértices", memoria.lon.length],
-                ["Perímetro Total (m)", ultimoPerimetroCalculado ? parseFloat(ultimoPerimetroCalculado.toFixed(2)) : 0],
-                ["Área Topográfica (m²)", ultimaAreaCalculada ? parseFloat(ultimaAreaCalculada.toFixed(2)) : 0]
+                ["MEMORIAL DESCRITIVO & RESUMO"], // Linha 1
+                [], // Linha 2 vazia
+                [], // Linha 3 vazia
+                ["Proprietário", "Sebastião Antônio ..."], // Linha 4
+                ["Responsável Técnico", "Hélio Silvânio Pinto (Téc. Topografia)"], // Linha 5
+                ["Localização", "Área Rural de São Joaquim / N. Sra. da Paz"], // Linha 6
+                ["Quantidade de Vértices", memoria.lon.length], // Linha 7
+                ["Perímetro Total (m)", ultimoPerimetroCalculado || 0], // Linha 8
+                ["Área Topográfica (m²)", ultimaAreaCalculada || 0] // Linha 9
             ];
             
             var wsResumo = XLSX.utils.aoa_to_sheet(wsResumoData);
             
-            // Força a formatação de número com duas casas decimais nas células de resultado
-            if(wsResumo["B8"]) wsResumo["B8"].z = "0.00"; // Perímetro
-            if(wsResumo["B9"]) wsResumo["B9"].z = "0.00"; // Área
+            // Mesclar células do título (A1 até C1)
+            wsResumo["!merges"] = [ { s: {r:0, c:0}, e: {r:0, c:2} } ];
+            // Configurar largura das colunas (Coluna A e B)
+            wsResumo["!cols"] = [ {wch: 25}, {wch: 55} ];
+            
+            // Força a formatação visual de número com duas casas (0.00)
+            if(wsResumo["B8"]) wsResumo["B8"].z = "0.00"; 
+            if(wsResumo["B9"]) wsResumo["B9"].z = "0.00";
             
             XLSX.utils.book_append_sheet(wb, wsResumo, "Resumo do Levantamento");
 
-            // --- ABA 2: DADOS DO PERÍMETRO ---
-            // Forçando o cálculo em UTM com base no Datum ativo do sistema
+            // =======================================================
+            // ABA 2: DADOS DO PERÍMETRO
+            // =======================================================
             var epsgU = "+proj=longlat +datum=WGS84 +no_defs";
             var zona = document.getElementById('main-zona').value || 23;
             var hemi = document.getElementById('main-hemi').value === 'S' ? '+south ' : '';
@@ -1296,31 +1303,27 @@
                 }
             }
 
-            // Montagem da tabela respeitando as 3 linhas superiores de distanciamento
             var wsDadosData = [
-                ["TABELA COMPLETA DE AZIMUTES, DISTÂNCIAS E COORDENADAS"],
-                [],
-                [],
-                [`Sistema de Projeção: UTM / ${datum}`],
-                ["Vértice Inicial (De)", "Vértice Final (Para)", "Azimute (UTM)", "Distância (m)", "Coordenada E (m)", "Coordenada N (m)"]
+                ["TABELA COMPLETA DE AZIMUTES, DISTÂNCIAS E COORDENADAS"], // Linha 1
+                [], // Linha 2
+                [], // Linha 3
+                [`Sistema de Projeção: UTM / ${datum}`], // Linha 4
+                ["Vértice Inicial (De)", "Vértice Final (Para)", "Azimute (UTM)", "Distância (m)", "Coordenada E (m)", "Coordenada N (m)"] // Linha 5
             ];
 
             if(coordsUTM.length > 0) {
-                // Linha 6: Amarração inicial com os traços idênticos ao padrão do seu arquivo
+                // Linha 6: Amarração de Partida com traços e sem distância (Exatamente como na sua imagem)
                 wsDadosData.push([
                     "-", 
                     coordsUTM[0].nome, 
                     "------", 
-                    "", 
-                    parseFloat(coordsUTM[0].e.toFixed(2)), 
-                    parseFloat(coordsUTM[0].n.toFixed(2))
+                    null, // Deixa a distância em branco nativamente
+                    coordsUTM[0].e, // Número puro (sem replace)
+                    coordsUTM[0].n  // Número puro
                 ]);
                 
-                // Loops sequenciais calculando os azimutes e as distâncias reais entre os vértices
                 for(var i = 0; i < coordsUTM.length; i++) {
                     var pProx = (i + 1) % coordsUTM.length;
-                    
-                    // Condição de parada para poligonais que já fecham o perímetro no último ponto digitado
                     if(i === coordsUTM.length - 1 && coordsUTM[i].nome === coordsUTM[pProx].nome) break;
 
                     var calc = calcAzimuteDist(coordsUTM[i].e, coordsUTM[i].n, coordsUTM[pProx].e, coordsUTM[pProx].n);
@@ -1329,34 +1332,39 @@
                         coordsUTM[i].nome,
                         coordsUTM[pProx].nome,
                         calc.azimute,
-                        parseFloat(calc.dist),
-                        parseFloat(coordsUTM[pProx].e.toFixed(2)),
-                        parseFloat(coordsUTM[pProx].n.toFixed(2))
+                        parseFloat(calc.dist), // Número puro
+                        coordsUTM[pProx].e,    // Número puro
+                        coordsUTM[pProx].n     // Número puro
                     ]);
                 }
             }
 
             var wsDados = XLSX.utils.aoa_to_sheet(wsDadosData);
             
-            // Varredura de células para aplicar a máscara numérica padrão de topografia (0.00) 
-            // nas colunas D (Distância), E (Coordenada E) e F (Coordenada N) a partir da linha 6
-            for (var cellRef in wsDados) {
-                if (cellRef[0] === '!') continue; 
-                var col = cellRef[0];
-                var rowNum = parseInt(cellRef.substring(1));
-                
-                if (rowNum >= 6) { 
-                    if (col === 'D' || col === 'E' || col === 'F') {
-                        if (wsDados[cellRef].t === 'n') {
-                            wsDados[cellRef].z = "0.00";
-                        }
+            // Mesclas de cabeçalho da Tabela
+            wsDados["!merges"] = [
+                { s: {r:0, c:0}, e: {r:0, c:5} }, // Título da tabela expandido
+                { s: {r:3, c:0}, e: {r:3, c:5} }  // Sistema de Projeção expandido
+            ];
+            
+            // Configurar a largura das colunas A, B, C, D, E, F para ficarem espaçosas
+            wsDados["!cols"] = [ {wch: 18}, {wch: 18}, {wch: 18}, {wch: 15}, {wch: 20}, {wch: 20} ];
+
+            // Varredura para aplicar a máscara padrão (0.00) nas colunas de medidas/coordenadas
+            var range = XLSX.utils.decode_range(wsDados['!ref']);
+            for(var R = 5; R <= range.e.r; ++R) { // Pula o cabeçalho (começa da linha 6/index 5)
+                for(var C = 3; C <= 5; ++C) { // Analisa as colunas D(3), E(4) e F(5)
+                    var cell_ref = XLSX.utils.encode_cell({c:C, r:R});
+                    var cell = wsDados[cell_ref];
+                    if(cell && cell.t === 'n') {
+                        cell.z = "0.00"; // Força o Excel a exibir como número topográfico "0,00"
                     }
                 }
             }
 
             XLSX.utils.book_append_sheet(wb, wsDados, "Dados do Perímetro");
 
-            // Exportação com nome padronizado
+            // Aciona o download
             XLSX.writeFile(wb, "tabela_topografica_completa.xlsx");
             mostrarToast("Planilha XLSX gerada na estrutura exata do modelo!");
         }
