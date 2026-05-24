@@ -2,7 +2,7 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS | BETA 1.9 - Professional Edition</title>
+    <title>LuiGIS | BETA 1.7 - Professional Edition</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,7 +20,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
@@ -158,7 +159,7 @@
     <aside id="left-sidebar">
         <div class="header">
             <div class="header-title">
-                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1.9</span></h1>
+                <h1>🌍 LuiGIS <span style="font-size:10px; color:var(--warning); font-weight:bold;">BETA 1.7</span></h1>
             </div>
             <div class="top-toolbar">
                 <button class="btn-tool-top" id="btn-undo" onclick="desfazerAcao()" title="Desfazer Ação (Ctrl+Z)" disabled>↩️</button>
@@ -626,7 +627,7 @@
                 let ptsCopa = [];
                 for(let i=0; i<=36; i++) {
                     let a = i * 10 * Math.PI / 180;
-                    let rOffset = (i % 2 === 0) ? 2.5 : 1.9; 
+                    let rOffset = (i % 2 === 0) ? 2.5 : 1.8; 
                     ptsCopa.push([latlng.lat + (rOffset * Math.sin(a) * mLat), latlng.lng + (rOffset * Math.cos(a) * mLng)]);
                 }
                 L.polygon(ptsCopa, {color: '#2e7d32', weight: 1.5, fillColor: '#4caf50', fillOpacity: 0.3}).addTo(group);
@@ -793,9 +794,6 @@
         document.getElementById('main-formato').addEventListener('change', function(e) { document.getElementById('utm-options').style.display = (e.target.value === 'utm') ? 'flex' : 'none'; });
         function parseDMS(str) { var match = str.match(/(\d+)[^\d]+(\d+)[^\d]+([\d.,]+)[^\d]*([NSWE]?)/i); if(!match) return null; var deg = parseFloat(match[1]); var min = parseFloat(match[2]); var sec = parseFloat(match[3].replace(',','.')); var dec = deg + (min/60) + (sec/3600); var dir = match[4] ? match[4].toUpperCase() : ''; if (dir === 'S' || dir === 'W' || dir === 'O') dec = dec * -1; return dec; }
 
-        // =====================================================================
-        // ATUALIZAÇÃO: Extrator de Arquivos (Integrado GPX, PDF, CSV, TXT)
-        // =====================================================================
         async function lerArquivoEntrada(e) {
             var file = e.target.files[0]; if (!file) return;
             var fileNameStr = file.name.toLowerCase();
@@ -824,9 +822,6 @@
             e.target.value = '';
         }
 
-        // =====================================================================
-        // NOVO: Leitor e Extrator de Waypoints/Tracks do GPX
-        // =====================================================================
         function processarGPX(gpxText) {
             var parser = new DOMParser();
             var xmlDoc = parser.parseFromString(gpxText, "text/xml");
@@ -888,9 +883,6 @@
             if(memoria.lon.length > 1) { atualizarEditor(); atualizarMapa(true); mostrarToast("Poligonal gerada!"); }
         }
 
-        // ==========================================
-        // LEITOR DE COORDENADAS REESCRITO (À PROVA DE FALHAS DD)
-        // ==========================================
         function processarLevantamento() {
             var txt = document.getElementById('main-texto').value; if(!txt.trim()) { alert("Insira dados."); return; }
             var chkMulti = document.getElementById('chk-multi-poly') && document.getElementById('chk-multi-poly').checked;
@@ -950,9 +942,6 @@
             atualizarEditor(); atualizarMapa(true);
         }
 
-        // ==========================================
-        // SISTEMA DE TABELA ARRASTÁVEL (DRAG & DROP)
-        // ==========================================
         let rowArrasteOriginal = null;
 
         function atualizarEditor() {
@@ -1017,7 +1006,7 @@
 
         function adicionarNovaLinha() {
             let lastBlk = memoria.bloco.length > 0 ? memoria.bloco[memoria.bloco.length-1] : 0;
-            memoria.nomes.push("P_Novo"); memoria.cotas.push(0); memoria.lon.push(-44.225); // Coord Default Centro BR
+            memoria.nomes.push("P_Novo"); memoria.cotas.push(0); memoria.lon.push(-44.225); 
             memoria.lat.push(-20.076); memoria.confs.push(""); memoria.bloco.push(lastBlk);
             atualizarEditor(); atualizarMapa(false);
             mostrarToast("Novo vértice adicionado no final da tabela. Edite as coordenadas!");
@@ -1046,7 +1035,6 @@
                 } catch(e) { ptsPPorBloco[blk].push({x:0, y:0}); }
 
                 L.circleMarker(ll, {radius:4, color:'#0098ff', fillColor:'#1e1e1e', fillOpacity:1, weight:2}).addTo(cPt);
-                // PADRÃO ONR/SIGEF: Apenas o nome para não poluir
                 L.marker(ll, {opacity:0}).bindTooltip(memoria.nomes[i], {permanent:true, direction:'right', className:'etiqueta-mapa'}).addTo(cTxt);
             }
 
@@ -1056,7 +1044,6 @@
                 var pts = ptsPorBloco[blk]; var ptsP = ptsPPorBloco[blk];
                 if(pts.length >= 2) { L.polyline(pts, {color:'#0098ff', weight:2}).addTo(cPoly); }
                 if(pts.length >= 3) {
-                    // PADRÃO ONR: Preenchimento azul claro
                     L.polygon(pts, {color:'#0098ff', weight:2, fillColor:'#0098ff', fillOpacity:0.2}).addTo(cPoly); 
                     var a = 0, p = 0; 
                     for(var j=0; j<ptsP.length; j++) { 
@@ -1079,10 +1066,6 @@
             gerenciadorCamadas.unshift({ id: 'rtk_text', nome: '📍 Textos & Cotas', leafletLayer: cTxt, visivel: true, tipo: 'rtk_text' });
             renderizarGestorCamadas();
         }
-
-        // ====================================================================
-        // FUNÇÕES DATAGEOSIS (Curvas, Perfil, Relatório, 3D)
-        // ====================================================================
 
         function adicionarCotasNasCurvas(geoJsonLines, colorHex, layerGroup) {
             if(!geoJsonLines || !geoJsonLines.features) return;
@@ -1186,10 +1169,6 @@
             else { map3dInstance.addSource('rtk-polygon', { 'type': 'geojson', 'data': geojson }); map3dInstance.addLayer({ 'id': 'rtk-fill', 'type': 'fill', 'source': 'rtk-polygon', 'paint': { 'fill-color': '#0098ff', 'fill-opacity': 0.3 } }); map3dInstance.addLayer({ 'id': 'rtk-line', 'type': 'line', 'source': 'rtk-polygon', 'paint': { 'line-color': '#0098ff', 'line-width': 3 } }); }
         }
 
-        // ====================================================================
-        // BASES EXTERNAS E GESTOR DE CAMADAS
-        // ====================================================================
-
         function processarGeoJSON_NoMapa(geojsonBruto, nomeOriginal, corOpcional, focarMapa, customWeight) {
             const idNovaCamada = 'shp_layer_' + camadaIdCounter++; const defaultColor = corOpcional || getRandomColor();
             if(geojsonBruto.features) { geojsonBruto.features.forEach(f => { if(f.properties) { Object.keys(f.properties).forEach(k => { if(colunasGlobais[k] === undefined) colunasGlobais[k] = true; }); } }); } renderizarFiltroColunas(); 
@@ -1230,10 +1209,6 @@
         function removerCamada(id) { var i = gerenciadorCamadas.findIndex(x => x.id === id); if(i !== -1){ map.removeLayer(gerenciadorCamadas[i].leafletLayer); var removida = gerenciadorCamadas.splice(i, 1)[0]; renderizarGestorCamadas(); if(removida.tipo === 'cad') { atualizarDropdownCAD(); if(gerenciadorCamadas.filter(c => c.tipo === 'cad').length === 0) inicializarSistemaCAD(); } } }
         function atualizarOrdemZIndexMap() { var camadasReversas = gerenciadorCamadas.slice().reverse(); camadasReversas.forEach(camada => { if(camada.visivel && camada.leafletLayer.bringToFront) camada.leafletLayer.bringToFront(); }); }
 
-        // ====================================================================
-        // EXPORTAÇÕES (CSV, DXF, KMZ, GEOJSON E PLANILHA XLSX)
-        // ====================================================================
-
         function obterCoordenadasExportacao() { var fmtOut = document.getElementById('out-formato').value; var epsgU = "+proj=longlat +datum=WGS84 +no_defs"; var epsgD = (fmtOut === 'utm') ? obterEpsgEntrada() : epsgU; var pts = []; for(var i=0; i<memoria.lon.length; i++) { var c = proj4(epsgU, epsgD, [memoria.lon[i], memoria.lat[i]]); pts.push({ x: c[0], y: c[1], z: memoria.cotas[i], nome: memoria.nomes[i] }); } return pts; }
         
         function obterRecorteFeatures() { 
@@ -1248,45 +1223,80 @@
         function nFormat(val) { let n = Number(val); if (isNaN(n) || !isFinite(n)) return "0.0000"; return n.toFixed(4); }
 
         // =====================================================================
-        // VERSÃO CORRIGIDA: Alinhada com a estrutura exata do modelo XLSX
+        // GERADOR EXCELJS AVANÇADO (Cores, Bordas, Tamanhos)
         // =====================================================================
-        function baixarPlanilhaTopograficaXLSX() {
+        async function baixarPlanilhaTopograficaXLSX() {
             if(memoria.lon.length < 2) return mostrarToast("Necessário ao menos 2 pontos para exportar a planilha.");
 
-            var wb = XLSX.utils.book_new();
+            if (typeof ExcelJS === 'undefined') {
+                alert("As bibliotecas ExcelJS e FileSaver não foram carregadas.");
+                return;
+            }
+
+            mostrarToast("Aplicando cores e bordas na planilha...");
+
+            var wb = new ExcelJS.Workbook();
             var datum = document.getElementById('main-datum').value;
             
             // =======================================================
             // ABA 1: RESUMO DO LEVANTAMENTO
             // =======================================================
-            var wsResumoData = [
-                ["MEMORIAL DESCRITIVO & RESUMO"], // Linha 1
-                [], // Linha 2 vazia
-                [], // Linha 3 vazia
-                ["Proprietário", "Sebastião Antônio ..."], // Linha 4
-                ["Responsável Técnico", "Hélio Silvânio Pinto (Téc. Topografia)"], // Linha 5
-                ["Localização", "Área Rural de São Joaquim / N. Sra. da Paz"], // Linha 6
-                ["Quantidade de Vértices", memoria.lon.length], // Linha 7
-                ["Perímetro Total (m)", ultimoPerimetroCalculado || 0], // Linha 8
-                ["Área Topográfica (m²)", ultimaAreaCalculada || 0] // Linha 9
+            var wsResumo = wb.addWorksheet("Resumo do Levantamento", {
+                pageSetup: { paperSize: 9, orientation: 'portrait', margins: { left: 0.7, right: 0.7, top: 0.75, bottom: 0.75 } }
+            });
+            
+            wsResumo.columns = [ { width: 30 }, { width: 50 } ];
+
+            // Linha 1: Título com Fundo Verde Escuro e Fonte Branca
+            wsResumo.mergeCells('A1:B1');
+            var titleCell = wsResumo.getCell('A1');
+            titleCell.value = "MEMORIAL DESCRITIVO & RESUMO";
+            titleCell.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
+            titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF107C41' } }; 
+            titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+            titleCell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+            wsResumo.getRow(1).height = 30;
+
+            var resumoDados = [
+                ["Proprietário", "Área de Interesse"],
+                ["Responsável Técnico", "Luigi Alves Bortoloto (Téc. em Edificações)"],
+                ["Localização", "Igarapé, MG"],
+                ["Quantidade de Vértices", memoria.lon.length],
+                ["Perímetro Total (m)", ultimoPerimetroCalculado ? parseFloat(ultimoPerimetroCalculado.toFixed(2)) : 0],
+                ["Área Topográfica (m²)", ultimaAreaCalculada ? parseFloat(ultimaAreaCalculada.toFixed(2)) : 0]
             ];
-            
-            var wsResumo = XLSX.utils.aoa_to_sheet(wsResumoData);
-            
-            // Mesclar células do título (A1 até C1)
-            wsResumo["!merges"] = [ { s: {r:0, c:0}, e: {r:0, c:2} } ];
-            // Configurar largura das colunas (Coluna A e B)
-            wsResumo["!cols"] = [ {wch: 25}, {wch: 55} ];
-            
-            // Força a formatação visual de número com duas casas (0.00)
-            if(wsResumo["B8"]) wsResumo["B8"].z = "0.00"; 
-            if(wsResumo["B9"]) wsResumo["B9"].z = "0.00";
-            
-            XLSX.utils.book_append_sheet(wb, wsResumo, "Resumo do Levantamento");
+
+            // Inserir dados a partir da linha 4
+            var rowStart = 4;
+            resumoDados.forEach((linha, index) => {
+                var r = wsResumo.getRow(rowStart + index);
+                r.getCell(1).value = linha[0];
+                r.getCell(2).value = linha[1];
+                
+                // Estilo da coluna A (Chaves / Labels) com fundo cinza
+                r.getCell(1).font = { bold: true };
+                r.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+                r.getCell(1).border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+                r.getCell(1).alignment = { vertical: 'middle' };
+                
+                // Estilo da coluna B (Valores)
+                r.getCell(2).border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+                r.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+                
+                // Aplicar máscara numérica caso seja um número calculado
+                if (typeof linha[1] === 'number' && index >= 4) {
+                    r.getCell(2).numFmt = '#,##0.00';
+                    r.getCell(2).alignment = { horizontal: 'right' };
+                }
+            });
 
             // =======================================================
             // ABA 2: DADOS DO PERÍMETRO
             // =======================================================
+            var wsDados = wb.addWorksheet("Dados do Perímetro", {
+                pageSetup: { paperSize: 9, orientation: 'landscape', margins: { left: 0.5, right: 0.5, top: 0.5, bottom: 0.5 } }
+            });
+
             var epsgU = "+proj=longlat +datum=WGS84 +no_defs";
             var zona = document.getElementById('main-zona').value || 23;
             var hemi = document.getElementById('main-hemi').value === 'S' ? '+south ' : '';
@@ -1303,70 +1313,90 @@
                 }
             }
 
-            var wsDadosData = [
-                ["TABELA COMPLETA DE AZIMUTES, DISTÂNCIAS E COORDENADAS"], // Linha 1
-                [], // Linha 2
-                [], // Linha 3
-                [`Sistema de Projeção: UTM / ${datum}`], // Linha 4
-                ["Vértice Inicial (De)", "Vértice Final (Para)", "Azimute (UTM)", "Distância (m)", "Coordenada E (m)", "Coordenada N (m)"] // Linha 5
+            wsDados.columns = [
+                { width: 18 }, { width: 18 }, { width: 20 }, { width: 15 }, { width: 22 }, { width: 22 }
             ];
 
+            // Título Aba 2
+            wsDados.mergeCells('A1:F1');
+            var title2 = wsDados.getCell('A1');
+            title2.value = "TABELA COMPLETA DE AZIMUTES, DISTÂNCIAS E COORDENADAS";
+            title2.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
+            title2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF107C41' } };
+            title2.alignment = { horizontal: 'center', vertical: 'middle' };
+            title2.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+            wsDados.getRow(1).height = 30;
+
+            // Sistema de Projeção
+            wsDados.mergeCells('A4:F4');
+            var sisCell = wsDados.getCell('A4');
+            sisCell.value = `Sistema de Projeção: UTM / ${datum}`;
+            sisCell.font = { bold: true, color: { argb: 'FF333333' } };
+            sisCell.alignment = { horizontal: 'center' };
+            sisCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFEFEF' } };
+            sisCell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+
+            // Cabeçalho da Tabela - Fundo Azul e Letra Branca
+            var cabecalho = ["Vértice Inicial (De)", "Vértice Final (Para)", "Azimute (UTM)", "Distância (m)", "Coordenada E (m)", "Coordenada N (m)"];
+            var rowCab = wsDados.getRow(5);
+            cabecalho.forEach((texto, idx) => {
+                var cell = rowCab.getCell(idx + 1);
+                cell.value = texto;
+                cell.font = { bold: true, color: {argb: 'FFFFFFFF'} };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF007ACC' } }; 
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+            });
+
+            var currRow = 6;
+            
+            // Função para aplicar bordas e alinhamentos
+            function estiloCelula(cell, val, isNum) {
+                cell.value = val;
+                cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                if(isNum) {
+                    cell.numFmt = '#,##0.00';
+                    cell.alignment = { horizontal: 'right' };
+                }
+            }
+
             if(coordsUTM.length > 0) {
-                // Linha 6: Amarração de Partida com traços e sem distância (Exatamente como na sua imagem)
-                wsDadosData.push([
-                    "-", 
-                    coordsUTM[0].nome, 
-                    "------", 
-                    null, // Deixa a distância em branco nativamente
-                    coordsUTM[0].e, // Número puro (sem replace)
-                    coordsUTM[0].n  // Número puro
-                ]);
+                var r0 = wsDados.getRow(currRow++);
+                estiloCelula(r0.getCell(1), "-", false);
+                estiloCelula(r0.getCell(2), coordsUTM[0].nome, false);
+                estiloCelula(r0.getCell(3), "------", false);
+                estiloCelula(r0.getCell(4), null, false); 
+                estiloCelula(r0.getCell(5), coordsUTM[0].e, true);
+                estiloCelula(r0.getCell(6), coordsUTM[0].n, true);
                 
                 for(var i = 0; i < coordsUTM.length; i++) {
                     var pProx = (i + 1) % coordsUTM.length;
                     if(i === coordsUTM.length - 1 && coordsUTM[i].nome === coordsUTM[pProx].nome) break;
 
                     var calc = calcAzimuteDist(coordsUTM[i].e, coordsUTM[i].n, coordsUTM[pProx].e, coordsUTM[pProx].n);
+                    var rx = wsDados.getRow(currRow++);
                     
-                    wsDadosData.push([
-                        coordsUTM[i].nome,
-                        coordsUTM[pProx].nome,
-                        calc.azimute,
-                        parseFloat(calc.dist), // Número puro
-                        coordsUTM[pProx].e,    // Número puro
-                        coordsUTM[pProx].n     // Número puro
-                    ]);
-                }
-            }
-
-            var wsDados = XLSX.utils.aoa_to_sheet(wsDadosData);
-            
-            // Mesclas de cabeçalho da Tabela
-            wsDados["!merges"] = [
-                { s: {r:0, c:0}, e: {r:0, c:5} }, // Título da tabela expandido
-                { s: {r:3, c:0}, e: {r:3, c:5} }  // Sistema de Projeção expandido
-            ];
-            
-            // Configurar a largura das colunas A, B, C, D, E, F para ficarem espaçosas
-            wsDados["!cols"] = [ {wch: 18}, {wch: 18}, {wch: 18}, {wch: 15}, {wch: 20}, {wch: 20} ];
-
-            // Varredura para aplicar a máscara padrão (0.00) nas colunas de medidas/coordenadas
-            var range = XLSX.utils.decode_range(wsDados['!ref']);
-            for(var R = 5; R <= range.e.r; ++R) { // Pula o cabeçalho (começa da linha 6/index 5)
-                for(var C = 3; C <= 5; ++C) { // Analisa as colunas D(3), E(4) e F(5)
-                    var cell_ref = XLSX.utils.encode_cell({c:C, r:R});
-                    var cell = wsDados[cell_ref];
-                    if(cell && cell.t === 'n') {
-                        cell.z = "0.00"; // Força o Excel a exibir como número topográfico "0,00"
+                    estiloCelula(rx.getCell(1), coordsUTM[i].nome, false);
+                    estiloCelula(rx.getCell(2), coordsUTM[pProx].nome, false);
+                    estiloCelula(rx.getCell(3), calc.azimute, false);
+                    estiloCelula(rx.getCell(4), parseFloat(calc.dist), true);
+                    estiloCelula(rx.getCell(5), coordsUTM[pProx].e, true);
+                    estiloCelula(rx.getCell(6), coordsUTM[pProx].n, true);
+                    
+                    if(i % 2 === 0) {
+                        for(var c=1; c<=6; c++) {
+                            rx.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF9F9F9' } };
+                        }
                     }
                 }
             }
 
-            XLSX.utils.book_append_sheet(wb, wsDados, "Dados do Perímetro");
-
-            // Aciona o download
-            XLSX.writeFile(wb, "tabela_topografica_completa.xlsx");
-            mostrarToast("Planilha XLSX gerada na estrutura exata do modelo!");
+            wb.xlsx.writeBuffer().then(function(buffer) {
+                var blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                saveAs(blob, "tabela_topografica_completa.xlsx");
+                mostrarToast("Planilha XLSX gerada com bordas e cores!");
+            });
         }
 
         function exportDxfEntity(layer, epsgU, epsgD, lName, hexColor) {
@@ -1427,10 +1457,6 @@
         }
 
         function extractGeoJsonEntities(layer, properties, featuresArr) { if (layer instanceof L.LayerGroup || layer instanceof L.FeatureGroup) { layer.eachLayer(sub => extractGeoJsonEntities(sub, properties, featuresArr)); } else { try { var f; if(layer instanceof L.Circle) { f = turf.circle([layer.getLatLng().lng, layer.getLatLng().lat], layer.getRadius(), {units: 'meters'}); } else { f = layer.toGeoJSON(); } f.properties = properties || {}; featuresArr.push(f); } catch(e) {} } }
-
-        // ====================================================================
-        // CONVERSOR SIG-RI
-        // ====================================================================
 
         function toggleConvParams(side) { var fmt = document.getElementById('conv-fmt-' + side).value; var optDiv = document.getElementById('conv-utm-' + side + '-options'); if(optDiv) optDiv.style.display = (fmt === 'utm') ? 'flex' : 'none'; }
 
