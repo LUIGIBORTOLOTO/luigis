@@ -1248,7 +1248,7 @@
         function nFormat(val) { let n = Number(val); if (isNaN(n) || !isFinite(n)) return "0.0000"; return n.toFixed(4); }
 
         // =====================================================================
-        // NOVO: Gerador Nativo de XLSX Estruturado em Abas
+        // VERSÃO CORRIGIDA: Alinhada com a estrutura exata do modelo XLSX
         // =====================================================================
         function baixarPlanilhaTopograficaXLSX() {
             if(memoria.lon.length < 2) return mostrarToast("Necessário ao menos 2 pontos para exportar a planilha.");
@@ -1257,30 +1257,29 @@
             var datum = document.getElementById('main-datum').value;
             
             // --- ABA 1: RESUMO DO LEVANTAMENTO ---
+            // Linhas 2 e 3 vazias conforme o modelo extraído
             var wsResumoData = [
-                ["MEMORIAL DESCRITIVO & RESUMO", "", ""],
-                ["", "", ""],
-                ["", "", ""],
+                ["MEMORIAL DESCRITIVO & RESUMO"],
+                [],
+                [],
                 ["Proprietário", ""], 
                 ["Responsável Técnico", "Luigi Alves Bortoloto (Técnico em Edificações)"],
                 ["Localização", "Igarapé, Minas Gerais"],
                 ["Quantidade de Vértices", memoria.lon.length],
-                ["Perímetro Total (m)", ultimoPerimetroCalculado ? ultimoPerimetroCalculado.toFixed(2).replace('.', ',') : "0,00"],
-                ["Área Topográfica (m²)", ultimaAreaCalculada ? ultimaAreaCalculada.toFixed(2).replace('.', ',') : "0,00"]
+                ["Perímetro Total (m)", ultimoPerimetroCalculado ? parseFloat(ultimoPerimetroCalculado.toFixed(2)) : 0],
+                ["Área Topográfica (m²)", ultimaAreaCalculada ? parseFloat(ultimaAreaCalculada.toFixed(2)) : 0]
             ];
+            
             var wsResumo = XLSX.utils.aoa_to_sheet(wsResumoData);
+            
+            // Força a formatação de número com duas casas decimais nas células de resultado
+            if(wsResumo["B8"]) wsResumo["B8"].z = "0.00"; // Perímetro
+            if(wsResumo["B9"]) wsResumo["B9"].z = "0.00"; // Área
+            
             XLSX.utils.book_append_sheet(wb, wsResumo, "Resumo do Levantamento");
 
             // --- ABA 2: DADOS DO PERÍMETRO ---
-            var wsDadosData = [
-                ["TABELA COMPLETA DE AZIMUTES, DISTÂNCIAS E COORDENADAS", "", "", "", "", ""],
-                ["", "", "", "", "", ""],
-                ["", "", "", "", "", ""],
-                [`Sistema de Projeção: UTM / ${datum}`, "", "", "", "", ""],
-                ["Vértice Inicial (De)", "Vértice Final (Para)", "Azimute (UTM)", "Distância (m)", "Coordenada E (m)", "Coordenada N (m)"]
-            ];
-
-            // Forçando UTM para exportar coordenadas com distâncias exatas conforme a sua base
+            // Forçando o cálculo em UTM com base no Datum ativo do sistema
             var epsgU = "+proj=longlat +datum=WGS84 +no_defs";
             var zona = document.getElementById('main-zona').value || 23;
             var hemi = document.getElementById('main-hemi').value === 'S' ? '+south ' : '';
@@ -1297,15 +1296,32 @@
                 }
             }
 
+            // Montagem da tabela respeitando as 3 linhas superiores de distanciamento
+            var wsDadosData = [
+                ["TABELA COMPLETA DE AZIMUTES, DISTÂNCIAS E COORDENADAS"],
+                [],
+                [],
+                [`Sistema de Projeção: UTM / ${datum}`],
+                ["Vértice Inicial (De)", "Vértice Final (Para)", "Azimute (UTM)", "Distância (m)", "Coordenada E (m)", "Coordenada N (m)"]
+            ];
+
             if(coordsUTM.length > 0) {
-                // Origem da Tabela
-                wsDadosData.push(["-", coordsUTM[0].nome, "------", "", coordsUTM[0].e.toFixed(2).replace('.', ','), coordsUTM[0].n.toFixed(2).replace('.', ',')]);
+                // Linha 6: Amarração inicial com os traços idênticos ao padrão do seu arquivo
+                wsDadosData.push([
+                    "-", 
+                    coordsUTM[0].nome, 
+                    "------", 
+                    "", 
+                    parseFloat(coordsUTM[0].e.toFixed(2)), 
+                    parseFloat(coordsUTM[0].n.toFixed(2))
+                ]);
                 
-                // Iterando azimutes e distâncias
+                // Loops sequenciais calculando os azimutes e as distâncias reais entre os vértices
                 for(var i = 0; i < coordsUTM.length; i++) {
                     var pProx = (i + 1) % coordsUTM.length;
                     
-                    if(i === coordsUTM.length - 1 && coordsUTM[i].nome === coordsUTM[pProx].nome) break; 
+                    // Condição de parada para poligonais que já fecham o perímetro no último ponto digitado
+                    if(i === coordsUTM.length - 1 && coordsUTM[i].nome === coordsUTM[pProx].nome) break;
 
                     var calc = calcAzimuteDist(coordsUTM[i].e, coordsUTM[i].n, coordsUTM[pProx].e, coordsUTM[pProx].n);
                     
@@ -1313,19 +1329,36 @@
                         coordsUTM[i].nome,
                         coordsUTM[pProx].nome,
                         calc.azimute,
-                        parseFloat(calc.dist).toFixed(2).replace('.', ','),
-                        coordsUTM[pProx].e.toFixed(2).replace('.', ','),
-                        coordsUTM[pProx].n.toFixed(2).replace('.', ',')
+                        parseFloat(calc.dist),
+                        parseFloat(coordsUTM[pProx].e.toFixed(2)),
+                        parseFloat(coordsUTM[pProx].n.toFixed(2))
                     ]);
                 }
             }
 
             var wsDados = XLSX.utils.aoa_to_sheet(wsDadosData);
+            
+            // Varredura de células para aplicar a máscara numérica padrão de topografia (0.00) 
+            // nas colunas D (Distância), E (Coordenada E) e F (Coordenada N) a partir da linha 6
+            for (var cellRef in wsDados) {
+                if (cellRef[0] === '!') continue; 
+                var col = cellRef[0];
+                var rowNum = parseInt(cellRef.substring(1));
+                
+                if (rowNum >= 6) { 
+                    if (col === 'D' || col === 'E' || col === 'F') {
+                        if (wsDados[cellRef].t === 'n') {
+                            wsDados[cellRef].z = "0.00";
+                        }
+                    }
+                }
+            }
+
             XLSX.utils.book_append_sheet(wb, wsDados, "Dados do Perímetro");
 
-            // Aciona o download do Excel Nativo
+            // Exportação com nome padronizado
             XLSX.writeFile(wb, "tabela_topografica_completa.xlsx");
-            mostrarToast("Planilha XLSX exportada com sucesso!");
+            mostrarToast("Planilha XLSX gerada na estrutura exata do modelo!");
         }
 
         function exportDxfEntity(layer, epsgU, epsgD, lName, hexColor) {
