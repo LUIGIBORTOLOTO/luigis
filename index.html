@@ -997,19 +997,17 @@
                         var c1 = parseDMS(partesDMS[0]); var c2 = parseDMS(partesDMS[1]);
                         if (partesDMS[0].toUpperCase().includes('W') || partesDMS[0].toUpperCase().includes('O')) { x = c1; y = c2; } else if (partesDMS[1].toUpperCase().includes('W') || partesDMS[1].toUpperCase().includes('O')) { x = c2; y = c1; } else { y = c1; x = c2; } 
                     }
-                } else if (fmtIn === 'decimal') {
-                    let matchNums = linhaLimpa.match(/-?\d+([.,]\d+)?/g);
-                    if (matchNums && matchNums.length >= 2) {
-                        x = parseFloat(matchNums[0].replace(',', '.'));
-                        y = parseFloat(matchNums[1].replace(',', '.'));
-                        if(matchNums.length > 2) z = parseFloat(matchNums[2].replace(',', '.'));
-                    }
                 } else {
                     var partes = linhaLimpa.split(/[\t;]+/); if (partes.length < 2) partes = linhaLimpa.split(',');
                     var numeros = []; var textos = [];
-                    for(var p = 0; p < partes.length; p++) { var val = partes[p].trim(); var numVal = parseFloat(val.replace(',', '.')); if(!isNaN(numVal) && val !== "") numeros.push(numVal); else if(val !== "" && isNaN(numVal)) textos.push(val); }
+                    for(var p = 0; p < partes.length; p++) { 
+                        var val = partes[p].trim(); 
+                        if (/^-?\d+([.,]\d+)?$/.test(val)) { numeros.push(parseFloat(val.replace(',', '.'))); } 
+                        else if (val !== "") { textos.push(val); } 
+                    }
+
                     if (numeros.length >= 2) {
-                        nomeMarco = textos.length > 0 ? textos[0] : (partes[1] && isNaN(parseFloat(partes[1])) ? partes[1] : "P" + (i+1));
+                        nomeMarco = textos.length > 0 ? textos[0] : "P" + (i+1);
                         if(fmtIn === 'utm') {
                             var pN = numeros.find(n => n > 1000000 && n < 10000000); var pE = numeros.find(n => n > 100000 && n < 1000000 && n !== pN);
                             if(pN && pE) { 
@@ -1019,7 +1017,17 @@
                                 if(maxIdx !== -1 && maxIdx + 1 < numeros.length) { z = numeros[maxIdx + 1]; }
                                 else { var res = numeros.filter(n => n !== pN && n !== pE); z = res.length > 0 ? res[0] : 0; }
                             } else { x = numeros[0]; y = numeros[1]; if(numeros.length > 2) z = numeros[2]; }
-                        } else { x = numeros[0]; y = numeros[1]; if(numeros.length > 2) z = numeros[2]; }
+                        } else { 
+                            x = numeros[0]; y = numeros[1]; if(numeros.length > 2) z = numeros[2]; 
+                        }
+                    } else if (fmtIn === 'decimal') {
+                        let matchNums = linhaLimpa.match(/-?\d+([.,]\d+)?/g);
+                        if (matchNums && matchNums.length >= 2) {
+                            var nLen = matchNums.length;
+                            x = parseFloat(matchNums[nLen - 2].replace(',', '.'));
+                            y = parseFloat(matchNums[nLen - 1].replace(',', '.'));
+                            if(nLen >= 3 && textos.length === 0) { nomeMarco = matchNums[0]; }
+                        }
                     }
                 }
 
