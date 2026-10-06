@@ -193,12 +193,19 @@
                 </div>
             </div>
             
-            <div class="card">
+<comment-tag id="1">            <div class="card">
                 <div class="card-title">Processador (CSV, TXT, PDF, GPX)</div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                     <label style="margin:0; font-size:9px;">Cole os dados ou carregue o arquivo</label>
                     <button class="btn btn-outline btn-small" onclick="document.getElementById('arquivo-csv').click()">📂 LER ARQUIVO</button>
-                    <input type="file" id="arquivo-csv" accept=".csv,.txt,.pdf,.gpx" style="display:none;" onchange="lerArquivoEntrada(event)">
+                    <input type="file" id="arquivo-csv" accept=".csv,.txt,.pdf,.gpx" style="display:none;" onchange="lerArquivoEntrada(event)"></comment-tag id="1" text="            <div class='card'>
+                <div class='card-title'>Processador (CSV, TXT, PDF, GPX, KML, KMZ)</div>
+                <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;'>
+                    <label style='margin:0; font-size:9px;'>Cole os dados ou carregue o arquivo</label>
+                    <button class='btn btn-outline btn-small' onclick='document.getElementById(&quot;arquivo-csv&quot;).click()'>📂 LER ARQUIVO</button>
+                    <input type='file' id='arquivo-csv' accept='.csv,.txt,.pdf,.gpx,.kml,.kmz' style='display:none;' onchange='lerArquivoEntrada(event)'>
+
+A alteração adiciona o KML e KMZ no título da seção e, o mais importante, adiciona '.kml,.kmz' na propriedade 'accept' do input de arquivo para que o navegador permita selecionar esses formatos." type="suggestion">
                 </div>
                 <textarea id="main-texto" style="height: 100px;" placeholder="ID; Coordenada X (Long); Coordenada Y (Lat)"></textarea>
                 
@@ -808,13 +815,42 @@
                     document.getElementById('main-texto').value = linhas.join('\n'); mostrarToast("PDF Extraído.");
                 };
                 reader.readAsArrayBuffer(file);
-            } else if (fileNameStr.endsWith('.gpx')) {
+<comment-tag id="2">            } else if (fileNameStr.endsWith('.gpx')) {
                 var reader = new FileReader();
                 reader.onload = function(ev) {
                     processarGPX(ev.target.result);
                 };
                 reader.readAsText(file);
+            } else { </comment-tag id="2" text="            } else if (fileNameStr.endsWith('.gpx')) {
+                var reader = new FileReader();
+                reader.onload = function(ev) {
+                    processarGPX(ev.target.result);
+                };
+                reader.readAsText(file);
+            } else if (fileNameStr.endsWith('.kml')) {
+                var reader = new FileReader();
+                reader.onload = function(ev) { processarKML(ev.target.result); };
+                reader.readAsText(file);
+            } else if (fileNameStr.endsWith('.kmz')) {
+                var reader = new FileReader();
+                reader.onload = async function(ev) {
+                    try {
+                        var zip = await JSZip.loadAsync(ev.target.result);
+                        var kmlFileName = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml'));
+                        if (kmlFileName) {
+                            var kmlText = await zip.files[kmlFileName].async('text');
+                            processarKML(kmlText);
+                        } else {
+                            mostrarToast('Arquivo KML não encontrado dentro do KMZ.');
+                        }
+                    } catch (err) {
+                        mostrarToast('Erro ao ler arquivo KMZ.');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
             } else { 
+
+Adicionei as condicionais para ler arquivos .kml e .kmz. No caso do KMZ, utilizamos o FileReader como ArrayBuffer e a biblioteca JSZip (já importada no seu projeto) para descompactar e ler o KML interno, repassando para a nova função processarKML." type="suggestion">
                 var reader = new FileReader(); 
                 reader.onload = ev => document.getElementById('main-texto').value = ev.target.result; 
                 reader.readAsText(file); 
@@ -854,11 +890,80 @@
                 memoria.bloco.push(0);
             }
             
-            document.getElementById('main-formato').value = 'decimal';
+<comment-tag id="3">            document.getElementById('main-formato').value = 'decimal';
             atualizarEditor(); 
             atualizarMapa(true);
             mostrarToast("GPX Importado com sucesso!");
+        }</comment-tag id="3" text="            document.getElementById('main-formato').value = 'decimal';
+            atualizarEditor(); 
+            atualizarMapa(true);
+            mostrarToast('GPX Importado com sucesso!');
         }
+
+        function processarKML(kmlText) {
+            var kmlDom = new DOMParser().parseFromString(kmlText, 'text/xml');
+            var geojson = toGeoJSON.kml(kmlDom);
+            
+            var features = geojson.features || [];
+            if (features.length === 0) {
+                mostrarToast('Nenhum ponto válido encontrado no KML/KMZ.');
+                return;
+            }
+
+            memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [], bloco: [] };
+            var ptCount = 1;
+            var currentBloco = 0;
+
+            features.forEach((feature) => {
+                var geomType = feature.geometry ? feature.geometry.type : null;
+                var coords = feature.geometry ? feature.geometry.coordinates : null;
+                var baseName = feature.properties && feature.properties.name ? feature.properties.name : 'P_' + ptCount;
+
+                if (geomType === 'Point') {
+                    memoria.nomes.push(baseName);
+                    memoria.cotas.push(coords[2] || 0);
+                    memoria.lon.push(coords[0]);
+                    memoria.lat.push(coords[1]);
+                    memoria.confs.push('');
+                    memoria.bloco.push(currentBloco);
+                    ptCount++;
+                } else if (geomType === 'LineString') {
+                    coords.forEach((coord, idx) => {
+                        memoria.nomes.push(baseName + '_' + (idx+1));
+                        memoria.cotas.push(coord[2] || 0);
+                        memoria.lon.push(coord[0]);
+                        memoria.lat.push(coord[1]);
+                        memoria.confs.push('');
+                        memoria.bloco.push(currentBloco);
+                        ptCount++;
+                    });
+                    currentBloco++;
+                } else if (geomType === 'Polygon') {
+                     coords[0].forEach((coord, idx) => {
+                        memoria.nomes.push(baseName + '_' + (idx+1));
+                        memoria.cotas.push(coord[2] || 0);
+                        memoria.lon.push(coord[0]);
+                        memoria.lat.push(coord[1]);
+                        memoria.confs.push('');
+                        memoria.bloco.push(currentBloco);
+                        ptCount++;
+                    });
+                    currentBloco++;
+                }
+            });
+
+            if (memoria.lon.length === 0) {
+                 mostrarToast('Nenhum dado válido processado.');
+                 return;
+            }
+
+            document.getElementById('main-formato').value = 'decimal';
+            atualizarEditor(); 
+            atualizarMapa(true);
+            mostrarToast('KMZ/KML Importado com sucesso!');
+        }
+
+Adicionada a função principal de processamento do KML. Ela converte o texto XML em GeoJSON usando a biblioteca toGeoJSON (já existente no projeto), itera pelas features (Pontos, Linhas e Polígonos), extrai as coordenadas (incluindo elevação Z) e as adiciona na tabela 'memoria' seguindo a lógica do processador de GPX." type="suggestion">
 
         function lerArquivoConversor(e) { var file = e.target.files[0]; if (!file) return; var reader = new FileReader(); reader.onload = function(ev) { document.getElementById('conv-texto-in').value = ev.target.result; mostrarToast("Arquivo carregado!"); }; reader.readAsText(file); e.target.value = ''; }
 
@@ -1498,3 +1603,5 @@
     </script>
 </body>
 </html>
+```eof
+*Sugestões adicionadas*
