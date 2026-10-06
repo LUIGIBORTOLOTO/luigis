@@ -140,7 +140,6 @@
         .toast { background: var(--accent); color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.5); opacity: 0; animation: fadeToast 2s forwards; }
         @keyframes fadeToast { 0% { opacity: 0; transform: translateY(20px); } 15% { opacity: 1; transform: translateY(0); } 85% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-20px); } }
 
-        /* Estilo dos Modais */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10001; align-items: center; justify-content: center; backdrop-filter: blur(3px);}
         .modal-content { background: var(--bg-panel); border: 1px solid var(--border); padding: 20px; border-radius: 8px; width: 80%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; flex-direction: column;}
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -193,19 +192,13 @@
                 </div>
             </div>
             
-<comment-tag id="1">            <div class="card">
-                <div class="card-title">Processador (CSV, TXT, PDF, GPX)</div>
+            <div class="card">
+                <div class="card-title">Processador (CSV, TXT, PDF, GPX, KML, KMZ)</div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                     <label style="margin:0; font-size:9px;">Cole os dados ou carregue o arquivo</label>
                     <button class="btn btn-outline btn-small" onclick="document.getElementById('arquivo-csv').click()">📂 LER ARQUIVO</button>
-                    <input type="file" id="arquivo-csv" accept=".csv,.txt,.pdf,.gpx" style="display:none;" onchange="lerArquivoEntrada(event)"></comment-tag id="1" text="            <div class='card'>
-                <div class='card-title'>Processador (CSV, TXT, PDF, GPX, KML, KMZ)</div>
-                <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;'>
-                    <label style='margin:0; font-size:9px;'>Cole os dados ou carregue o arquivo</label>
-                    <button class='btn btn-outline btn-small' onclick='document.getElementById(&quot;arquivo-csv&quot;).click()'>📂 LER ARQUIVO</button>
-                    <input type='file' id='arquivo-csv' accept='.csv,.txt,.pdf,.gpx,.kml,.kmz' style='display:none;' onchange='lerArquivoEntrada(event)'>
-
-A alteração adiciona o KML e KMZ no título da seção e, o mais importante, adiciona '.kml,.kmz' na propriedade 'accept' do input de arquivo para que o navegador permita selecionar esses formatos." type="suggestion">
+                    <!-- Aceitando os novos formatos de arquivo -->
+                    <input type="file" id="arquivo-csv" accept=".csv,.txt,.pdf,.gpx,.kml,.kmz" style="display:none;" onchange="lerArquivoEntrada(event)">
                 </div>
                 <textarea id="main-texto" style="height: 100px;" placeholder="ID; Coordenada X (Long); Coordenada Y (Lat)"></textarea>
                 
@@ -282,7 +275,7 @@ A alteração adiciona o KML e KMZ no título da seção e, o mais importante, a
                 
                 <label style="display:flex; align-items:center; gap:8px; margin-top:15px; background:#1e1e1e; padding:10px; border-radius:4px; border:1px solid var(--border); cursor:pointer; justify-content:center;">
                     <input type="checkbox" id="chk-recorte" checked style="width:auto;">
-                    ✂️ Exportar apenas o que está visível na tela (Clip)
+                    ✂️️ Exportar apenas o que está visível na tela (Clip)
                 </label>
             </div>
 
@@ -778,8 +771,118 @@ A alteração adiciona o KML e KMZ no título da seção e, o mais importante, a
         function toolInverterSentido() { mostrarToast("Clique na linha/polígono para INVERTER"); let clicou = false; map.once('click', function() { setTimeout(()=>{ if(!clicou) mostrarToast("Expirado."); }, 500); }); gerenciadorCamadas.forEach(c => { if(c.leafletLayer && c.leafletLayer.eachLayer) { c.leafletLayer.eachLayer(l => { l.once('click', function(e) { clicou = true; if(l instanceof L.Polyline) { let latlngs = l.getLatLngs(); if(l instanceof L.Polygon) { latlngs[0].reverse(); } else { latlngs.reverse(); } l.setLatLngs(latlngs); mostrarToast("Invertido!"); } }); }); } }); }
 
         // =======================================================
-        // NÚCLEO E PROCESSAMENTO DE VÉRTICES (À PROVA DE FALHAS PARA DD)
+        // LÓGICA ATUALIZADA: IMPORTAÇÃO KML/KMZ PARA CAIXA DE TEXTO
         // =======================================================
+
+        function processarGPX(gpxText) {
+            var parser = new DOMParser();
+            var xmlDoc = parser.parseFromString(gpxText, "text/xml");
+            
+            var pts = Array.from(xmlDoc.getElementsByTagName("trkpt")).concat(Array.from(xmlDoc.getElementsByTagName("wpt")));
+            
+            if (pts.length === 0) {
+                mostrarToast("Nenhum ponto válido encontrado no GPX.");
+                return;
+            }
+
+            var linhasTexto = [];
+            for (var i = 0; i < pts.length; i++) {
+                var pt = pts[i];
+                var lat = parseFloat(pt.getAttribute("lat"));
+                var lon = parseFloat(pt.getAttribute("lon"));
+                
+                var eleNode = pt.getElementsByTagName("ele")[0];
+                var z = eleNode ? parseFloat(eleNode.textContent) : 0;
+                
+                var nameNode = pt.getElementsByTagName("name")[0];
+                var nome = nameNode ? nameNode.textContent : "P_" + (i + 1);
+
+                linhasTexto.push(`${nome}; ${lon.toFixed(7)}; ${lat.toFixed(7)}; ${z}`);
+            }
+            
+            document.getElementById('main-texto').value = linhasTexto.join('\n');
+            document.getElementById('main-formato').value = 'decimal';
+            processarLevantamento();
+            mostrarToast("GPX lido e convertido com sucesso!");
+        }
+
+        function processarKML(kmlText) {
+            try {
+                var kmlDom = new DOMParser().parseFromString(kmlText, 'text/xml');
+                var geojson = toGeoJSON.kml(kmlDom);
+                var features = geojson.features || [];
+                
+                if (features.length === 0) {
+                    mostrarToast('Nenhuma geometria válida no KML/KMZ.');
+                    return;
+                }
+
+                var linhasTexto = [];
+                var ptCount = 1;
+
+                // Função recursiva robusta para suportar estruturas complexas de polígonos
+                function extrairCoords(geom, nomeBase) {
+                    if (!geom) return;
+                    if (geom.type === 'Point') {
+                        var c = geom.coordinates;
+                        if(c && c.length >= 2) {
+                            linhasTexto.push(`${nomeBase}; ${c[0].toFixed(7)}; ${c[1].toFixed(7)}; ${c[2] || 0}`);
+                            ptCount++;
+                        }
+                    } else if (geom.type === 'LineString') {
+                        if(geom.coordinates) geom.coordinates.forEach((c, idx) => {
+                            if(c && c.length >= 2) linhasTexto.push(`${nomeBase}_${idx+1}; ${c[0].toFixed(7)}; ${c[1].toFixed(7)}; ${c[2] || 0}`);
+                            ptCount++;
+                        });
+                        linhasTexto.push(""); // Quebra para separar blocos no mapa
+                    } else if (geom.type === 'Polygon') {
+                        if(geom.coordinates && geom.coordinates[0]) geom.coordinates[0].forEach((c, idx) => {
+                            if(c && c.length >= 2) linhasTexto.push(`${nomeBase}_${idx+1}; ${c[0].toFixed(7)}; ${c[1].toFixed(7)}; ${c[2] || 0}`);
+                            ptCount++;
+                        });
+                        linhasTexto.push("");
+                    } else if (geom.type === 'MultiLineString') {
+                        if(geom.coordinates) geom.coordinates.forEach((line, lIdx) => {
+                            if(line) line.forEach((c, idx) => {
+                                if(c && c.length >= 2) linhasTexto.push(`${nomeBase}_L${lIdx+1}_${idx+1}; ${c[0].toFixed(7)}; ${c[1].toFixed(7)}; ${c[2] || 0}`);
+                                ptCount++;
+                            });
+                            linhasTexto.push("");
+                        });
+                    } else if (geom.type === 'MultiPolygon') {
+                        if(geom.coordinates) geom.coordinates.forEach((poly, pIdx) => {
+                            if(poly && poly[0]) poly[0].forEach((c, idx) => {
+                                if(c && c.length >= 2) linhasTexto.push(`${nomeBase}_P${pIdx+1}_${idx+1}; ${c[0].toFixed(7)}; ${c[1].toFixed(7)}; ${c[2] || 0}`);
+                                ptCount++;
+                            });
+                            linhasTexto.push("");
+                        });
+                    } else if (geom.type === 'GeometryCollection') {
+                        if(geom.geometries) geom.geometries.forEach(g => extrairCoords(g, nomeBase));
+                    }
+                }
+
+                features.forEach((feature) => {
+                    var nome = (feature.properties && feature.properties.name) ? feature.properties.name : 'P_' + ptCount;
+                    extrairCoords(feature.geometry, nome);
+                });
+
+                if (linhasTexto.length === 0) {
+                     mostrarToast('Nenhuma coordenada extraída do arquivo.');
+                     return;
+                }
+
+                // Joga na textarea de forma nativa e força a plotagem na tela
+                document.getElementById('main-texto').value = linhasTexto.join('\n');
+                document.getElementById('main-formato').value = 'decimal';
+                processarLevantamento();
+                mostrarToast('KMZ/KML lido e processado na tabela!');
+
+            } catch (error) {
+                console.error("Erro ao processar KML:", error);
+                mostrarToast('Erro ao interpretar estrutura do arquivo.');
+            }
+        }
 
         var memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [], bloco: [] };
         var colunasGlobais = {}; 
@@ -815,17 +918,9 @@ A alteração adiciona o KML e KMZ no título da seção e, o mais importante, a
                     document.getElementById('main-texto').value = linhas.join('\n'); mostrarToast("PDF Extraído.");
                 };
                 reader.readAsArrayBuffer(file);
-<comment-tag id="2">            } else if (fileNameStr.endsWith('.gpx')) {
+            } else if (fileNameStr.endsWith('.gpx')) {
                 var reader = new FileReader();
-                reader.onload = function(ev) {
-                    processarGPX(ev.target.result);
-                };
-                reader.readAsText(file);
-            } else { </comment-tag id="2" text="            } else if (fileNameStr.endsWith('.gpx')) {
-                var reader = new FileReader();
-                reader.onload = function(ev) {
-                    processarGPX(ev.target.result);
-                };
+                reader.onload = function(ev) { processarGPX(ev.target.result); };
                 reader.readAsText(file);
             } else if (fileNameStr.endsWith('.kml')) {
                 var reader = new FileReader();
@@ -838,132 +933,24 @@ A alteração adiciona o KML e KMZ no título da seção e, o mais importante, a
                         var zip = await JSZip.loadAsync(ev.target.result);
                         var kmlFileName = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml'));
                         if (kmlFileName) {
-                            var kmlText = await zip.files[kmlFileName].async('text');
+                            var kmlText = await zip.files[kmlFileName].async("text");
                             processarKML(kmlText);
                         } else {
-                            mostrarToast('Arquivo KML não encontrado dentro do KMZ.');
+                            mostrarToast("Arquivo KML interno não encontrado no KMZ.");
                         }
                     } catch (err) {
-                        mostrarToast('Erro ao ler arquivo KMZ.');
+                        console.error(err);
+                        mostrarToast("Erro ao abrir ou descompactar o arquivo KMZ.");
                     }
                 };
                 reader.readAsArrayBuffer(file);
             } else { 
-
-Adicionei as condicionais para ler arquivos .kml e .kmz. No caso do KMZ, utilizamos o FileReader como ArrayBuffer e a biblioteca JSZip (já importada no seu projeto) para descompactar e ler o KML interno, repassando para a nova função processarKML." type="suggestion">
                 var reader = new FileReader(); 
                 reader.onload = ev => document.getElementById('main-texto').value = ev.target.result; 
                 reader.readAsText(file); 
             }
             e.target.value = '';
         }
-
-        function processarGPX(gpxText) {
-            var parser = new DOMParser();
-            var xmlDoc = parser.parseFromString(gpxText, "text/xml");
-            
-            var pts = Array.from(xmlDoc.getElementsByTagName("trkpt")).concat(Array.from(xmlDoc.getElementsByTagName("wpt")));
-            
-            if (pts.length === 0) {
-                mostrarToast("Nenhum ponto válido encontrado no GPX.");
-                return;
-            }
-
-            memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [], bloco: [] };
-            
-            for (var i = 0; i < pts.length; i++) {
-                var pt = pts[i];
-                var lat = parseFloat(pt.getAttribute("lat"));
-                var lon = parseFloat(pt.getAttribute("lon"));
-                
-                var eleNode = pt.getElementsByTagName("ele")[0];
-                var z = eleNode ? parseFloat(eleNode.textContent) : 0;
-                
-                var nameNode = pt.getElementsByTagName("name")[0];
-                var nome = nameNode ? nameNode.textContent : "P_" + (i + 1);
-
-                memoria.nomes.push(nome);
-                memoria.cotas.push(z);
-                memoria.lon.push(lon);
-                memoria.lat.push(lat);
-                memoria.confs.push("");
-                memoria.bloco.push(0);
-            }
-            
-<comment-tag id="3">            document.getElementById('main-formato').value = 'decimal';
-            atualizarEditor(); 
-            atualizarMapa(true);
-            mostrarToast("GPX Importado com sucesso!");
-        }</comment-tag id="3" text="            document.getElementById('main-formato').value = 'decimal';
-            atualizarEditor(); 
-            atualizarMapa(true);
-            mostrarToast('GPX Importado com sucesso!');
-        }
-
-        function processarKML(kmlText) {
-            var kmlDom = new DOMParser().parseFromString(kmlText, 'text/xml');
-            var geojson = toGeoJSON.kml(kmlDom);
-            
-            var features = geojson.features || [];
-            if (features.length === 0) {
-                mostrarToast('Nenhum ponto válido encontrado no KML/KMZ.');
-                return;
-            }
-
-            memoria = { nomes: [], cotas: [], lon: [], lat: [], confs: [], bloco: [] };
-            var ptCount = 1;
-            var currentBloco = 0;
-
-            features.forEach((feature) => {
-                var geomType = feature.geometry ? feature.geometry.type : null;
-                var coords = feature.geometry ? feature.geometry.coordinates : null;
-                var baseName = feature.properties && feature.properties.name ? feature.properties.name : 'P_' + ptCount;
-
-                if (geomType === 'Point') {
-                    memoria.nomes.push(baseName);
-                    memoria.cotas.push(coords[2] || 0);
-                    memoria.lon.push(coords[0]);
-                    memoria.lat.push(coords[1]);
-                    memoria.confs.push('');
-                    memoria.bloco.push(currentBloco);
-                    ptCount++;
-                } else if (geomType === 'LineString') {
-                    coords.forEach((coord, idx) => {
-                        memoria.nomes.push(baseName + '_' + (idx+1));
-                        memoria.cotas.push(coord[2] || 0);
-                        memoria.lon.push(coord[0]);
-                        memoria.lat.push(coord[1]);
-                        memoria.confs.push('');
-                        memoria.bloco.push(currentBloco);
-                        ptCount++;
-                    });
-                    currentBloco++;
-                } else if (geomType === 'Polygon') {
-                     coords[0].forEach((coord, idx) => {
-                        memoria.nomes.push(baseName + '_' + (idx+1));
-                        memoria.cotas.push(coord[2] || 0);
-                        memoria.lon.push(coord[0]);
-                        memoria.lat.push(coord[1]);
-                        memoria.confs.push('');
-                        memoria.bloco.push(currentBloco);
-                        ptCount++;
-                    });
-                    currentBloco++;
-                }
-            });
-
-            if (memoria.lon.length === 0) {
-                 mostrarToast('Nenhum dado válido processado.');
-                 return;
-            }
-
-            document.getElementById('main-formato').value = 'decimal';
-            atualizarEditor(); 
-            atualizarMapa(true);
-            mostrarToast('KMZ/KML Importado com sucesso!');
-        }
-
-Adicionada a função principal de processamento do KML. Ela converte o texto XML em GeoJSON usando a biblioteca toGeoJSON (já existente no projeto), itera pelas features (Pontos, Linhas e Polígonos), extrai as coordenadas (incluindo elevação Z) e as adiciona na tabela 'memoria' seguindo a lógica do processador de GPX." type="suggestion">
 
         function lerArquivoConversor(e) { var file = e.target.files[0]; if (!file) return; var reader = new FileReader(); reader.onload = function(ev) { document.getElementById('conv-texto-in').value = ev.target.result; mostrarToast("Arquivo carregado!"); }; reader.readAsText(file); e.target.value = ''; }
 
@@ -989,7 +976,7 @@ Adicionada a função principal de processamento do KML. Ela converte o texto XM
         }
 
         function processarLevantamento() {
-            var txt = document.getElementById('main-texto').value; if(!txt.trim()) { alert("Insira dados."); return; }
+            var txt = document.getElementById('main-texto').value; if(!txt.trim()) { alert("Insira dados ou carregue um arquivo válido."); return; }
             var chkMulti = document.getElementById('chk-multi-poly') && document.getElementById('chk-multi-poly').checked;
             var fmtIn = document.getElementById('main-formato').value; var epsgIn = obterEpsgEntrada(); var epsgOut = "+proj=longlat +datum=WGS84 +no_defs";
             
@@ -1603,5 +1590,3 @@ Adicionada a função principal de processamento do KML. Ela converte o texto XM
     </script>
 </body>
 </html>
-```eof
-*Sugestões adicionadas*
