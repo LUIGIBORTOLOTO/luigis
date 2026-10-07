@@ -26,7 +26,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
-    
+    <!-- Suporte para Ortofotos (GeoTIFF) -->
+    <script src="https://unpkg.com/geotiff@2.13.0/dist-browser/geotiff.js"></script>
+    <script src="https://unpkg.com/georaster@1.6.0/dist/georaster.browser.bundle.min.js"></script>
+    <script src="https://unpkg.com/georaster-layer-for-leaflet@3.10.0/dist/georaster-layer-for-leaflet.min.js"></script>
     <style>
         :root {
             --bg-dark: #0f0f11; --bg-panel: #1a1a1c; --bg-card: #252526;
@@ -474,6 +477,14 @@
                     <input type="file" id="file-shp" accept=".zip, .geojson, .shp, .kml, .kmz" onchange="importarShapefile(event)" style="display:none;">
                 </div>
                 <p id="loading-shp" style="display:none; color: var(--warning); font-size: 10px; margin-top: 5px; font-weight:bold;">⏳ Processando Geometrias...</p>
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
+                
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="margin:0;">Importar Ortofoto (GeoTIFF)</label>
+                    <button class="btn btn-outline btn-small" style="border-color: #4caf50; color: #4caf50;" onclick="document.getElementById('file-tiff').click()">📸 ORTOFOTO</button>
+                    <input type="file" id="file-tiff" accept=".tif, .tiff" onchange="importarOrtofoto(event)" style="display:none;">
+                </div>
+                <p id="loading-tiff" style="display:none; color: #4caf50; font-size: 10px; margin-top: 5px; font-weight:bold;">⏳ Renderizando Ortofoto (Aguarde)...</p>
             </div>
 
             <div class="section-divider"><span>3. Gestor de Camadas Global</span></div>
@@ -1293,6 +1304,46 @@
             else if (fileNameStr.endsWith('.kmz')) { reader.onload = async (e) => { try { var zip = await JSZip.loadAsync(e.target.result); var kmlFileName = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml')); var kmlText = await zip.files[kmlFileName].async("text"); var kmlDom = new DOMParser().parseFromString(kmlText, 'text/xml'); processarGeoJSON_NoMapa(toGeoJSON.kml(kmlDom), file.name, null, true); mostrarToast("KMZ Importado");} catch (err) { document.getElementById('loading-shp').style.display='none'; } }; reader.readAsArrayBuffer(file); } 
             else if (fileNameStr.endsWith('.kml')) { reader.onload = (e) => { try { var kmlDom = new DOMParser().parseFromString(e.target.result, 'text/xml'); processarGeoJSON_NoMapa(toGeoJSON.kml(kmlDom), file.name, null, true); mostrarToast("KML Importado");} catch (err) { document.getElementById('loading-shp').style.display='none'; } }; reader.readAsText(file); } 
             else { reader.onload = (e) => { try { processarGeoJSON_NoMapa(JSON.parse(e.target.result), file.name, null, true); mostrarToast("JSON Importado");} catch(err) { document.getElementById('loading-shp').style.display='none'; } }; reader.readAsText(file); }
+        }
+        
+    async function importarOrtofoto(event) {
+            const file = event.target.files[0]; 
+            if (!file) return;
+            
+            document.getElementById('loading-tiff').style.display = 'block'; 
+            mostrarToast("Lendo Ortofoto (TIFF)...");
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const georaster = await parseGeoraster(arrayBuffer);
+                const layer = new GeoRasterLayer({
+                    georaster: georaster,
+                    opacity: 1.0,
+                    resolution: 256
+                });
+
+                layer.addTo(map);
+                map.fitBounds(layer.getBounds());
+                
+                const idNovaCamada = 'ortho_layer_' + camadaIdCounter++;
+                gerenciadorCamadas.push({ 
+                    id: idNovaCamada, 
+                    nome: "📸 " + file.name, 
+                    leafletLayer: layer, 
+                    visivel: true, 
+                    tipo: 'ortho', 
+                    cor: '#ffffff'
+                });
+                
+                renderizarGestorCamadas();
+                mostrarToast("Ortofoto carregada com sucesso!");
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao carregar Ortofoto. Certifique-se de que é um arquivo GeoTIFF válido.");
+            } finally {
+                document.getElementById('loading-tiff').style.display = 'none';
+                event.target.value = ''; 
+            }
         }
 
         function renderizarGestorCamadas() {
