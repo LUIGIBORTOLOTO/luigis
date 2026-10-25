@@ -357,8 +357,8 @@
  <div class="x-title"><b>🌍 LuiGIS Studio<i>BETA 1.8</i></b><div class="top-toolbar">
                 <button class="btn-tool-top" id="btn-undo" onclick="desfazerAcao()" title="Desfazer Ação (Ctrl+Z)" disabled>↩️</button>
                 <button class="btn-tool-top" id="btn-redo" onclick="refazerAcao()" title="Refazer Ação (Ctrl+Y)" disabled>↪️</button>
-            </div><span class="x-doc">Projeto topográfico · CAD &amp; SIG</span><button class="x-tg open" id="x-tl" title="Painel de camadas">◧</button><button class="x-tg open" id="x-tr" title="Propriedades ativas">◨</button></div>
- <div class="x-ws" id="x-ws"><div class="x-tool" id="x-tool"></div><aside id="left-sidebar">
+            </div><span class="x-doc">Projeto topográfico · CAD &amp; SIG</span><button class="x-tg" id="x-tl" title="Painel de camadas">◧</button><button class="x-tg" id="x-tr" title="Propriedades ativas">◨</button></div>
+ <div class="x-ws nl nr" id="x-ws"><div class="x-tool" id="x-tool"></div><aside id="left-sidebar">
         <div class="tabs"><button class="tab-btn active" onclick="abrirAba('aba-camadas', this)">Camadas</button><button class="tab-btn" onclick="abrirAba('aba-entrada', this)">Vértices</button><button class="tab-btn" onclick="abrirAba('aba-exportar', this)" style="color:var(--warning);">Exportar</button><button class="tab-btn" onclick="abrirAba('aba-conversor', this)" style="color:#4caf50;">Conversor</button></div>
 
         <div id="aba-camadas" class="tab-content active" style="padding:0;gap:0;"><div class="x-ph">Gestor de Camadas <em>Dinâmico</em></div><div id="camadas-dinamicas"></div><div class="x-ph" style="margin-top:10px">Bases Externas (XREF)</div><div style="padding:10px"><div class="card" style="border-color: var(--accent); margin-top:0;">
@@ -615,14 +615,14 @@
                 <div class="form-row">
                     <div><label>Formato Base</label>
                         <select id="main-formato">
-                            <option value="decimal" selected>DD (Graus Decimais)</option>
-                            <option value="utm">UTM (Metros N/E)</option>
+                            <option value="decimal">DD (Graus Decimais)</option>
+                            <option value="utm" selected>UTM (Metros N/E)</option>
                             <option value="sgl">SGL (Graus, Min, Seg)</option>
                         </select>
                     </div>
                     <div><label>Datum</label><select id="main-datum"><option value="SIRGAS2000">SIRGAS 2000</option><option value="WGS84">WGS 84</option><option value="SAD69">SAD 69</option></select></div>
                 </div>
-                <div class="form-row" id="utm-options" style="display:none;">
+                <div class="form-row" id="utm-options" style="display:flex;">
                     <div><label>Zona UTM</label><input type="number" id="main-zona" value="23"></div>
                     <div><label>Hemisfério</label><select id="main-hemi"><option value="S">Sul (S)</option><option value="N">Norte (N)</option></select></div>
                 </div>
@@ -682,7 +682,7 @@
         };
         L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
-        map.pm.addControls({ position: 'topleft', drawMarker: true, drawCircle: true, drawCircleMarker: false, drawText: true, cutPolygon: true, editMode: true, dragMode: true, removalMode: true });
+        // Barra flutuante do Leaflet-Geoman desativada; comandos CAD continuam disponíveis.
         map.pm.setGlobalOptions({ snappable: true, snapDistance: 20, snapMiddle: true, allowSelfIntersection: false });
 
         var gerenciadorCamadas = [];
