@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <title>LuiGIS Studio PRO | CAD & SIG</title>
+    <title>LuiGIS Studio | CAD & SIG</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -231,61 +231,37 @@
         #map3d { width: 100%; height: 100%; border-radius: 6px; border: 1px solid #444; }
         .maplibregl-ctrl-bottom-right { display: none !important; }
         .btn-3d-highlight { background: linear-gradient(45deg, #0277bd, #4a148c); border: 1px solid #4a148c; color: white; }
-    :root{--xb:#0b0b0d;--xh:#202022;--xs:#0d3a5c;--xt:#cfcfcf}
-:root[data-theme=light]{--xb:#fff;--xh:#eef1f5;--xs:#dbe9f7;--xt:#2a2d33;--bg-dark:#f1f2f5;--bg-panel:#fff;--bg-card:#f4f5f8;--text-light:#1d1d21;--text-muted:#666b75;--border:#d5d7de;--accent:#0066b3;--accent-hover:#0a6fc2;--warning:#a37f00}
-:root[data-theme=light] :is(select,input[type=text],input[type=number],input[type=date],textarea){background:#fff;border-color:#c5c8d0;color:#1d1d21}
-:root[data-theme=light] :is(option,optgroup){background:#fff;color:#1d1d21}
-:root[data-theme=light] label{color:#555}
-:root[data-theme=light] .top-toolbar{background:#fff;border-color:var(--border)}
-:root[data-theme=light] .btn-tool-top{color:#333}:root[data-theme=light] .btn-tool-top:hover:not(:disabled){background:#e9ecf0}
-:root[data-theme=light] .spreadsheet-container{background:#fff}
-:root[data-theme=light] .tabela-editor th{background:#eceef2;color:#555}:root[data-theme=light] .tabela-editor td{background:#fff;color:#222}
-:root[data-theme=light] .tabela-editor :is(th,td){border-color:var(--border)}
-:root[data-theme=light] #bottom-hud{background:#fff}:root[data-theme=light] .hud-block{background:#f1f2f5;border-color:var(--border)}
-:root[data-theme=light] .hud-value{color:#1d1d21}:root[data-theme=light] .hud-value.highlight{color:var(--warning)}
-:root[data-theme=light] .popup-table th{background:#eef1f5}:root[data-theme=light] .popup-table td{background:#fff;color:#222}
-:root[data-theme=light] .x-tool button{color:#444}:root[data-theme=light] .x-rb{color:#2a2d33}
-html,body{display:block!important}
-.x-app{height:100vh;display:grid;grid-template-rows:34px auto minmax(0,1fr) 26px 24px;background:var(--bg-dark)}
-.x-title{display:flex;align-items:center;gap:14px;padding:0 10px;border-bottom:1px solid var(--border);background:var(--xb)}
+    html,body{display:block!important}
+.x-app{height:100vh;display:grid;grid-template-rows:34px minmax(0,1fr) 26px 24px;background:var(--bg-dark)}
+.x-title{display:flex;align-items:center;gap:14px;padding:0 10px;border-bottom:1px solid var(--border);background:#0b0b0d}
 .x-title b{font-size:13px}.x-title i{font-style:normal;color:var(--warning);font-size:10px;margin-left:4px}.x-title .top-toolbar{padding:1px 3px}
-.x-doc{margin:0 auto;color:var(--text-muted);font-size:11px}.x-doc b{color:var(--text-light);font-weight:500}
-.x-tabs{display:flex;background:var(--xb);padding:0 6px;border-bottom:1px solid var(--border)}
-.x-tabs button{padding:8px 14px;color:var(--text-muted);border:0;background:none;border-bottom:2px solid transparent;cursor:pointer;font:12px Inter,sans-serif}
-.x-tabs button:hover{color:var(--text-light)}.x-tabs button.on{color:var(--text-light);border-color:var(--accent);background:var(--xh)}
-.x-ribbon{display:flex;height:84px;background:var(--bg-panel);border-bottom:1px solid var(--border);overflow-x:auto}
-.x-grp{display:flex;flex-direction:column;border-right:1px solid var(--border);padding:5px 6px 3px;flex:none}
-.x-grp .bt{display:flex;gap:2px;flex:1}.x-grp small{text-align:center;color:var(--text-muted);font-size:10px;padding-top:2px}
-.x-rb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:56px;padding:3px 4px;border-radius:3px;font:10.5px Inter,sans-serif;color:var(--xt);background:none;border:0;cursor:pointer}
-.x-rb span{font-size:20px;line-height:1;color:var(--accent-hover)}.x-rb:hover{background:var(--xh)}.x-rb.w span{color:var(--warning)}.x-rb.g span{color:var(--success)}
-.x-ws{display:grid;grid-template-columns:38px var(--lw,300px) minmax(0,1fr) var(--rw,340px);min-height:0;transition:grid-template-columns .18s}
+.x-doc{margin:0 auto;color:var(--text-muted);font-size:11px}
+.x-tg{background:none;border:0;color:#999;font-size:15px;cursor:pointer;padding:0 6px}.x-tg.open{color:var(--accent-hover)}
+.x-ws{display:grid;grid-template-columns:38px var(--lw,400px) minmax(0,1fr) var(--rw,340px);min-height:0;transition:grid-template-columns .18s}
 .x-ws.nl{--lw:0px}.x-ws.nr{--rw:0px}.x-ws.nl #left-sidebar,.x-ws.nr #right-sidebar{visibility:hidden;border:0}
-#left-sidebar,#right-sidebar{width:auto!important;min-width:0!important;box-shadow:none!important;overflow-y:auto}
-.x-stage{display:flex;flex-direction:column;min-width:0;min-height:0}#center-workspace{flex:1;min-width:0;min-height:0}
-.x-ftabs{display:flex;background:var(--xb);border-bottom:1px solid var(--border)}
-.x-ftabs button{padding:6px 14px;color:var(--text-muted);background:none;border:0;border-right:1px solid var(--border);cursor:pointer;font:12px Inter,sans-serif}
-.x-ftabs button.on{background:var(--accent);color:#fff}.x-ftabs .tg{font-size:14px;padding:4px 11px}.x-ftabs .tg.open{color:var(--accent-hover)}
+#left-sidebar,#right-sidebar{width:auto!important;min-width:0!important;box-shadow:none!important}
+#center-workspace{min-width:0;min-height:0}
 .x-tool{background:var(--bg-panel);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:2px;overflow-y:auto;scrollbar-width:none}
 .x-tool::-webkit-scrollbar{display:none}
-.x-tool button{flex:none;width:30px;height:30px;border-radius:3px;font-size:15px;color:var(--text-muted);background:none;border:0;cursor:pointer}
-.x-tool button:hover{background:var(--xh);color:var(--text-light)}.x-tool button.on{background:var(--accent);color:#fff}
+.x-tool button{flex:none;width:30px;height:30px;border-radius:3px;font-size:15px;color:#bbb;background:none;border:0;cursor:pointer}
+.x-tool button:hover{background:var(--bg-card);color:#fff}.x-tool button.on{background:var(--accent);color:#fff}
 .x-tool hr{flex:none;width:22px;border:0;border-top:1px solid var(--border);margin:4px 0}
 .x-ph{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--bg-card);border-bottom:1px solid var(--border);font-weight:600;font-size:11.5px}
 .x-ph em{font-style:normal;color:var(--text-muted);font-weight:400}
-.x-ly{display:grid;grid-template-columns:18px 18px minmax(0,1fr) 20px 20px;gap:6px;align-items:center;padding:5px 10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:12px}
-.x-ly:hover{background:var(--xh)}.x-ly.act,.x-bm.on{background:var(--xs)}.x-ly .sw{width:12px;height:12px;border-radius:2px}
+.x-ly{display:grid;grid-template-columns:18px 18px minmax(0,1fr) 20px 20px;gap:6px;align-items:center;padding:5px 10px;border-bottom:1px solid #222;cursor:pointer;font-size:12px}
+.x-ly:hover{background:#202022}.x-ly.act{background:#0d3a5c}.x-ly .sw{width:12px;height:12px;border-radius:2px}
 .x-ly .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.x-ly input[type=color]{width:16px;height:16px;padding:0;border:0;background:none;cursor:pointer}
 .x-ly span[data-a]{text-align:center;font-size:12px;opacity:.75}.x-ly span[data-a]:hover{opacity:1}
-.x-pa .card{margin:0;border-radius:0;border-left:0;border-right:0}
-.x-mc{display:flex;flex-direction:column;gap:15px}
-#x-grid{position:absolute;inset:0;z-index:1;pointer-events:none;display:none}
+.x-bm.on{background:#0d3a5c}
+.x-pa{overflow-y:auto}.x-pa .card{margin:0;border-radius:0;border-left:0;border-right:0}
+#x-grid{position:absolute;inset:0;z-index:1;pointer-events:none}
 .leaflet-control-layers{display:none!important}
-.x-cmd{display:flex;align-items:center;gap:8px;padding:0 10px;background:var(--xb);border-top:1px solid var(--border);color:var(--text-muted);font-size:10px;overflow:hidden;white-space:nowrap}
-.x-cmd input{flex:1;min-width:120px;background:none!important;border:0!important;color:var(--text-light);font:12px 'Fira Code',monospace;height:100%;outline:0;padding:0!important}
+.x-cmd{display:flex;align-items:center;gap:8px;padding:0 10px;background:#0b0b0d;border-top:1px solid var(--border);color:var(--text-muted);font-size:10px;overflow:hidden;white-space:nowrap}
+.x-cmd input{flex:1;min-width:120px;background:none;border:0;color:var(--text-light);font:12px 'Fira Code',monospace;height:100%;outline:0}
 .x-cmd i{font-style:normal;color:var(--warning);font:12px 'Fira Code',monospace}
 .x-stat{display:flex;align-items:center;background:var(--accent);color:#fff;font-size:11px;padding:0 6px;gap:8px;overflow:hidden;white-space:nowrap}
 .x-stat .co{font:500 11px 'Fira Code',monospace;min-width:300px}.x-stat .sp{flex:1}
-.x-stat button{padding:0 8px;height:100%;border:0;background:none;color:#fff;opacity:.7;font:600 10.5px Inter,sans-serif;cursor:pointer}.x-stat button.on{opacity:1;background:rgba(0,0,0,.25)}
+.x-stat button{padding:0 8px;height:100%;border:0;background:none;color:#fff;opacity:.7;font:600 10.5px Inter,sans-serif;cursor:pointer}.x-stat button.on{opacity:1;background:#005a99}
 @media(max-width:980px){.x-ws{grid-template-columns:38px minmax(0,1fr)}#left-sidebar,#right-sidebar{display:none}}
 
 </style>
@@ -377,7 +353,50 @@ html,body{display:block!important}
         </div>
     </div>
 
-    <div id="modal-entrada" class="modal-overlay" onmousedown="if(event.target===this)this.style.display='none'"><div class="modal-content" style="max-width:520px;max-height:90vh;overflow:auto"><div class="modal-header"><h3>📍 Vértices & Poligonal</h3><button class="btn btn-danger btn-small" onclick="this.closest('.modal-overlay').style.display='none'">❌ Fechar</button></div><div id="aba-entrada" class="x-mc">
+    <div class="x-app">
+ <div class="x-title"><b>🌍 LuiGIS Studio<i>BETA 1.8</i></b><div class="top-toolbar">
+                <button class="btn-tool-top" id="btn-undo" onclick="desfazerAcao()" title="Desfazer Ação (Ctrl+Z)" disabled>↩️</button>
+                <button class="btn-tool-top" id="btn-redo" onclick="refazerAcao()" title="Refazer Ação (Ctrl+Y)" disabled>↪️</button>
+            </div><span class="x-doc">Projeto topográfico · CAD &amp; SIG</span><button class="x-tg open" id="x-tl" title="Painel de camadas">◧</button><button class="x-tg open" id="x-tr" title="Propriedades ativas">◨</button></div>
+ <div class="x-ws" id="x-ws"><div class="x-tool" id="x-tool"></div><aside id="left-sidebar">
+        <div class="tabs"><button class="tab-btn active" onclick="abrirAba('aba-camadas', this)">Camadas</button><button class="tab-btn" onclick="abrirAba('aba-entrada', this)">Vértices</button><button class="tab-btn" onclick="abrirAba('aba-exportar', this)" style="color:var(--warning);">Exportar</button><button class="tab-btn" onclick="abrirAba('aba-conversor', this)" style="color:#4caf50;">Conversor</button></div>
+
+        <div id="aba-camadas" class="tab-content active" style="padding:0;gap:0;"><div class="x-ph">Gestor de Camadas <em>Dinâmico</em></div><div id="camadas-dinamicas"></div><div class="x-ph" style="margin-top:10px">Bases Externas (XREF)</div><div style="padding:10px"><div class="card" style="border-color: var(--accent); margin-top:0;">
+                <div class="card-title">SHP / Nuvem</div>
+                <select id="select-bases-nuvem" style="margin-bottom: 5px;">
+                    <option value="">Regional Contagem (Nuvem)...</option>
+                    <optgroup label="📍 Lotes Contagem (Todas Regionais)">
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_ELDORADO.zip">🏙️ Regional Eldorado</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_INDUSTRIAL.zip">🏙️ Regional Industrial</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_NACIONAL.zip">🏙️ Regional Nacional</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_PETROLANDIA.zip">🏙️ Regional Petrolândia</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_RESSACA.zip">🏙️ Regional Ressaca</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_RIACHO.zip">🏙️ Regional Riacho</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_Sede.zip">🏙️ Regional Sede</option>
+                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_VARGEM%20DAS%20FLORES.zip">🏙️ Regional Vargem</option>
+                    </optgroup>
+                </select>
+                <button class="btn btn-primary btn-block btn-small" onclick="baixarBaseSelecionada()">☁️ Carregar da Nuvem</button>
+                
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
+                
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="margin:0;">Importar Local (SHP/KML)</label>
+                    <button class="btn btn-outline btn-small" onclick="document.getElementById('file-shp').click()">📂 XREF LOCAL</button>
+                    <input type="file" id="file-shp" accept=".zip, .geojson, .shp, .kml, .kmz" onchange="importarShapefile(event)" style="display:none;">
+                </div>
+                <p id="loading-shp" style="display:none; color: var(--warning); font-size: 10px; margin-top: 5px; font-weight:bold;">⏳ Processando Geometrias...</p>
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
+                
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <label style="margin:0;">Importar Ortofoto (GeoTIFF)</label>
+                    <button class="btn btn-outline btn-small" style="border-color: #4caf50; color: #4caf50;" onclick="document.getElementById('file-tiff').click()">📸 ORTOFOTO</button>
+                    <input type="file" id="file-tiff" accept=".tif, .tiff" onchange="importarOrtofoto(event)" style="display:none;">
+                </div>
+                <p id="loading-tiff" style="display:none; color: #4caf50; font-size: 10px; margin-top: 5px; font-weight:bold;">⏳ Renderizando Ortofoto (Aguarde)...</p>
+            </div>
+
+            </div><div class="x-ph" style="margin-top:6px">Mapas de Fundo</div><div class="x-ly x-bm on" onclick="setBasemap('cad',this)"><span style="opacity:1">👁</span><span class="sw" style="background:#444"></span><span class="nm">Fundo CAD (quadrantes)</span><span></span><span></span></div><div class="x-ly x-bm " onclick="setBasemap('googleHybrid',this)"><span style="opacity:0.3">👁</span><span class="sw" style="background:#2e7d32"></span><span class="nm">Google Híbrido</span><span></span><span></span></div><div class="x-ly x-bm " onclick="setBasemap('googleSat',this)"><span style="opacity:0.3">👁</span><span class="sw" style="background:#546e7a"></span><span class="nm">Google Satélite</span><span></span><span></span></div><div class="x-ly x-bm " onclick="setBasemap('cartoDark',this)"><span style="opacity:0.3">👁</span><span class="sw" style="background:#000"></span><span class="nm">Tema Escuro (ruas)</span><span></span><span></span></div></div><div id="aba-entrada" class="tab-content">
             <div class="card">
                 <div class="card-title">Processador (CSV, TXT, PDF, GPX, KML, KMZ)</div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
@@ -416,7 +435,7 @@ html,body{display:block!important}
             </div>
         </div>
 
-        </div></div><div id="modal-exportar" class="modal-overlay" onmousedown="if(event.target===this)this.style.display='none'"><div class="modal-content" style="max-width:520px;max-height:90vh;overflow:auto"><div class="modal-header"><h3>⚙️ Configurar Exportação</h3><button class="btn btn-danger btn-small" onclick="this.closest('.modal-overlay').style.display='none'">❌ Fechar</button></div><div id="aba-exportar" class="x-mc">
+        <div id="aba-exportar" class="tab-content">
             <div class="card">
                 <div class="card-title">Configuração de Saída</div>
                 <div class="form-row">
@@ -466,7 +485,7 @@ html,body{display:block!important}
             </div>
         </div>
 
-        </div></div><div id="modal-conversor" class="modal-overlay" onmousedown="if(event.target===this)this.style.display='none'"><div class="modal-content" style="max-width:520px;max-height:90vh;overflow:auto"><div class="modal-header"><h3>🔄 Conversor SIG-RI</h3><button class="btn btn-danger btn-small" onclick="this.closest('.modal-overlay').style.display='none'">❌ Fechar</button></div><div id="aba-conversor" class="x-mc">
+        <div id="aba-conversor" class="tab-content">
             <div class="card" style="border-color: #4caf50;">
                 <div class="card-title" style="color: #4caf50;">Configuração de Entrada</div>
                 <div class="form-row">
@@ -541,69 +560,7 @@ html,body{display:block!important}
                 <textarea id="conv-texto-out" style="height: 120px;" readonly></textarea>
             </div>
         </div>
-    </div></div><div class="x-app">
- <div class="x-title"><b>🌍 LuiGIS Studio<i>PRO</i></b><div class="top-toolbar">
-                <button class="btn-tool-top" id="btn-undo" onclick="desfazerAcao()" title="Desfazer Ação (Ctrl+Z)" disabled>↩️</button>
-                <button class="btn-tool-top" id="btn-redo" onclick="refazerAcao()" title="Refazer Ação (Ctrl+Y)" disabled>↪️</button>
-            </div><span class="x-doc"><b>Projeto_Sem_Titulo.lgs</b> · Levantamento Topográfico</span></div>
- <div><div class="x-tabs" id="x-tabs"></div><div class="x-ribbon" id="x-ribbon"></div></div>
- <div class="x-ws" id="x-ws"><div class="x-tool" id="x-tool"></div><aside id="left-sidebar" class="x-pa"><div class="x-ph">Gestor de Camadas <em>Dinâmico</em></div><div id="camadas-dinamicas"></div><div class="x-ph" style="margin-top:10px">Bases Externas (Nuvem)</div><div style="padding:10px"><div class="card" style="border-color: var(--accent); margin-top:0;">
-                <div class="card-title">SHP / Nuvem</div>
-                <select id="select-bases-nuvem" style="margin-bottom: 5px;">
-                    <option value="">Regional Contagem (Nuvem)...</option>
-                    <optgroup label="📍 Lotes Contagem (Todas Regionais)">
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_ELDORADO.zip">🏙️ Regional Eldorado</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_INDUSTRIAL.zip">🏙️ Regional Industrial</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_NACIONAL.zip">🏙️ Regional Nacional</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_PETROLANDIA.zip">🏙️ Regional Petrolândia</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_RESSACA.zip">🏙️ Regional Ressaca</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_RIACHO.zip">🏙️ Regional Riacho</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_Sede.zip">🏙️ Regional Sede</option>
-                        <option value="https://raw.githubusercontent.com/LUIGIBORTOLOTO/geoprocessamento/main/bases/mg_contagem/lotes/Regiao_adm_VARGEM%20DAS%20FLORES.zip">🏙️ Regional Vargem</option>
-                    </optgroup>
-                </select>
-                <button class="btn btn-primary btn-block btn-small" onclick="baixarBaseSelecionada()">☁️ Carregar da Nuvem</button>
-                
-                <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
-                
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <label style="margin:0;">Importar Local (SHP/KML)</label>
-                    <button class="btn btn-outline btn-small" onclick="document.getElementById('file-shp').click()">📂 XREF LOCAL</button>
-                    <input type="file" id="file-shp" accept=".zip, .geojson, .shp, .kml, .kmz" onchange="importarShapefile(event)" style="display:none;">
-                </div>
-                <p id="loading-shp" style="display:none; color: var(--warning); font-size: 10px; margin-top: 5px; font-weight:bold;">⏳ Processando Geometrias...</p>
-                <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
-                
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <label style="margin:0;">Importar Ortofoto (GeoTIFF)</label>
-                    <button class="btn btn-outline btn-small" style="border-color: #4caf50; color: #4caf50;" onclick="document.getElementById('file-tiff').click()">📸 ORTOFOTO</button>
-                    <input type="file" id="file-tiff" accept=".tif, .tiff" onchange="importarOrtofoto(event)" style="display:none;">
-                </div>
-                <p id="loading-tiff" style="display:none; color: #4caf50; font-size: 10px; margin-top: 5px; font-weight:bold;">⏳ Renderizando Ortofoto (Aguarde)...</p>
-            </div>
-
-            
-            <div class="card" style="border-color: #ff9800; margin-top:5px;">
-                <div class="card-title" style="color:#ff9800;">Conexão GeoServer / PostGIS</div>
-                <div class="form-row">
-                    <div>
-                        <label>URL Base do GeoServer</label>
-                        <input type="text" id="gs-url" value="http://localhost:8080/geoserver">
-                    </div>
-                </div>
-                <div class="form-row" style="margin-top: 5px;">
-                    <div>
-                        <label>Workspace:Camada</label>
-                        <input type="text" id="gs-layer" value="luigis:lotes_municipais" placeholder="ex: luigis:lotes_municipais">
-                    </div>
-                </div>
-                <p style="font-size: 9px; color: var(--text-muted); margin: 5px 0;">O WFS importa dados manipuláveis (GeoJSON) direto do PostGIS. O WMS importa uma imagem leve do mapa.</p>
-                <div style="display:flex; gap:5px; margin-top:5px;">
-                    <button class="btn btn-warning btn-block btn-small" onclick="importarGeoServerWFS()">📥 Extrair Dados (WFS)</button>
-                    <button class="btn btn-outline btn-block btn-small" style="color:#ff9800; border-color:#ff9800;" onclick="importarGeoServerWMS()">🗺️ Ver Fundo (WMS)</button>
-                </div>
-            </div>
-</div><div class="x-ph" style="margin-top:6px">Mapas de Fundo</div><div class="x-ly x-bm on" onclick="setBasemap('googleHybrid',this)"><span style="opacity:1">👁</span><span class="sw" style="background:#2e7d32"></span><span class="nm">Google Híbrido</span><span></span><span></span></div><div class="x-ly x-bm " onclick="setBasemap('googleSat',this)"><span style="opacity:0.3">👁</span><span class="sw" style="background:#546e7a"></span><span class="nm">Google Satélite</span><span></span><span></span></div><div class="x-ly x-bm " onclick="setBasemap('cartoDark',this)"><span style="opacity:0.3">👁</span><span class="sw" style="background:#000"></span><span class="nm">Tema Escuro (ruas)</span><span></span><span></span></div><div class="x-ly x-bm " onclick="setBasemap('cad',this)"><span style="opacity:0.3">👁</span><span class="sw" style="background:#444"></span><span class="nm">Fundo CAD (quadrantes)</span><span></span><span></span></div></aside><section class="x-stage"><div class="x-ftabs"><button class="on">Modelo (Mapa)</button><span style="flex:1"></span><button class="tg open" id="x-tl" title="Camadas">◧</button><button class="tg open" id="x-tr" title="Propriedades">◨</button><button class="tg" id="x-tt" title="Tema claro/escuro">◐</button></div><main id="center-workspace">
+    </aside><main id="center-workspace">
         <div id="map"></div>
         <div id="bottom-hud">
             <div class="hud-block"><span class="hud-label">Layer de Desenho</span><span class="hud-value" id="hud-layer">Nenhuma</span></div>
@@ -611,7 +568,7 @@ html,body{display:block!important}
             <div class="hud-block"><span class="hud-label">Área Levantada</span><span class="hud-value highlight" id="lbl-area">0.00 m²</span></div>
             <div class="hud-block"><span class="hud-label">Perímetro</span><span class="hud-value" id="lbl-perimetro">0.00 m</span></div>
         </div>
-    </main></section><aside id="right-sidebar" class="x-pa"><div class="x-ph">Propriedades Ativas <em>CAD / RTK</em></div><div class="card" style="border-color: var(--warning); margin-top:0;">
+    </main><aside id="right-sidebar" class="x-pa"><div class="x-ph">Propriedades Ativas <em>CAD / RTK</em></div><div class="card" style="border-color: var(--warning); margin-top:0;">
                 <div class="card-title" style="color:var(--warning);">Desenho & Layers</div>
                 
                 <div class="form-row" style="align-items:flex-end;">
@@ -695,7 +652,7 @@ html,body{display:block!important}
 
         </aside></div>
  <div class="x-cmd"><i>Comando:</i><span>L, POL, C, REC, M, E, ED, DIST, ANG, U, REDO, CORTAR, PLOTAR</span><input id="x-cmdin" aria-label="Linha de comando" placeholder="digite e Enter"></div>
- <div class="x-stat"><span class="co" id="x-co">E 0,000  N 0,000</span><button class="on" id="x-snap">SNAP</button><span class="sp"></span><span>PRO Edition</span><span id="x-zoom">Zoom –</span></div>
+ <div class="x-stat"><span class="co" id="x-co">E 0,000  N 0,000</span><button class="on" id="x-snap">OSNAP</button><span class="sp"></span><span>UTM automático · WGS 84</span><span id="x-zoom">Zoom –</span></div>
 </div>
 <script>
         function mostrarToast(mensagem) {
@@ -1388,58 +1345,7 @@ html,body{display:block!important}
 
         function construirPopupCompleto(props) { if(!props) return "Sem dados"; let html = "<table class='popup-table'><tbody>"; for(let key in props) { html += `<tr><th>${key}</th><td>${props[key]}</td></tr>`; } html += "</tbody></table>"; return html; }
 
-        
-        async function importarGeoServerWFS() {
-            const baseUrl = document.getElementById('gs-url').value.replace(/\/$/, "");
-            const layerName = document.getElementById('gs-layer').value;
-            if (!layerName || !baseUrl) return mostrarToast("Preencha a URL e o nome da camada (Workspace:Camada)");
-            document.getElementById('loading-shp').style.display = 'block';
-            mostrarToast("Requisitando dados vetoriais do PostGIS...");
-            const wfsUrl = `${baseUrl}/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=${layerName}&maxFeatures=50000&outputFormat=application%2Fjson`;
-            try {
-                const response = await fetch(wfsUrl);
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                const geojson = await response.json();
-                if (geojson.features && geojson.features.length > 0) {
-                    processarGeoJSON_NoMapa(geojson, `WFS: ${layerName}`, '#ff9800', true);
-                    mostrarToast("Dados do PostGIS carregados com sucesso!");
-                } else {
-                    mostrarToast("A consulta não retornou feições.");
-                }
-            } catch (err) {
-                console.error("Erro WFS:", err);
-                alert("Falha ao conectar no GeoServer. Verifique a URL, a Camada e as políticas de CORS do servidor.");
-            } finally {
-                document.getElementById('loading-shp').style.display = 'none';
-            }
-        }
-
-        function importarGeoServerWMS() {
-            const baseUrl = document.getElementById('gs-url').value.replace(/\/$/, "");
-            const layerName = document.getElementById('gs-layer').value;
-            if (!layerName || !baseUrl) return mostrarToast("Preencha a URL e o nome da camada");
-            mostrarToast("Renderizando camada WMS...");
-            const wmsUrl = `${baseUrl}/wms`;
-            const wmsLayer = L.tileLayer.wms(wmsUrl, {
-                layers: layerName,
-                format: 'image/png',
-                transparent: true,
-                version: '1.1.0',
-                maxZoom: 22
-            }).addTo(map);
-            const idNovaCamada = 'wms_layer_' + camadaIdCounter++;
-            gerenciadorCamadas.push({ 
-                id: idNovaCamada, 
-                nome: "🗺️ WMS: " + layerName, 
-                leafletLayer: wmsLayer, 
-                visivel: true, 
-                tipo: 'ortho', 
-                cor: '#ff9800'
-            });
-            renderizarGestorCamadas();
-        }
-
-async function baixarBaseSelecionada() {
+        async function baixarBaseSelecionada() {
             var select = document.getElementById('select-bases-nuvem'); var url = select.value; var nomeBase = select.options[select.selectedIndex].text; if (!url) return;
             document.getElementById('loading-shp').style.display = 'block'; mostrarToast("Transferindo...");
             try { const response = await fetch(url); const buffer = await response.arrayBuffer(); let geojson = await shp(buffer); processarGeoJSON_NoMapa(geojson, nomeBase, null, true); mostrarToast("Carregada!"); } 
@@ -1923,91 +1829,76 @@ window.addEventListener('load', function() {
         if (loader) {
             loader.classList.add('loader-hidden'); 
         }
-        
-        // AUTO-START: Iniciar as bases do GeoServer automaticamente
-        if (document.getElementById('gs-layer').value) {
-            importarGeoServerWMS(); // Carrega o mapa base renderizado
-            // importarGeoServerWFS(); // Descomente esta linha se quiser puxar os vetores para edição logo na inicialização
-        }
     }, 1500); 
 });
     
-/* ===== LuiGIS Studio PRO (ribbon + tema claro/escuro) ===== */
+/* ===== LuiGIS Studio: barra CAD, gestor de camadas, grade, comandos e status ===== */
 (function(){
 const $=id=>document.getElementById(id),ws=$('x-ws');
 const draw=s=>()=>{map.pm.disableDraw();map.pm.enableDraw(s)};
 const modo=n=>()=>map.pm['toggleGlobal'+n+'Mode']();
-const click=id=>()=>$(id).click();
-const modal=(n,foc)=>()=>{$('modal-'+n).style.display='flex';if(foc)$(foc).focus()};
-const dir=id=>()=>{ws.classList.remove('nr');if(id)$(id).focus()};
+const bloco=t=>()=>{$('cad-block-type').value=t;ativarDesenhoBloco()};
 const livre=()=>{const p=map.pm;p.disableDraw();if(p.globalEditModeEnabled())p.disableGlobalEditMode();if(p.globalDragModeEnabled())p.disableGlobalDragMode();if(p.globalRemovalModeEnabled())p.disableGlobalRemovalMode()};
-window.abrirAba=function(id){if(id==='aba-editor')ws.classList.remove('nr')};
-/* --- ribbon --- */
-const R={
-Início:[["Entrada",[["⇪","Importar",click('arquivo-csv'),'w'],["📋","Colar Vértices",modal('entrada','main-texto')],["🛰","RTK / GPX",click('arquivo-csv')],["🗺","SHP / KML",click('file-shp')],["📸","Ortofoto",click('file-tiff')]]],
-["Desenho CAD",[["╱","Linha",draw('Line')],["⌇","Polígono",draw('Polygon')],["○","Círculo",draw('Circle')],["📍","Inserir Bloco",ativarDesenhoBloco]]],
-["Modificar",[["✥","Mover",modo('Drag')],["✎","Editar vértices",modo('Edit')],["✂","Cortar",toolCortarPoligono],["⌫","Apagar",modo('Removal')],["✕","Apagar vértice",toolApagarVertice],["⇄","Inverter",toolInverterSentido],["〰","Suavizar",toolSuavizar]]],
-["Topografia",[["↔","Medir Distância",toolMedirDistancia],["∠","Medir Ângulo",toolMedirAngulo],["📐","Azimutes / Poligonal",modal('entrada','pol-texto')]]]],
-Topografia:[["Poligonal",[["▱","Relatório",calcularFechamento,'w'],["📐","Motor Az/Dist",modal('entrada','pol-texto')]]],
-["Relevo",[["📥","Extrair Cotas",abrirModalExtrairCotas],["≈","Curvas de Nível",gerarCurvasNivel],["▲","Perfil de Elevação",abrirPerfilElevacao],["🏔","Visualizador 3D",abrirVisualizador3D]]]],
-Camadas:[["Gerenciar",[["＋","Nova Camada CAD",dir('new-cad-layer-name')],["🗑","Limpar Camada Ativa",limparLayerAtiva,'w']]],["Propriedades",[["🧲","Ativar Ímã (Snap)",toolSnap]]],
-["Bases Externas",[["☁","Nuvem",baixarBaseSelecionada],["🗺","SHP / KML",click('file-shp')],["📸","Ortofoto",click('file-tiff')]]]],
-Exportar:[["Arquivos CAD/GIS",[["⇩","DXF",baixarDXF,'w'],["🌐","KMZ",baixarKMZ,'w'],["{}","GeoJSON",baixarGeoJSON,'w'],["📊","CSV",baixarCSV,'g'],["📊","Excel",baixarPlanilhaTopograficaXLSX,'g']]],
-["Configuração",[["⚙","Configurar Saída",modal('exportar')]]],["Conversor",[["🔄","SIG-RI / Datum",modal('conversor'),'g']]]]};
-const tabs=$('x-tabs'),rib=$('x-ribbon');
-function show(k){[...tabs.children].forEach(b=>b.classList.toggle('on',b.textContent===k));rib.innerHTML='';
-R[k].forEach(([n,bs])=>{const g=document.createElement('div');g.className='x-grp';const bt=document.createElement('div');bt.className='bt';
-bs.forEach(([i,l,f,c])=>{const b=document.createElement('button');b.className='x-rb '+(c||'');b.title=l;b.innerHTML='<span>'+i+'</span>'+l;b.onclick=()=>f();bt.append(b)});
-g.append(bt);g.insertAdjacentHTML('beforeend','<small>'+n+'</small>');rib.append(g)})}
-Object.keys(R).forEach(k=>{const b=document.createElement('button');b.textContent=k;b.onclick=()=>show(k);tabs.append(b)});show('Início');
-/* --- barra vertical --- */
-const T=[["➤","Selecionar (Esc)",livre],["✥","Mover",modo('Drag')],["╱","Linha",draw('Line')],["⌇","Polígono",draw('Polygon')],["○","Círculo",draw('Circle')],["📍","Inserir bloco",ativarDesenhoBloco],0,["✂","Cortar polígono",toolCortarPoligono],["↔","Medir distância",toolMedirDistancia],["∠","Medir ângulo",toolMedirAngulo]];
+/* --- barra de ferramentas CAD (única) --- */
+const T=[["➤","Selecionar (Esc)",livre],["✥","Mover",modo('Drag')],["✎","Editar vértices",modo('Edit')],0,
+["⌇","Polilinha (L)",draw('Line')],["▱","Polígono (POL)",draw('Polygon')],["○","Círculo (C)",draw('Circle')],["▭","Retângulo (REC)",draw('Rectangle')],
+["⌖","Inserir bloco",ativarDesenhoBloco],["🌳","Bloco: árvore",bloco('tree')],["🕳","Bloco: bueiro",bloco('sewer')],["⚡","Bloco: poste",bloco('light')],0,
+["✂","Cortar polígono",toolCortarPoligono],["⌫","Apagar objeto",modo('Removal')],["✕","Apagar vértice",toolApagarVertice],["⇄","Inverter sentido",toolInverterSentido],["〰","Suavizar linha",toolSuavizar],0,
+["↔","Medir distância",toolMedirDistancia],["∠","Medir ângulo",toolMedirAngulo]];
 const tl=$('x-tool');
 T.forEach(t=>{if(!t){tl.insertAdjacentHTML('beforeend','<hr>');return}const b=document.createElement('button');b.textContent=t[0];b.title=t[1];
 b.onclick=()=>{const was=b.classList.contains('on');livre();tl.querySelectorAll('button').forEach(x=>x.classList.remove('on'));if(was||t[2]===livre){first.classList.add('on');return}b.classList.add('on');t[2]()};tl.append(b)});
 const first=tl.querySelector('button');first.classList.add('on');
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.activeElement.tagName!=='INPUT'){livre();tl.querySelectorAll('button').forEach(x=>x.classList.remove('on'));first.classList.add('on')}});
-/* --- gestor de camadas --- */
+const _ab=window.abrirAba;window.abrirAba=function(id,btn){if(id==='aba-editor'){ws.classList.remove('nr');return}_ab(id,btn)};
+/* --- gestor de camadas (substitui o render original) --- */
 window.renderizarGestorCamadas=function(){const c=$('camadas-dinamicas');if(!c)return;const sel=$('active-cad-layer'),act=sel&&sel.value;c.innerHTML='';
 if(!gerenciadorCamadas.length)c.innerHTML='<p style="padding:14px;text-align:center;color:var(--text-muted);font-size:11px">Nenhuma camada gerada.</p>';
 gerenciadorCamadas.forEach(cam=>{const d=document.createElement('div');d.className='x-ly'+(cam.id===act?' act':'');
 const ed=['shp','rtk_poly','rtk_pt','cad'].includes(cam.tipo);
-d.innerHTML='<span data-a="v" style="opacity:'+(cam.visivel?1:.3)+'">👁</span>'+(ed?'<input type="color" value="'+cam.cor+'" title="Cor da camada">':'<span></span>')+'<span class="nm" title="'+cam.nome+'" style="opacity:'+(cam.visivel?1:.5)+'">'+cam.nome+'</span><span data-a="z" title="Zoom na camada">🔍</span><span data-a="d" title="Apagar camada">🗑</span>';
+d.innerHTML='<span data-a="v" style="opacity:'+(cam.visivel?1:.3)+'">👁</span>'+(ed?'<input type="color" value="'+cam.cor+'" title="Cor da camada">':'<span></span>')+'<span class="nm" title="'+cam.nome+'" style="color:'+(cam.visivel?'inherit':'#666')+'">'+cam.nome+'</span><span data-a="z" title="Zoom na camada">🔍</span><span data-a="d" title="Apagar camada">🗑</span>';
 d.querySelector('[data-a=v]').onclick=e=>{e.stopPropagation();toggleC(cam.id)};
 const ci=d.querySelector('input');if(ci){ci.onclick=e=>e.stopPropagation();ci.onchange=()=>alterarCorCamada(cam.id,ci.value)}
 d.querySelector('[data-a=z]').onclick=e=>{e.stopPropagation();zoomCamada(cam.id)};
 d.querySelector('[data-a=d]').onclick=e=>{e.stopPropagation();if(confirm('Remover esta camada e todo o seu conteúdo?'))removerCamada(cam.id)};
 d.onclick=()=>{if(cam.tipo==='cad'&&sel&&[...sel.options].some(o=>o.value===cam.id)){sel.value=cam.id;atualizarLayerAtivaCAD();renderizarGestorCamadas()}};
 c.append(d)});atualizarOrdemZIndexMap()};
-$('active-cad-layer').addEventListener('change',()=>renderizarGestorCamadas());renderizarGestorCamadas();
-/* --- fundo CAD (opcional em Mapas de Fundo) --- */
+if($('active-cad-layer'))$('active-cad-layer').addEventListener('change',()=>renderizarGestorCamadas());
+renderizarGestorCamadas();
+/* --- fundo CAD com quadrantes (grade em metros, acompanha pan/zoom) --- */
 const gc=document.createElement('canvas');gc.id='x-grid';map.getContainer().prepend(gc);
 const RM=6378137,rad=Math.PI/180,nice=v=>{const p=Math.pow(10,Math.floor(Math.log10(v))),m=v/p;return(m<=1?1:m<=2?2:m<=5?5:10)*p};
-function drawGrid(){if(gc.style.display!=='block')return;const sz=map.getSize(),d=window.devicePixelRatio||1;gc.width=sz.x*d;gc.height=sz.y*d;gc.style.width=sz.x+'px';gc.style.height=sz.y+'px';
-const c=gc.getContext('2d');c.scale(d,d);const ctr=map.getCenter(),k=Math.cos(ctr.lat*rad),step=nice(40075016.686/Math.pow(2,map.getZoom()+8)*k*32)/k,b=map.getBounds();
-const x0=RM*b.getWest()*rad,x1=RM*b.getEast()*rad,my=l=>RM*Math.log(Math.tan(Math.PI/4+l*rad/2)),y0=my(b.getSouth()),y1=my(b.getNorth()),lat=y=>(2*Math.atan(Math.exp(y/RM))-Math.PI/2)/rad;
-const line=(a,b2,c2,d2,col)=>{c.strokeStyle=col;c.beginPath();c.moveTo(a,b2);c.lineTo(c2,d2);c.stroke()};c.lineWidth=1;
+function drawGrid(){const sz=map.getSize(),d=window.devicePixelRatio||1;gc.width=sz.x*d;gc.height=sz.y*d;gc.style.width=sz.x+'px';gc.style.height=sz.y+'px';
+const c=gc.getContext('2d');c.scale(d,d);const z=map.getZoom(),ctr=map.getCenter(),k=Math.cos(ctr.lat*rad);
+const step=nice(40075016.686/Math.pow(2,z+8)*k*32)/k,b=map.getBounds();
+const x0=RM*b.getWest()*rad,x1=RM*b.getEast()*rad,my=l=>RM*Math.log(Math.tan(Math.PI/4+l*rad/2)),y0=my(b.getSouth()),y1=my(b.getNorth());
+const lat=y=>(2*Math.atan(Math.exp(y/RM))-Math.PI/2)/rad;
+const line=(x1_,y1_,x2_,y2_,col)=>{c.strokeStyle=col;c.beginPath();c.moveTo(x1_,y1_);c.lineTo(x2_,y2_);c.stroke()};
+c.lineWidth=1;
 for(let pass=0;pass<2;pass++){
-for(let n=Math.floor(x0/step),e=Math.ceil(x1/step),i=0;n<=e&&i<500;n++,i++){const maj=n%5===0;if(maj!==!!pass)continue;const px=Math.round(map.latLngToContainerPoint([ctr.lat,n*step/RM/rad]).x)+.5;line(px,0,px,sz.y,maj?'#2a2a38':'#15151d')}
-for(let n=Math.floor(y0/step),e=Math.ceil(y1/step),i=0;n<=e&&i<500;n++,i++){const maj=n%5===0;if(maj!==!!pass)continue;const py=Math.round(map.latLngToContainerPoint([lat(n*step),ctr.lng]).y)+.5;line(0,py,sz.x,py,maj?'#2a2a38':'#15151d')}}
-const ox=36,oy=sz.y-36;c.lineWidth=1.6;line(ox,oy,ox+30,oy,'#f44336');line(ox,oy,ox,oy-30,'#4caf50');c.fillStyle='#9aa';c.font='10px Inter,sans-serif';c.fillText('X',ox+34,oy+3);c.fillText('Y',ox-3,oy-34);c.fillStyle='#667';c.fillText('grade '+(step*k>=1?(step*k).toFixed(0):(step*k).toFixed(1))+' m',ox+56,oy+3)}
-let raf;const redraw=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(drawGrid)};map.on('move zoomend resize viewreset',redraw);
+for(let n=Math.floor(x0/step);n<=Math.ceil(x1/step)&&n-Math.floor(x0/step)<500;n++){const maj=n%5===0;if(maj!==!!pass)continue;const px=Math.round(map.latLngToContainerPoint([ctr.lat,n*step/RM/rad]).x)+.5;line(px,0,px,sz.y,maj?'#2a2a38':'#15151d')}
+for(let n=Math.floor(y0/step);n<=Math.ceil(y1/step)&&n-Math.floor(y0/step)<500;n++){const maj=n%5===0;if(maj!==!!pass)continue;const py=Math.round(map.latLngToContainerPoint([lat(n*step),ctr.lng]).y)+.5;line(0,py,sz.x,py,maj?'#2a2a38':'#15151d')}}
+const ox=36,oy=sz.y-36;c.lineWidth=1.6;line(ox,oy,ox+30,oy,'#f44336');line(ox,oy,ox,oy-30,'#4caf50');c.fillStyle='#9aa';c.font='10px Inter,sans-serif';c.fillText('X',ox+34,oy+3);c.fillText('Y',ox-3,oy-34);
+c.fillStyle='#667';c.fillText('grade '+(step*k>=1?(step*k).toFixed(0):(step*k).toFixed(1))+' m',ox+56,oy+3)}
+let raf;const redraw=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(drawGrid)};
+map.on('move zoomend resize viewreset',redraw);
 window.setBasemap=function(t,el){document.querySelectorAll('.x-bm').forEach(x=>{x.classList.remove('on');x.firstChild.style.opacity=.3});el.classList.add('on');el.firstChild.style.opacity=1;
-[googleHybrid,googleSat,cartoDark].forEach(l=>map.removeLayer(l));const m={googleHybrid,googleSat,cartoDark}[t];if(m)m.addTo(map);gc.style.display=m?'none':'block';redraw()};
-/* --- painéis, tema, comandos, status --- */
+[googleHybrid,googleSat,cartoDark].forEach(l=>map.removeLayer(l));const L2={googleHybrid,googleSat,cartoDark}[t];if(L2)L2.addTo(map);gc.style.display=L2?'none':'block';if(!L2)redraw()};
+map.removeLayer(googleHybrid);map.invalidateSize();drawGrid();
+/* --- painéis, comandos e status --- */
 const inv=()=>setTimeout(()=>{map.invalidateSize();drawGrid()},260);
 $('x-tl').onclick=e=>{ws.classList.toggle('nl');e.currentTarget.classList.toggle('open');inv()};
 $('x-tr').onclick=e=>{ws.classList.toggle('nr');e.currentTarget.classList.toggle('open');inv()};
-$('x-tt').onclick=()=>{const D=document.documentElement;D.dataset.theme=D.dataset.theme==='light'?'dark':'light'};
 const CMD={L:draw('Line'),PL:draw('Line'),POL:draw('Polygon'),C:draw('Circle'),REC:draw('Rectangle'),M:modo('Drag'),E:modo('Removal'),ED:modo('Edit'),DIST:toolMedirDistancia,ANG:toolMedirAngulo,U:desfazerAcao,REDO:refazerAcao,CORTAR:toolCortarPoligono,PLOTAR:processarLevantamento};
 $('x-cmdin').onkeydown=e=>{if(e.key!=='Enter')return;const k=e.target.value.trim().toUpperCase();e.target.value='';if(k)CMD[k]?CMD[k]():mostrarToast('Comando desconhecido: '+k)};
 $('x-snap').onclick=e=>{toolSnap();e.currentTarget.classList.toggle('on')};
 map.on('mousemove',e=>{const{lat,lng}=e.latlng,z=Math.floor((lng+180)/6)+1;let u=[0,0];
 try{u=proj4('EPSG:4326','+proj=utm +zone='+z+(lat<0?' +south':'')+' +datum=WGS84 +units=m +no_defs',[lng,lat])}catch(_){}
 $('x-co').textContent='E '+u[0].toFixed(3)+'  N '+u[1].toFixed(3)+'  |  '+lat.toFixed(6)+', '+lng.toFixed(6)});
-const zz=()=>$('x-zoom').textContent='Zoom '+map.getZoom().toFixed(1);map.on('zoomend',zz);zz();setTimeout(()=>map.invalidateSize(),50);
+const zz=()=>$('x-zoom').textContent='Zoom '+map.getZoom().toFixed(1);map.on('zoomend',zz);zz();
 })();
 
 </script>
 </body>
 </html>
+```eof
