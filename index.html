@@ -48,8 +48,38 @@
             --purple: #7a3e9d;
             --border: #dbe1e8;
             --cad-canvas: #ffffff;
+            --grid-minor: #e8ecf2;
+            --grid-major: #cfd6e0;
+            --grid-axis-x: #d32f2f;
+            --grid-axis-y: #2e7d32;
+            --grid-label: #5f6b7a;
             --mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
         }
+        body.theme-dark {
+            --bg-dark: #111827;
+            --bg-panel: #18212f;
+            --bg-card: #202c3d;
+            --bg-input: #111827;
+            --bg-hover: #2b3a50;
+            --text-light: #e5edf7;
+            --text-muted: #aebbd0;
+            --accent: #63a4ff;
+            --accent-hover: #8bbcff;
+            --accent-soft: #263d5c;
+            --border: #34445a;
+            --cad-canvas: #111827;
+            --grid-minor: #263347;
+            --grid-major: #40516a;
+            --grid-axis-x: #ff6b6b;
+            --grid-axis-y: #69db7c;
+            --grid-label: #c7d2e3;
+        }
+        body.theme-dark .x-title, body.theme-dark .tabs, body.theme-dark .x-ph,
+        body.theme-dark .x-win, body.theme-dark .modal-content, body.theme-dark .captura-painel { background: var(--bg-panel); color: var(--text-light); }
+        body.theme-dark .btn, body.theme-dark select, body.theme-dark input, body.theme-dark textarea,
+        body.theme-dark .tabela-editor td, body.theme-dark .tabela-editor input { background: var(--bg-input); color: var(--text-light); border-color: var(--border); }
+        body.theme-dark .tabela-editor th, body.theme-dark .popup-table th { background: var(--bg-card); color: var(--text-light); }
+        body.theme-dark .popup-table td { background: var(--bg-panel); color: var(--text-light); }
 
         #loader-screen {
             position: fixed; inset: 0; background-color: #ffffff; z-index: 999999;
@@ -113,6 +143,14 @@
         .x-measuring .leaflet-interactive { pointer-events: none !important; }
 
         .etiqueta-mapa { background: rgba(255,255,255,.95); border: 1px solid var(--accent); color: var(--text-light); font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+        .rtk-vertice { cursor: pointer; transition: fill .15s, stroke .15s, radius .15s; }
+        .rtk-vertice:hover { fill: var(--accent) !important; stroke: #fff !important; }
+        .vertice-editor { min-width: 220px; font-family: 'IBM Plex Sans', sans-serif; }
+        .vertice-editor h4 { margin: 0 0 9px; color: var(--accent); font-size: 13px; }
+        .vertice-editor label { margin: 6px 0 3px; font-size: 10px; }
+        .vertice-editor input { width: 100%; box-sizing: border-box; padding: 6px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-input); color: var(--text-light); }
+        .vertice-editor .ve-actions { display: flex; gap: 6px; margin-top: 10px; }
+        body.theme-dark .etiqueta-mapa { background: rgba(24,33,47,.95); color: var(--text-light); text-shadow: none; }
         .cota-curva { background: transparent; border: none; box-shadow: none; pointer-events: none; }
         .cota-curva-text { font-size: 10px; font-weight: 600; text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff; text-align: center; white-space: nowrap; margin-top: -6px; margin-left: -10px; }
         .captura-overlay { position:absolute; inset:0; z-index:10000; cursor:crosshair; background:rgba(27,79,156,.08); }
@@ -349,6 +387,7 @@
             <span class="x-doc"></span>
             <button class="x-tg" id="x-tl" title="Painel de camadas" aria-label="Painel de camadas"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
             <button class="x-tg" id="x-tr" title="Propriedades ativas" aria-label="Propriedades ativas"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg></button>
+            <button class="x-tg" id="x-theme" title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
         </div>
         <div class="x-ws nl nr" id="x-ws">
             <div class="x-tool" id="x-tool"></div>
@@ -365,9 +404,9 @@
                     <div id="camadas-dinamicas"></div>
                     <div class="x-ph" style="margin-top:6px">Mapas de Fundo</div>
                     <div class="x-ly x-bm" onclick="setBasemap('googleHybrid',this)"><span style="opacity:0.3"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="sw" style="background:#2e7d32"></span><span class="nm">Satélite com ruas (Google Híbrido)</span><span></span><span></span></div>
-                    <div class="x-ly x-bm on" onclick="setBasemap('googleSat',this)"><span style="opacity:1"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="sw" style="background:#546e7a"></span><span class="nm">Satélite (Google)</span><span></span><span></span></div>
+                    <div class="x-ly x-bm" onclick="setBasemap('googleSat',this)"><span style="opacity:0.3"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="sw" style="background:#546e7a"></span><span class="nm">Satélite (Google)</span><span></span><span></span></div>
                     <div class="x-ly x-bm" onclick="setBasemap('openTopoMap',this)"><span style="opacity:0.3"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="sw" style="background:#c9a66b"></span><span class="nm">Relevo (OpenTopoMap)</span><span></span><span></span></div>
-                    <div class="x-ly x-bm" onclick="setBasemap('cad',this)"><span style="opacity:0.3"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="sw" style="background:#ffffff"></span><span class="nm">Fundo branco com grade (CAD)</span><span></span><span></span></div>
+                    <div class="x-ly x-bm on" onclick="setBasemap('cad',this)"><span style="opacity:1"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="sw" style="background:#ffffff"></span><span class="nm">Fundo branco com grade (CAD)</span><span></span><span></span></div>
                     <div class="x-ph" style="margin-top:6px">Desenho e layers</div>
                     <div style="padding:12px" id="card-desenho">
                         <div class="card" style="margin-top:0;">
@@ -486,6 +525,7 @@
 
                     <div style="display:flex; flex-direction:column; gap:10px; margin-top:5px;">
                         <button class="btn btn-warning btn-block" onclick="baixarDXF()"> Exportar AutoCAD (.DXF)</button>
+                        <button class="btn btn-primary btn-block" onclick="exportarFolhaPlantaDXF()"> Exportar Folha de Planta (.DXF)</button>
                         <button class="btn btn-block" style="background-color:#0277bd; border-color:#0277bd;" onclick="baixarKMZ()"> Exportar Google Earth (.KMZ)</button>
                         <button class="btn btn-block" style="background-color:#107c41; border-color:#107c41; color:#fff;" onclick="baixarPlanilhaTopograficaXLSX()"> Exportar Planilha (.XLSX)</button>
                         <button class="btn btn-success btn-block" onclick="baixarCSV()"> Exportar Tabela (.CSV)</button>
@@ -561,6 +601,7 @@
         <div class="x-stat">
             <span class="co" id="x-co">E 0,000  N 0,000</span>
             <button class="on" id="x-snap">OSNAP</button>
+            <button class="on" id="x-grid-toggle" title="Ligar ou desligar o grid">GRID</button>
             <span class="sp"></span>
             <span style="font-weight: bold; font-size: 12px; color: #64b5f6; margin-right: 15px;">LuiGIS v1.0</span>
             <span id="x-altimetria" style="color: #aed581;">Altimetria Satélite: Buscando…</span>
@@ -584,7 +625,7 @@
         var googleTerrain = L.tileLayer('https://mt1.google.com/vt/lyrs=p&hl=pt-BR&x={x}&y={y}&z={z}', { maxZoom: 22, maxNativeZoom: 20 });
         var openTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: '© OpenTopoMap' });
 
-        var map = L.map('map', { preserveDrawingBuffer: true, zoomControl: false, layers: [googleSat] }).setView([-20.1433, -44.1999], 13);
+        var map = L.map('map', { preserveDrawingBuffer: true, zoomControl: false, layers: [] }).setView([-20.1433, -44.1999], 13);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
         
         var baseMaps = {
@@ -1095,6 +1136,27 @@
             mostrarToast("Novo vértice adicionado no final da tabela. Edite as coordenadas!");
         }
 
+        function abrirEditorVerticeNoMapa(index, latlng) {
+            if (index < 0 || index >= memoria.lon.length) return;
+            var box = document.createElement('div'); box.className = 'vertice-editor';
+            var title = document.createElement('h4'); title.textContent = 'Editar vértice ' + (index + 1); box.appendChild(title);
+            var nomeLabel = document.createElement('label'); nomeLabel.textContent = 'Nome / identificação'; box.appendChild(nomeLabel);
+            var nome = document.createElement('input'); nome.type = 'text'; nome.value = memoria.nomes[index] || ('P' + (index + 1)); nome.maxLength = 80; box.appendChild(nome);
+            var zLabel = document.createElement('label'); zLabel.textContent = 'Altimetria / Cota Z (m)'; box.appendChild(zLabel);
+            var z = document.createElement('input'); z.type = 'number'; z.step = '0.001'; z.value = Number(memoria.cotas[index] || 0); box.appendChild(z);
+            var actions = document.createElement('div'); actions.className = 've-actions';
+            var save = document.createElement('button'); save.type = 'button'; save.className = 'btn btn-primary btn-small'; save.textContent = 'Aplicar';
+            var cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'btn btn-small'; cancel.textContent = 'Cancelar'; actions.append(save, cancel); box.appendChild(actions);
+            var popup = L.popup({ closeButton: true, autoClose: true, closeOnClick: false, maxWidth: 280 }).setLatLng(latlng).setContent(box).openOn(map);
+            save.onclick = function() {
+                var novoNome = nome.value.trim() || ('P' + (index + 1)), novaCota = Number(z.value);
+                memoria.nomes[index] = novoNome; memoria.cotas[index] = Number.isFinite(novaCota) ? novaCota : 0;
+                map.closePopup(popup); atualizarEditor(); atualizarMapa(false); mostrarToast('Vértice ' + novoNome + ' atualizado.');
+            };
+            cancel.onclick = function() { map.closePopup(popup); };
+            setTimeout(function(){ nome.focus(); nome.select(); }, 50);
+        }
+
         function atualizarMapa(zoom = false) {
             var idsRtk = ['rtk_poly', 'rtk_pt', 'rtk_text'];
             idsRtk.forEach(id => { var index = gerenciadorCamadas.findIndex(c => c.id === id); if(index !== -1) { map.removeLayer(gerenciadorCamadas[index].leafletLayer); gerenciadorCamadas.splice(index, 1); } });
@@ -1117,8 +1179,10 @@
                     ptsPPorBloco[blk].push({x: cr[0], y: cr[1]}); 
                 } catch(e) { ptsPPorBloco[blk].push({x:0, y:0}); }
 
-                L.circleMarker(ll, {radius:4, color:'#0098ff', fillColor:'#ffffff', fillOpacity:1, weight:2}).addTo(cPt);
-                L.marker(ll, {opacity:0}).bindTooltip(memoria.nomes[i], {permanent:true, direction:'right', className:'etiqueta-mapa'}).addTo(cTxt);
+                var verticeMarker = L.circleMarker(ll, {radius:5, color:'#0066cc', fillColor:'#ffffff', fillOpacity:1, weight:2, className:'rtk-vertice'}).addTo(cPt);
+                verticeMarker.bindTooltip(memoria.nomes[i] || ('P' + (i + 1)), {permanent:true, direction:'right', className:'etiqueta-mapa', offset:[7,0]});
+                verticeMarker.on('click', function(e) { L.DomEvent.stopPropagation(e); abrirEditorVerticeNoMapa(i, e.latlng); });
+                L.marker(ll, {opacity:0, interactive:false}).addTo(cTxt);
             }
 
             ultimaAreaCalculada = 0; ultimoPerimetroCalculado = 0;
@@ -1570,6 +1634,130 @@
             baixarArquivo("LuiGIS_Tabela.csv", csvContent, "text/csv;charset=utf-8;"); mostrarToast("CSV Exportado!");
         }
 
+        /* Exportador profissional de projeto topográfico em DXF R12/AC1009. */
+        function topoDxfSafe(v) { return String(v == null ? '' : v).replace(/[\r\n\x00]/g, ' ').replace(/[<>;]/g, ' ').trim(); }
+        function topoDxfNum(v) { var n = Number(v); return Number.isFinite(n) ? n.toFixed(4) : '0.0000'; }
+        function topoDxfLayer(name, color, ltype) {
+            return `0\nLAYER\n2\n${topoDxfSafe(name).slice(0,31)}\n70\n0\n62\n${color}\n6\n${ltype || 'CONTINUOUS'}\n`;
+        }
+        function topoDxfHeader() {
+            return '0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n' +
+                '0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLTYPE\n70\n2\n0\nLTYPE\n2\nCONTINUOUS\n70\n0\n3\nSolid line\n72\n65\n73\n0\n40\n0.0\n0\nLTYPE\n2\nDASHED\n70\n0\n3\nDashed __ __\n72\n65\n73\n2\n40\n6.0\n49\n3.0\n49\n-3.0\n0\nENDTAB\n' +
+                '0\nTABLE\n2\nLAYER\n70\n13\n' +
+                topoDxfLayer('01_GLEBA_PERIMETRO_EXTERNO', 1) +
+                topoDxfLayer('02_LOTE_BASE', 2) + topoDxfLayer('03_DIVISAS_INTERNAS', 5, 'DASHED') +
+                topoDxfLayer('04_VERTICES_PONTOS', 1) + topoDxfLayer('05_VERTICES_TEXTOS', 7) +
+                topoDxfLayer('06_COTAS_AZIMUTE_DIST', 8) + topoDxfLayer('07_TEXTOS_LOTES_AREAS', 7) +
+                topoDxfLayer('08_CONFRONTANTES_VIAS', 3) + topoDxfLayer('09_QUADRO_AREAS_COORD', 7) +
+                topoDxfLayer('10_MALHA_UTM_CARIMBO', 9) + topoDxfLayer('11_DESENHOS_CAD', 6) +
+                topoDxfLayer('12_LEGENDA', 7) + topoDxfLayer('13_BORDA_FOLHA', 9) + '0\nENDTAB\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n';
+        }
+        function topoDxfEnd() { return '0\nENDSEC\n0\nEOF\n'; }
+        function topoDxfLine(layer, color, a, b, z, weight) {
+            return `0\nLINE\n8\n${layer}\n62\n${color || 7}\n10\n${topoDxfNum(a[0])}\n20\n${topoDxfNum(a[1])}\n30\n${topoDxfNum(z || 0)}\n11\n${topoDxfNum(b[0])}\n21\n${topoDxfNum(b[1])}\n31\n${topoDxfNum(z || 0)}\n`;
+        }
+        function topoDxfText(layer, color, x, y, text, height, rotation, align) {
+            var t = topoDxfSafe(text), r = Number(rotation) || 0, extra = align ? `72\n1\n11\n${topoDxfNum(x)}\n21\n${topoDxfNum(y)}\n` : '';
+            return `0\nTEXT\n8\n${layer}\n62\n${color || 7}\n10\n${topoDxfNum(x)}\n20\n${topoDxfNum(y)}\n30\n0.0000\n40\n${topoDxfNum(height || 1.5)}\n50\n${topoDxfNum(r)}\n${extra}1\n${t}\n`;
+        }
+        function topoDxfPoint(layer, color, x, y, z) {
+            return `0\nPOINT\n8\n${layer}\n62\n${color || 1}\n10\n${topoDxfNum(x)}\n20\n${topoDxfNum(y)}\n30\n${topoDxfNum(z || 0)}\n`;
+        }
+        function topoDxfCircle(layer, color, x, y, r) {
+            return `0\nCIRCLE\n8\n${layer}\n62\n${color || 1}\n10\n${topoDxfNum(x)}\n20\n${topoDxfNum(y)}\n30\n0.0000\n40\n${topoDxfNum(r)}\n`;
+        }
+        function topoDxfPolyline(layer, color, coords, closed, weight, z) {
+            if (!coords || coords.length < 2) return '';
+            var s = `0\nPOLYLINE\n8\n${layer}\n62\n${color || 7}\n66\n1\n70\n${closed ? 1 : 0}\n10\n0.0\n20\n0.0\n30\n${topoDxfNum(z || 0)}\n`;
+            coords.forEach(p => { s += `0\nVERTEX\n8\n${layer}\n10\n${topoDxfNum(p[0])}\n20\n${topoDxfNum(p[1])}\n30\n${topoDxfNum(p[2] || z || 0)}\n`; });
+            return s + '0\nSEQEND\n';
+        }
+        function topoDxfBounds(points) {
+            var b = {minX:Infinity,maxX:-Infinity,minY:Infinity,maxY:-Infinity};
+            points.forEach(p => { b.minX=Math.min(b.minX,p[0]); b.maxX=Math.max(b.maxX,p[0]); b.minY=Math.min(b.minY,p[1]); b.maxY=Math.max(b.maxY,p[1]); });
+            return b;
+        }
+        function topoDxfAreaPerimeter(poly) {
+            var area=0, per=0; if (!poly || poly.length < 3) return {area:0,perimeter:0,centroid:[0,0]};
+            var cx=0, cy=0;
+            for (var i=0;i<poly.length;i++) { var a=poly[i], b=poly[(i+1)%poly.length], cr=a[0]*b[1]-b[0]*a[1]; area += cr; cx += (a[0]+b[0])*cr; cy += (a[1]+b[1])*cr; per += Math.hypot(b[0]-a[0],b[1]-a[1]); }
+            area /= 2; var den=6*area; return {area:Math.abs(area),perimeter:per,centroid:Math.abs(den)>1e-9?[cx/den,cy/den]:[poly[0][0],poly[0][1]]};
+        }
+        function topoDxfRotateReadable(deg) { var r=Number(deg)||0; while(r>180)r-=360; while(r<=-180)r+=360; if(r>90)r-=180; if(r<=-90)r+=180; return r; }
+        function topoDxfCollectCAD(epsgD) {
+            var epsgU='+proj=longlat +datum=WGS84 +no_defs', entities='', points=[], items=[];
+            function addLL(ll){try{var p=proj4(epsgU,epsgD,[ll.lng,ll.lat]);points.push([p[0],p[1],0]);}catch(e){}}
+            function walk(layer){
+                if(!layer)return;
+                if(layer.getLatLng){addLL(layer.getLatLng());return;}
+                if(layer.getLatLngs){var ls=layer.getLatLngs();(function flat(v){if(!Array.isArray(v))return;if(v.length&&v[0]&&typeof v[0].lat==='number'){v.forEach(addLL);}else v.forEach(flat)})(ls);return;}
+                if(layer.eachLayer)layer.eachLayer(walk);
+            }
+            gerenciadorCamadas.filter(c=>c.tipo==='cad'&&c.visivel).forEach(c=>{
+                var n=0;c.leafletLayer.eachLayer(l=>{n++;walk(l)});items.push({name:c.nome,count:n,color:c.cor});
+                entities+=exportDxfEntity(c.leafletLayer,epsgU,epsgD,'11_DESENHOS_CAD',c.cor);
+            });
+            return {entities,points,items};
+        }
+        function topoDxfBuildSheet(data) {
+            var pts=(data.pts||[]).map(p=>[p.x,p.y,0]).concat(data.cadPoints||[]); if(pts.length<2)return '';
+            var b=topoDxfBounds(pts), bx=Math.max(b.maxX+80,b.minX+120), by=b.maxY, rows=(data.pts||[]).length+(data.cadItems||[]).length+data.lots.length+12;
+            var left=b.minX-15,right=bx+220,top=by+15,bottom=Math.min(b.minY-15,by-rows*3-18);
+            var frame=[[left,bottom],[right,bottom],[right,top],[left,top]]; var s=topoDxfPolyline('13_BORDA_FOLHA',9,frame,true);
+            s+=topoDxfLine('13_BORDA_FOLHA',9,[bx-12,bottom],[bx-12,top],0)+topoDxfText('12_LEGENDA',7,left+5,top-7,'FOLHA DE PLANTA TOPOGRAFICA',2.6,0);
+            s+=topoDxfText('12_LEGENDA',7,left+5,top-13,'LIMITE DA FOLHA / DESENHO CAD / UTM - SIRGAS 2000',1.4,0);
+            s+=topoDxfText('12_LEGENDA',7,bx,top-7,'TABELA DE ITENS E LEGENDA',1.8,0);
+            var y=top-14;s+=topoDxfText('12_LEGENDA',7,bx,y,'ITEM | CAMADA | QUANTIDADE',1.2,0);y-=4;
+            (data.lots||[]).forEach((l,i)=>{s+=topoDxfText('12_LEGENDA',7,bx,y,(i+1)+' | '+l.name+' | '+l.points.length+' vertices',1.2,0);y-=3;});
+            (data.cadItems||[]).forEach((it,i)=>{s+=topoDxfText('12_LEGENDA',7,bx,y,(i+1+data.lots.length)+' | '+topoDxfSafe(it.name)+' | '+it.count+' objeto(s)',1.2,0);y-=3;});
+            s+=topoDxfText('12_LEGENDA',7,bx,y,'SIMBOLOGIA',1.4,0);y-=4;
+            s+=topoDxfLine('01_GLEBA_PERIMETRO_EXTERNO',1,[bx,y+1],[bx+10,y+1],0)+topoDxfText('12_LEGENDA',7,bx+14,y,'Perimetro externo',1.2,0);y-=4;
+            s+=topoDxfLine('03_DIVISAS_INTERNAS',5,[bx,y+1],[bx+10,y+1],0)+topoDxfText('12_LEGENDA',7,bx+14,y,'Divisa interna',1.2,0);y-=4;
+            s+=topoDxfCircle('04_VERTICES_PONTOS',1,bx+5,y+1,.8)+topoDxfText('12_LEGENDA',7,bx+14,y,'Vertice / ponto',1.2,0);
+            return s;
+        }
+        function topoDxfBuildData() {
+            if (!memoria || memoria.lon.length < 3) throw new Error('Carregue ao menos 3 vértices antes de exportar.');
+            var epsgU='+proj=longlat +datum=WGS84 +no_defs', epsgM=obterEpsgEntrada();
+            var pts=memoria.lon.map((lon,i)=>{var c=proj4(epsgU,epsgM,[lon,memoria.lat[i]]);return {name:memoria.nomes[i]||('P'+(i+1)),x:c[0],y:c[1],z:Number(memoria.cotas[i])||0,conf:memoria.confs&&memoria.confs[i]||'',block:memoria.bloco&&Number.isFinite(Number(memoria.bloco[i]))?Number(memoria.bloco[i]):0,idx:i};});
+            var groups={}; pts.forEach(p=>(groups[p.block]||(groups[p.block]=[])).push(p));
+            var lots=Object.keys(groups).sort((a,b)=>Number(a)-Number(b)).map((k,i)=>({key:k,name:'LOTE_'+(i+1),points:groups[k]})).filter(l=>l.points.length>=3);
+            if (!lots.length) throw new Error('Não foi possível formar uma poligonal fechada com os vértices carregados.');
+            lots.forEach(l=>{l.coords=l.points.map(p=>[p.x,p.y,p.z]);l.calc=topoDxfAreaPerimeter(l.coords);});
+            var edgeMap=new Map(); lots.forEach(l=>{for(var i=0;i<l.coords.length;i++){var a=l.coords[i],b=l.coords[(i+1)%l.coords.length],ka=topoDxfNum(a[0])+','+topoDxfNum(a[1]),kb=topoDxfNum(b[0])+','+topoDxfNum(b[1]),key=ka<kb?ka+'|'+kb:kb+'|'+ka;if(!edgeMap.has(key))edgeMap.set(key,{a,b,count:0});edgeMap.get(key).count++;}});
+            var boundary=[]; edgeMap.forEach(e=>{if(e.count===1)boundary.push([e.a,e.b]);});
+            var external=[]; if(boundary.length){var used=[];var first=boundary[0];external=[first[0],first[1]];used.push(0);while(used.length<boundary.length){var last=external[external.length-1],found=-1,next=null;for(var j=0;j<boundary.length;j++){if(used.includes(j))continue;var e=boundary[j];if(Math.hypot(e[0][0]-last[0],e[0][1]-last[1])<.01){found=j;next=e[1];break;}if(Math.hypot(e[1][0]-last[0],e[1][1]-last[1])<.01){found=j;next=e[0];break;}}if(found<0)break;used.push(found);external.push(next);if(Math.hypot(next[0]-external[0][0],next[1]-external[0][1])<.01)break;}}
+            if(external.length<3) external=lots.slice().sort((a,b)=>b.calc.area-a.calc.area)[0].coords;
+            var internal=[]; edgeMap.forEach(e=>{if(e.count>1)internal.push([e.a,e.b]);});
+            return {pts,lots,external,internal,epsg:epsgM};
+        }
+        function topoDxfBuildFile(data, onlyLot) {
+            var s=topoDxfHeader(), lots=onlyLot?[onlyLot]:data.lots, all=[];
+            if(!onlyLot){var cad=topoDxfCollectCAD(data.epsg);s+=cad.entities;data.cadPoints=cad.points;data.cadItems=cad.items;}
+            lots.forEach((l,li)=>{var layer='02_'+topoDxfSafe(l.name).toUpperCase().replace(/[^A-Z0-9_]/g,'_').slice(0,24), color=[2,3,4,6,30,140][li%6];s+=topoDxfPolyline(layer,color,l.coords,true,onlyLot?12:12);all=all.concat(l.coords);l.points.forEach((p,i)=>{s+=topoDxfPoint('04_VERTICES_PONTOS',1,p.x,p.y,p.z)+topoDxfCircle('04_VERTICES_PONTOS',1,p.x,p.y,.35)+topoDxfText('05_VERTICES_TEXTOS',7,p.x+.55,p.y+.45,p.name,1.5,0);var q=l.points[(i+1)%l.points.length],dx=q.x-p.x,dy=q.y-p.y,dist=Math.hypot(dx,dy),az=(Math.atan2(dx,dy)*180/Math.PI+360)%360,mid=[(p.x+q.x)/2,(p.y+q.y)/2],ang=topoDxfRotateReadable(Math.atan2(dy,dx)*180/Math.PI);s+=topoDxfText('06_COTAS_AZIMUTE_DIST',8,mid[0],mid[1],dist.toFixed(2)+' m ('+az.toFixed(0)+'°)',1.2,ang,true);var conf=p.conf||'';if(conf)s+=topoDxfText('08_CONFRONTANTES_VIAS',3,mid[0],mid[1],conf,1.2,ang,true);});var c=l.calc.centroid;s+=topoDxfText('07_TEXTOS_LOTES_AREAS',7,c[0],c[1]+1.5,l.name+' | A='+l.calc.area.toFixed(2)+' m2 | P='+l.calc.perimeter.toFixed(2)+' m',1.8,0,true);});
+            if(!onlyLot){s+=topoDxfPolyline('01_GLEBA_PERIMETRO_EXTERNO',1,data.external,true,25);data.internal.forEach(e=>{s+=topoDxfLine('03_DIVISAS_INTERNAS',5,e[0],e[1],0,12);});var pts=data.pts.map(p=>[p.x,p.y]).concat((data.cadPoints||[]).map(p=>[p[0],p[1]]));var b=topoDxfBounds(pts),step=50,startX=Math.floor(b.minX/step)*step-step,endX=Math.ceil(b.maxX/step)*step+step,startY=Math.floor(b.minY/step)*step-step,endY=Math.ceil(b.maxY/step)*step+step;for(var x=startX;x<=endX;x+=step){s+=topoDxfLine('10_MALHA_UTM_CARIMBO',9,[x,b.minY-8],[x,b.minY],0)+topoDxfText('10_MALHA_UTM_CARIMBO',9,x+1,b.minY-6,'E='+x+'m',1.2,90);}for(var y=startY;y<=endY;y+=step){s+=topoDxfLine('10_MALHA_UTM_CARIMBO',9,[b.minX-8,y],[b.minX,y],0)+topoDxfText('10_MALHA_UTM_CARIMBO',9,b.minX-6,y+1,'N='+y+'m',1.2,0);}var bx=Math.max(b.maxX+80,b.minX+120),by=b.maxY; s+=topoDxfText('09_QUADRO_AREAS_COORD',7,bx,by,'PROJETO TOPOGRAFICO - UTM / SIRGAS 2000',2.5,0);s+=topoDxfText('09_QUADRO_AREAS_COORD',7,bx,by-6,'QUADRO DE AREAS E PERIMETROS',1.8,0);var totalA=0,totalP=0;data.lots.forEach((l,i)=>{totalA+=l.calc.area;totalP+=l.calc.perimeter;s+=topoDxfText('09_QUADRO_AREAS_COORD',7,bx,by-10-i*4,l.name+' | A='+l.calc.area.toFixed(2)+' m2 | P='+l.calc.perimeter.toFixed(2)+' m',1.4,0);});s+=topoDxfText('09_QUADRO_AREAS_COORD',7,bx,by-14-data.lots.length*4,'TOTAL GERAL | A='+totalA.toFixed(2)+' m2 | P='+totalP.toFixed(2)+' m',1.6,0);s+=topoDxfText('09_QUADRO_AREAS_COORD',7,bx,by-21-data.lots.length*4,'TABELA OFICIAL DE COORDENADAS UTM',1.8,0);data.pts.forEach((p,i)=>{s+=topoDxfText('09_QUADRO_AREAS_COORD',7,bx,by-25-data.lots.length*4-i*3,p.name+' | E='+p.x.toFixed(4)+' | N='+p.y.toFixed(4)+' | Z='+p.z.toFixed(3),1.1,0);});s+=topoDxfBuildSheet(data);}
+            return s+topoDxfEnd();
+        }
+        function exportarFolhaPlantaDXF(){
+            try {
+                var data=topoDxfBuildData();
+                var dxf=topoDxfBuildFile(data).replace(/\r?\n/g,'\r\n');
+                baixarArquivo('Folha_Planta_Topografica_AC1009.dxf',dxf,'application/dxf;charset=utf-8');
+                var totalA=data.lots.reduce((sum,l)=>sum+l.calc.area,0), totalP=data.lots.reduce((sum,l)=>sum+l.calc.perimeter,0);
+                mostrarToast('Folha DXF gerada: '+data.lots.length+' lote(s), area total '+totalA.toFixed(2)+' m2.');
+            } catch(e) {
+                console.error(e);
+                mostrarToast(e.message||'Nao foi possivel gerar a folha DXF.');
+            }
+        }
+
+        async function exportarProjetoTopograficoZIP(){
+            try{var data=topoDxfBuildData(),zip=new JSZip(),principal=topoDxfBuildFile(data);zip.file('Projeto_Topografico_AC1009.dxf',principal);data.lots.forEach(l=>zip.file('Lotes_Individuais/'+l.name+'_AC1009.dxf',topoDxfBuildFile(data,l)));
+                var rel='PROJETO TOPOGRAFICO - RELATORIO DE CONFERENCIA\nCRS de exportacao: '+data.epsg+'\nFormato: AutoCAD R12 / AC1009\nUnidades: metros\n\n';data.lots.forEach(l=>{rel+=l.name+'; area='+l.calc.area.toFixed(4)+' m2; perimetro='+l.calc.perimeter.toFixed(4)+' m\n';});zip.file('Relatorio_Conferencia.txt',rel);
+                var mapEl=document.getElementById('map'),png=await html2canvas(mapEl,{useCORS:true,backgroundColor:'#ffffff',scale:2});var blob=await new Promise(r=>png.toBlob(r,'image/png'));if(blob)zip.file('Conferencia_Geometrica.png',blob);var out=await zip.generateAsync({type:'blob',compression:'DEFLATE'}),a=document.createElement('a');a.href=URL.createObjectURL(out);a.download='Projeto_Topografico_AC1009.zip';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);mostrarToast('Projeto topografico ZIP gerado com DXF, lotes e PNG.');
+            }catch(e){console.error(e);mostrarToast(e.message||'Nao foi possivel gerar o projeto topografico.');}
+        }
+
         function baixarDXF() {
             var incluirCurvas = true; var incluirTin = false;
             var hasRtkPt = memoria.lon.length > 0 && gerenciadorCamadas.find(c => c.id === 'rtk_pt')?.visivel !== false; var hasRtkPoly = memoria.lon.length > 0 && gerenciadorCamadas.find(c => c.id === 'rtk_poly')?.visivel !== false; var hasLayers = gerenciadorCamadas.some(c => c.visivel && (c.tipo === 'shp' || (incluirCurvas && c.tipo === 'curva_nivel') || (incluirTin && c.tipo === 'tin_mesh'))); var hasCAD = gerenciadorCamadas.some(c => c.tipo === 'cad' && c.visivel);
@@ -1847,9 +2035,10 @@ c.append(d)});atualizarOrdemZIndexMap()};
 if($('active-cad-layer'))$('active-cad-layer').addEventListener('change',()=>renderizarGestorCamadas());
 renderizarGestorCamadas();
 
-const gc=document.createElement('canvas');gc.id='x-grid';map.getContainer().prepend(gc);gc.style.display='none';
+const gc=document.createElement('canvas');gc.id='x-grid';map.getContainer().prepend(gc);gc.style.display='block';
 const RM=6378137,rad=Math.PI/180,nice=v=>{const p=Math.pow(10,Math.floor(Math.log10(v))),m=v/p;return(m<=1?1:m<=2?2:m<=5?5:10)*p};
 function drawGrid(){const sz=map.getSize(),d=window.devicePixelRatio||1;gc.width=sz.x*d;gc.height=sz.y*d;gc.style.width=sz.x+'px';gc.style.height=sz.y+'px';
+const cs=getComputedStyle(document.body),gridMinor=cs.getPropertyValue('--grid-minor').trim(),gridMajor=cs.getPropertyValue('--grid-major').trim(),gridAxisX=cs.getPropertyValue('--grid-axis-x').trim(),gridAxisY=cs.getPropertyValue('--grid-axis-y').trim(),gridLabel=cs.getPropertyValue('--grid-label').trim();
 const c=gc.getContext('2d');c.scale(d,d);const z=map.getZoom(),ctr=map.getCenter(),k=Math.cos(ctr.lat*rad);
 const step=nice(40075016.686/Math.pow(2,z+8)*k*32)/k,b=map.getBounds();
 const x0=RM*b.getWest()*rad,x1=RM*b.getEast()*rad,my=l=>RM*Math.log(Math.tan(Math.PI/4+l*rad/2)),y0=my(b.getSouth()),y1=my(b.getNorth());
@@ -1857,15 +2046,15 @@ const lat=y=>(2*Math.atan(Math.exp(y/RM))-Math.PI/2)/rad;
 const line=(x1_,y1_,x2_,y2_,col)=>{c.strokeStyle=col;c.beginPath();c.moveTo(x1_,y1_);c.lineTo(x2_,y2_);c.stroke()};
 c.lineWidth=1;
 for(let pass=0;pass<2;pass++){
-for(let n=Math.floor(x0/step);n<=Math.ceil(x1/step)&&n-Math.floor(x0/step)<500;n++){const maj=n%5===0;if(maj!==!!pass)continue;const px=Math.round(map.latLngToContainerPoint([ctr.lat,n*step/RM/rad]).x)+.5;line(px,0,px,sz.y,maj?'#cfd6e0':'#e8ecf2')}
-for(let n=Math.floor(y0/step);n<=Math.ceil(y1/step)&&n-Math.floor(y0/step)<500;n++){const maj=n%5===0;if(maj!==!!pass)continue;const py=Math.round(map.latLngToContainerPoint([lat(n*step),ctr.lng]).y)+.5;line(0,py,sz.x,py,maj?'#cfd6e0':'#e8ecf2')}}
-const ox=36,oy=sz.y-36;c.lineWidth=1.6;line(ox,oy,ox+30,oy,'#d32f2f');line(ox,oy,ox,oy-30,'#2e7d32');c.fillStyle='#5f6b7a';c.font='11px "IBM Plex Sans",sans-serif';c.fillText('X',ox+34,oy+3);c.fillText('Y',ox-3,oy-34);
-c.fillStyle='#8a96a6';c.fillText('grade '+(step*k>=1?(step*k).toFixed(0):(step*k).toFixed(1))+' m',ox+56,oy+3)}
+    for(let n=Math.floor(x0/step);n<=Math.ceil(x1/step)&&n-Math.floor(x0/step)<500;n++){const maj=n%5===0;if(maj!==!!pass)continue;const px=Math.round(map.latLngToContainerPoint([ctr.lat,n*step/RM/rad]).x)+.5;line(px,0,px,sz.y,maj?gridMajor:gridMinor)}
+    for(let n=Math.floor(y0/step);n<=Math.ceil(y1/step)&&n-Math.floor(y0/step)<500;n++){const maj=n%5===0;if(maj!==!!pass)continue;const py=Math.round(map.latLngToContainerPoint([lat(n*step),ctr.lng]).y)+.5;line(0,py,sz.x,py,maj?gridMajor:gridMinor)}}
+    const ox=36,oy=sz.y-36;c.lineWidth=1.6;line(ox,oy,ox+30,oy,gridAxisX);line(ox,oy,ox,oy-30,gridAxisY);c.fillStyle=gridLabel;c.font='11px "IBM Plex Sans",sans-serif';c.fillText('X',ox+34,oy+3);c.fillText('Y',ox-3,oy-34);
+    c.fillStyle=gridLabel;c.fillText('grade '+(step*k>=1?(step*k).toFixed(0):(step*k).toFixed(1))+' m',ox+56,oy+3)}
 let raf;const redraw=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(drawGrid)};
 map.on('move zoomend resize viewreset',redraw);
 const BM={googleHybrid:googleHybrid,googleSat:googleSat,openTopoMap:openTopoMap};
 window.setBasemap=function(t,el){document.querySelectorAll('.x-bm').forEach(x=>{x.classList.remove('on');x.firstElementChild.style.opacity=.3});el.classList.add('on');el.firstElementChild.style.opacity=1;
-Object.values(BM).forEach(l=>map.removeLayer(l));const L2=BM[t];if(L2)L2.addTo(map);gc.style.display=L2?'none':'block';if(!L2)redraw()};
+Object.values(BM).forEach(l=>map.removeLayer(l));const L2=BM[t];if(L2)L2.addTo(map);gc.style.display=L2?'none':'block';const gb=document.getElementById('x-grid-toggle');if(gb)gb.classList.toggle('on',!L2);if(!L2)redraw()};
 map.invalidateSize();drawGrid();
 
 const MED={on:false,modo:'dist',pts:[],cur:null,fix:L.layerGroup().addTo(map),mk:null,mkTipo:null,pv:null,cl:null,raf:0,ev:null};
@@ -2002,7 +2191,10 @@ window.toolMedirAngulo=()=>{if(!MED.on)usar('regua',iniciarMedicao);setModoMedid
 
 $('x-tl').onclick=e=>{ws.classList.toggle('nl');e.currentTarget.classList.toggle('open');inv()};
 $('x-tr').onclick=e=>{ws.classList.toggle('nr');e.currentTarget.classList.toggle('open');inv()};
+$('x-theme').onclick=()=>{const dark=document.body.classList.toggle('theme-dark');localStorage.setItem('luigis-theme',dark?'dark':'light');$('x-theme').classList.toggle('open',dark);setTimeout(drawGrid,0)};
+if(localStorage.getItem('luigis-theme')==='dark'){document.body.classList.add('theme-dark');$('x-theme').classList.add('open');}
 $('x-snap').onclick=e=>{toolSnap();e.currentTarget.classList.toggle('on',$('cad-snap-toggle').checked)};
+$('x-grid-toggle').onclick=e=>{const on=gc.style.display!=='none';gc.style.display=on?'none':'block';e.currentTarget.classList.toggle('on',!on);if(!on)redraw();};
 realce();inv();
 })();
 
